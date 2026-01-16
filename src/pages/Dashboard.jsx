@@ -107,7 +107,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Friend Cards Layer */}
-                <div className="absolute inset-0">
+                <div className="absolute inset-0 z-20 pointer-events-none">
                     {friends.map((f, i) => {
                         // Deterministic random position based on ID or index for stability across renders (demo only)
                         // In reality, would be lat/long. Using Math.sin for pseudo-randomness.
@@ -123,7 +123,7 @@ export default function Dashboard() {
                                 initial={{ scale: 0, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: i * 0.1, type: "spring" }}
-                                className="absolute group cursor-pointer"
+                                className="absolute group cursor-pointer pointer-events-auto"
                                 style={{ left: `${x}%`, top: `${y}%` }}
                                 onClick={() => setSelectedFriend(f)}
                             >
