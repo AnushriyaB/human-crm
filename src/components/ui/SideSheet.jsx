@@ -50,17 +50,17 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             <div className="space-y-6">
                                 {/* Details Section */}
                                 <div className="space-y-4">
-                                    <DetailRow label="Birthday" value={friend.birthday} />
-                                    <DetailRow label="Anniversary" value={friend.anniversary} />
-                                    <DetailRow label="Phone" value={friend.phone} />
-                                    <DetailRow label="Address" value={friend.address} />
-                                    <DetailRow label="Partner" value={friend.partner} />
+                                    <DetailRow label="birthday" value={friend.birthday} />
+                                    <DetailRow label="anniversary" value={friend.anniversary} />
+                                    <DetailRow label="phone" value={friend.phone} />
+                                    <DetailRow label="address" value={friend.address} />
+                                    <DetailRow label="partner" value={friend.partner} />
                                 </div>
 
                                 {/* Notes Section */}
                                 {friend.notes && (
                                     <div className="p-4 bg-gray-50 rounded-xl space-y-2">
-                                        <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider">Notes</h3>
+                                        <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider">notes</h3>
                                         <p className="text-text-primary whitespace-pre-wrap">{friend.notes}</p>
                                     </div>
                                 )}
@@ -68,7 +68,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
 
                             {/* Photo Cluster Placeholder */}
                             <div className="pt-4">
-                                <h3 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-4">Photos</h3>
+                                <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">photos</h3>
                                 <div className="flex -space-x-4 overflow-x-auto pb-4 pl-2">
                                     {[1, 2, 3].map((i) => (
                                         <div key={i} className="w-20 h-20 rounded-full bg-gray-200 border-4 border-white shadow-md flex-shrink-0 hover:scale-110 hover:z-10 transition-transform duration-300" />
@@ -87,7 +87,7 @@ function DetailRow({ label, value }) {
     if (!value) return null;
     return (
         <div className="grid grid-cols-3 gap-4 border-b border-gray-100 pb-3 last:border-0 text-sm">
-            <span className="text-text-secondary font-medium">{label}</span>
+            <span className="text-text-secondary font-medium lowercase">{label}</span>
             <span className="col-span-2 text-text-primary">{value}</span>
         </div>
     );

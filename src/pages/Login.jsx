@@ -28,21 +28,21 @@ export default function Login() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
             <div className="w-full max-w-md space-y-8">
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-2 uppercase">
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl font-bold tracking-tight text-text-primary"
+                        className="text-4xl font-bold tracking-tight text-text-primary lowercase"
                     >
-                        Human.
+                        human.
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-text-secondary text-lg"
+                        className="text-text-secondary text-lg lowercase"
                     >
-                        A minimal world for your friends.
+                        a minimal world for your friends.
                     </motion.p>
                 </div>
 
@@ -60,17 +60,17 @@ export default function Login() {
                                 <div className="space-y-2">
                                     <Input
                                         type="text"
-                                        placeholder="Email or Phone"
+                                        placeholder="email or phone"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         autoFocus
                                     />
-                                    <p className="text-sm text-text-secondary pl-1">
-                                        We'll send you a code. No passwords.
+                                    <p className="text-sm text-text-secondary pl-1 lowercase">
+                                        we'll send you a code. no passwords.
                                     </p>
                                 </div>
-                                <Button type="submit" className="w-full" size="lg">
-                                    Continue
+                                <Button type="submit" className="w-full lowercase" size="lg">
+                                    continue
                                 </Button>
                             </motion.form>
                         ) : (
@@ -85,7 +85,7 @@ export default function Login() {
                                 <div className="space-y-2">
                                     <Input
                                         type="text"
-                                        placeholder="Code (Try 1234)"
+                                        placeholder="code (try 1234)"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
                                         autoFocus
@@ -93,13 +93,13 @@ export default function Login() {
                                     <button
                                         type="button"
                                         onClick={() => setStep('email')}
-                                        className="text-sm text-text-secondary hover:text-brand pl-1 transition-colors"
+                                        className="text-sm text-text-secondary hover:text-brand pl-1 transition-colors lowercase"
                                     >
-                                        Wrong number? Go back.
+                                        wrong number? go back.
                                     </button>
                                 </div>
-                                <Button type="submit" className="w-full" size="lg">
-                                    Enter World
+                                <Button type="submit" className="w-full lowercase" size="lg">
+                                    enter world
                                 </Button>
                             </motion.form>
                         )}

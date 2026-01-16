@@ -39,14 +39,14 @@ export default function Dashboard() {
                     className="space-y-6"
                 >
                     <h2 className="text-2xl font-medium text-text-primary">
-                        Your world is empty.<br />Start with one.
+                        your world is empty.<br />start with one.
                     </h2>
                     <Button
                         onClick={() => setIsAdding(true)}
                         size="lg"
-                        className="rounded-full px-8 shadow-lg shadow-brand/20"
+                        className="rounded-full px-8 shadow-lg shadow-brand/20 lowercase"
                     >
-                        Add a friend
+                        add a friend
                     </Button>
                 </motion.div>
             </div>
@@ -74,13 +74,14 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Map Pattern Background */}
-                <div className="absolute inset-0 opacity-[0.03]"
-                    style={{
-                        backgroundImage: 'radial-gradient(#000 1px, transparent 1px)',
-                        backgroundSize: '24px 24px'
-                    }}
-                />
+                {/* Map Background */}
+                <div className="absolute inset-0 flex items-center justify-center p-4 md:p-20 opacity-80 pointer-events-none">
+                    <img
+                        src="/src/assets/world-map.png"
+                        alt="world map"
+                        className="w-full max-w-6xl object-contain opacity-20"
+                    />
+                </div>
 
                 {/* User Center Dot */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -136,8 +137,8 @@ export default function Dashboard() {
 
                 {/* Floating Add Button */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30">
-                    <Button onClick={() => setIsAdding(true)} className="rounded-full shadow-xl bg-white text-black hover:bg-gray-50 border border-gray-100">
-                        Add Friend
+                    <Button onClick={() => setIsAdding(true)} className="rounded-full shadow-xl bg-white text-black hover:bg-gray-50 border border-gray-100 lowercase">
+                        add friend
                     </Button>
                 </div>
             </div>

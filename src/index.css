@@ -8,5 +8,6 @@
   body {
     @apply bg-white text-text-primary antialiased;
     font-family: 'Satoshi', sans-serif;
+    text-transform: lowercase;
   }
 }

@@ -24,7 +24,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                         className="relative w-full max-w-sm bg-white rounded-3xl shadow-xl overflow-hidden p-6 space-y-6"
                     >
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-text-primary">Settings</h2>
+                            <h2 className="text-xl font-bold text-text-primary lowercase">settings</h2>
                             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
                                 ✕
                             </Button>
@@ -32,29 +32,29 @@ export default function SettingsModal({ isOpen, onClose }) {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium text-text-secondary block mb-3">Digest Frequency</label>
+                                <label className="text-sm font-medium text-text-secondary block mb-3 lowercase">digest frequency</label>
                                 <div className="grid grid-cols-2 gap-2 bg-gray-50 p-1 rounded-xl">
                                     {['daily', 'weekly'].map((freq) => (
                                         <button
                                             key={freq}
                                             onClick={() => setDigestFrequency(freq)}
                                             className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${digestFrequency === freq
-                                                ? 'bg-white text-brand shadow-sm'
-                                                : 'text-text-secondary hover:text-text-primary'
+                                                ? 'bg-white text-brand shadow-sm lowercase'
+                                                : 'text-text-secondary hover:text-text-primary lowercase'
                                                 }`}
                                         >
-                                            {freq.charAt(0).toUpperCase() + freq.slice(1)}
+                                            {freq}
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-xs text-text-secondary mt-2">
-                                    Receive updates about your friends {digestFrequency}.
+                                <p className="text-xs text-text-secondary mt-2 lowercase">
+                                    receive updates about your friends {digestFrequency}.
                                 </p>
                             </div>
                         </div>
 
-                        <Button className="w-full" onClick={onClose}>
-                            Done
+                        <Button className="w-full lowercase" onClick={onClose}>
+                            done
                         </Button>
 
                     </motion.div>
