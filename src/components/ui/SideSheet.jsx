@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
+import { Icons } from './Icons';
 
 export default function SideSheet({ isOpen, onClose, friend }) {
     // Prevent body scroll when open
@@ -111,14 +112,14 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">interaction history</h3>
                                     <div className="relative border-l border-gray-200 ml-3 space-y-8 pl-8">
                                         {[
-                                            { date: 'Today', event: 'Viewed profile', icon: '👁️' },
-                                            { date: '2 weeks ago', event: 'Sent a gift', icon: '🎁' },
-                                            { date: '1 month ago', event: 'Met for coffee', icon: '☕' },
-                                            { date: '3 months ago', event: 'Added to Human.', icon: '✨' },
+                                            { date: 'Today', event: 'Viewed profile', Icon: Icons.Eye },
+                                            { date: '2 weeks ago', event: 'Sent a gift', Icon: Icons.Gift },
+                                            { date: '1 month ago', event: 'Met for coffee', Icon: Icons.Coffee },
+                                            { date: '3 months ago', event: 'Added to Human.', Icon: Icons.Sparkles },
                                         ].map((item, i) => (
                                             <div key={i} className="relative">
-                                                <div className="absolute -left-[41px] bg-white border border-gray-200 text-lg rounded-full w-8 h-8 flex items-center justify-center shadow-sm">
-                                                    {item.icon}
+                                                <div className="absolute -left-[41px] bg-white border border-gray-200 text-lg rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-brand">
+                                                    <item.Icon className="w-4 h-4" />
                                                 </div>
                                                 <p className="text-xs text-text-secondary mb-1">{item.date}</p>
                                                 <p className="font-medium text-text-primary">{item.event}</p>
