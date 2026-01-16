@@ -25,6 +25,8 @@ export default function FriendForm() {
     const passphrase = state?.passphrase || '';
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [locationType, setLocationType] = useState('city'); // 'city' | 'address'
+
     const [formData, setFormData] = useState({
         name: initialName,
         photo: null,
@@ -132,18 +134,50 @@ export default function FriendForm() {
                 return (
                     <div className="space-y-6 max-w-md mx-auto pt-10">
                         <h2 className="text-2xl font-bold lowercase">coordinates</h2>
+
+                        {/* Location Type Toggle */}
+                        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6">
+                            <button
+                                onClick={() => setLocationType('city')}
+                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'city'
+                                        ? 'bg-white shadow-sm text-text-primary'
+                                        : 'text-text-secondary hover:text-text-primary'
+                                    }`}
+                            >
+                                city / country
+                            </button>
+                            <button
+                                onClick={() => setLocationType('address')}
+                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'address'
+                                        ? 'bg-white shadow-sm text-text-primary'
+                                        : 'text-text-secondary hover:text-text-primary'
+                                    }`}
+                            >
+                                full address
+                            </button>
+                        </div>
+
                         <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">full address</label>
-                                <Input name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." />
-                                <p className="text-brand text-xs mt-2 lowercase italic">
-                                    "i can order something nice for you if you put your full address"
-                                </p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">city</label>
-                                <Input name="city" value={formData.city} onChange={handleChange} placeholder="current base" />
-                            </div>
+                            {locationType === 'address' ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                >
+                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">full address</label>
+                                    <Input name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." />
+                                    <p className="text-brand text-xs mt-2 lowercase italic">
+                                        "i can order something nice for you if you put your full address"
+                                    </p>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                >
+                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">city / country</label>
+                                    <Input name="city" value={formData.city} onChange={handleChange} placeholder="current base" />
+                                </motion.div>
+                            )}
                         </div>
                     </div>
                 );
