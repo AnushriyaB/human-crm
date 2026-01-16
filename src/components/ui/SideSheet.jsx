@@ -110,19 +110,29 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                 // Audit Trail / Gantt View
                                 <div className="space-y-6">
                                     <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">interaction history</h3>
-                                    <div className="relative border-l border-gray-200 ml-3 space-y-8 pl-8">
+                                    <div className="space-y-0">
                                         {[
                                             { date: 'Today', event: 'Viewed profile', Icon: Icons.Eye },
                                             { date: '2 weeks ago', event: 'Sent a gift', Icon: Icons.Gift },
                                             { date: '1 month ago', event: 'Met for coffee', Icon: Icons.Coffee },
                                             { date: '3 months ago', event: 'Added to Human.', Icon: Icons.Sparkles },
-                                        ].map((item, i) => (
-                                            <div key={i} className="relative">
-                                                <div className="absolute -left-[41px] bg-white border border-gray-200 text-lg rounded-full w-8 h-8 flex items-center justify-center shadow-sm text-brand">
-                                                    <item.Icon className="w-4 h-4" />
+                                        ].map((item, i, arr) => (
+                                            <div key={i} className="flex gap-4">
+                                                {/* Stepper Column */}
+                                                <div className="flex flex-col items-center">
+                                                    <div className="relative z-10 bg-white p-1">
+                                                        <item.Icon className="w-5 h-5 text-brand" />
+                                                    </div>
+                                                    {/* Line connects to next item */}
+                                                    {i !== arr.length - 1 && (
+                                                        <div className="w-px flex-1 bg-gray-200 my-1" />
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-text-secondary mb-1">{item.date}</p>
-                                                <p className="font-medium text-text-primary">{item.event}</p>
+                                                {/* Content Column */}
+                                                <div className="pb-8 pt-1.5">
+                                                    <p className="text-xs text-text-secondary mb-1 lowercase tracking-wide">{item.date}</p>
+                                                    <p className="font-medium text-text-primary leading-tight lowercase">{item.event}</p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
