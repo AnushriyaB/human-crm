@@ -106,50 +106,70 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Friend Cards Layer */}
+                {/* Friend Cards Layer (Map) */}
                 <div className="absolute inset-0 z-20 pointer-events-none">
-                    {friends.map((f, i) => {
-                        // Deterministic random position based on ID or index for stability across renders (demo only)
-                        // In reality, would be lat/long. Using Math.sin for pseudo-randomness.
-                        const angle = (i / friends.length) * 2 * Math.PI;
-                        const radius = 30; // % distance from center
-                        const x = 50 + radius * Math.cos(angle + i);
-                        const y = 50 + radius * Math.sin(angle + i);
-
-                        return (
-                            <motion.div
-                                key={f.id}
-                                layoutId={`card-${f.id}`}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: i * 0.1, type: "spring" }}
-                                className="absolute group cursor-pointer pointer-events-auto"
-                                style={{ left: `${x}%`, top: `${y}%` }}
-                                onClick={() => setSelectedFriend(f)}
-                            >
-                                <div className="relative bg-white pl-8 pr-4 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2">
-                                    {/* Photo overlapping left edge */}
-                                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
-                                        {f.photo ? (
-                                            <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            /* Initials fallback */
-                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                                                {f.name.substring(0, 2).toUpperCase()}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="font-medium text-sm text-text-primary whitespace-nowrap">{f.name}</span>
-
-                                    {/* Hover Arrow */}
-                                    <div className="w-0 overflow-hidden group-hover:w-4 transition-all duration-300">
-                                        <span className="text-brand">→</span>
-                                    </div>
+                    {friends.filter(f => f.x !== null).map((f) => (
+                        <motion.div
+                            key={f.id}
+                            layoutId={`card-${f.id}`}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="absolute group cursor-pointer pointer-events-auto"
+                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
+                            onClick={() => setSelectedFriend(f)}
+                        >
+                            <div className="relative bg-white pl-8 pr-4 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2">
+                                {/* Photo overlapping left edge */}
+                                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
+                                    {f.photo ? (
+                                        <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                                            {f.name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
-                            </motion.div>
-                        );
-                    })}
+                                <span className="font-medium text-sm text-text-primary whitespace-nowrap lowercase">{f.name}</span>
+
+                                <div className="w-0 overflow-hidden group-hover:w-4 transition-all duration-300">
+                                    <span className="text-brand">→</span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
+
+                {/* The Shelf (Bottom) */}
+                {friends.some(f => f.x === null) && (
+                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100/80 to-transparent z-20 flex items-end justify-center pb-8 pointer-events-none">
+                        <div className="flex gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm pointer-events-auto">
+                            {friends.filter(f => f.x === null).map((f) => (
+                                <motion.div
+                                    key={f.id}
+                                    layoutId={`card-${f.id}`}
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    onClick={() => setSelectedFriend(f)}
+                                    className="relative group cursor-pointer"
+                                >
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:-translate-y-1 transition-transform">
+                                            {f.photo ? (
+                                                <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                                                    {f.name.substring(0, 2).toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="text-xs font-medium text-text-secondary lowercase">{f.name}</span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Floating Add Button */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30">

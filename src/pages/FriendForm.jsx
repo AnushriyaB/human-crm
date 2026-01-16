@@ -19,28 +19,29 @@ const STEPS = [
 export default function FriendForm() {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const { addFriend } = useFriends();
+    const { addFriend, updateFriend } = useFriends();
 
     const initialName = state?.name || 'friend';
     const passphrase = state?.passphrase || '';
+    const isEdit = state?.isEdit || false;
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
-    const [locationType, setLocationType] = useState('city'); // 'city' | 'address'
+    const [locationType, setLocationType] = useState(state?.address ? 'address' : 'city'); // Default logic based on existing data
 
     const [formData, setFormData] = useState({
         name: initialName,
-        photo: null,
-        birthday: '',
-        anniversary: '',
-        partner: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        memory: '',
-        how_we_met: '',
-        notes: '',
-        gift_ideas: ''
+        photo: state?.photo || null,
+        birthday: state?.birthday || '',
+        anniversary: state?.anniversary || '',
+        partner: state?.partner || '',
+        phone: state?.phone || '',
+        email: state?.email || '',
+        address: state?.address || '',
+        city: state?.city || '',
+        memory: state?.memory || '',
+        how_we_met: state?.how_we_met || '',
+        notes: state?.notes || '',
+        gift_ideas: state?.gift_ideas || ''
     });
 
     const handleChange = (e) => {
@@ -53,7 +54,11 @@ export default function FriendForm() {
     };
 
     const handleSubmit = () => {
-        addFriend({ ...formData, passphrase });
+        if (isEdit && state?.id) {
+            updateFriend(state.id, { ...formData });
+        } else {
+            addFriend({ ...formData, passphrase });
+        }
         navigate('/dashboard');
     };
 
@@ -140,8 +145,8 @@ export default function FriendForm() {
                             <button
                                 onClick={() => setLocationType('city')}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'city'
-                                        ? 'bg-white shadow-sm text-text-primary'
-                                        : 'text-text-secondary hover:text-text-primary'
+                                    ? 'bg-white shadow-sm text-text-primary'
+                                    : 'text-text-secondary hover:text-text-primary'
                                     }`}
                             >
                                 city / country
@@ -149,8 +154,8 @@ export default function FriendForm() {
                             <button
                                 onClick={() => setLocationType('address')}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'address'
-                                        ? 'bg-white shadow-sm text-text-primary'
-                                        : 'text-text-secondary hover:text-text-primary'
+                                    ? 'bg-white shadow-sm text-text-primary'
+                                    : 'text-text-secondary hover:text-text-primary'
                                     }`}
                             >
                                 full address

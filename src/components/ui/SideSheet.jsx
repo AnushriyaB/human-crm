@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './Button';
 import { Icons } from './Icons';
 
 export default function SideSheet({ isOpen, onClose, friend }) {
+    const navigate = useNavigate();
     // Prevent body scroll when open
     useEffect(() => {
         if (isOpen) {
@@ -50,10 +52,29 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-bold text-text-primary leading-tight">{friend.name}</h2>
-                                        {friend.location && <p className="text-sm text-text-secondary">{friend.location}</p>}
+                                        {friend.location ? (
+                                            <p className="text-sm text-text-secondary">{friend.location}</p>
+                                        ) : (
+                                            <button
+                                                onClick={() => navigate('/friend-form', { state: { ...friend, isEdit: true } })}
+                                                className="text-xs text-brand lowercase underline"
+                                            >
+                                                add location
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => navigate('/friend-form', { state: { ...friend, isEdit: true } })}
+                                        className="rounded-full text-text-secondary hover:text-brand"
+                                        title="Edit Profile"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                    </Button>
+
                                     <Button
                                         variant="ghost"
                                         size="icon"
