@@ -84,14 +84,26 @@ export default function Dashboard() {
                 </div>
 
                 {/* User Center Dot */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="w-4 h-4 bg-brand rounded-full shadow-[0_0_20px_rgba(59,130,246,0.6)] z-10 relative"
-                    >
-                        <div className="absolute inset-0 bg-brand rounded-full animate-ping opacity-20" />
-                    </motion.div>
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <div className="relative group cursor-pointer" onClick={() => setSelectedFriend({
+                        id: 'me',
+                        name: 'Me',
+                        address: 'My Coordinates',
+                        notes: 'This is my world.',
+                        photo: null
+                    })}>
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-4 h-4 bg-brand rounded-full shadow-[0_0_20px_rgba(59,130,246,0.6)] relative z-10"
+                        >
+                            <div className="absolute inset-0 bg-brand rounded-full animate-ping opacity-20" />
+                        </motion.div>
+                        {/* Hover Tooltip for Me */}
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-2 py-1 rounded-md whitespace-nowrap pointer-events-none">
+                            my profile
+                        </div>
+                    </div>
                 </div>
 
                 {/* Friend Cards Layer */}
@@ -118,10 +130,14 @@ export default function Dashboard() {
                                 <div className="relative bg-white pl-8 pr-4 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2">
                                     {/* Photo overlapping left edge */}
                                     <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
-                                        {/* Initials fallback */}
-                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                                            {f.name.substring(0, 2).toUpperCase()}
-                                        </div>
+                                        {f.photo ? (
+                                            <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            /* Initials fallback */
+                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                                                {f.name.substring(0, 2).toUpperCase()}
+                                            </div>
+                                        )}
                                     </div>
                                     <span className="font-medium text-sm text-text-primary whitespace-nowrap">{f.name}</span>
 
