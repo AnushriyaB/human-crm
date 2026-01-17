@@ -18,7 +18,21 @@ export default function Dashboard() {
     const navigate = useNavigate();
 
     const handleFriendAdded = (friendData) => {
-        navigate('/friend-form', { state: { ...friendData } });
+        // If it's a full add (clicked "fill it out myself"), navigate to form
+        if (friendData.navigate) {
+            // Check if we need to edit an existing friend (e.g. from Quick Add)
+            if (friendData.isEdit) {
+                const existing = friends.find(f => f.passphrase === friendData.passphrase);
+                if (existing) {
+                    navigate('/friend-form', { state: { ...existing, isEdit: true } });
+                    return;
+                }
+            }
+            navigate('/friend-form', { state: { ...friendData } });
+        } else {
+            // Just add to list (Quick Add / Invite)
+            addFriend(friendData);
+        }
     };
 
     if (isOnboarding) {
@@ -43,9 +57,8 @@ export default function Dashboard() {
 
                     <Button
                         onClick={() => setIsOnboarding(true)}
-
-                        variant="ghost"
-                        className="px-12 py-8 text-3xl border border-gray-50 shadow-lg shadow-brand/20 transition-all lowercase"
+                        size="lg"
+                        className="px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary transition-all"
                     >
                         add your first friend
                     </Button>
