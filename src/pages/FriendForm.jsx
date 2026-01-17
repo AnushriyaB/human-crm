@@ -66,6 +66,24 @@ export default function FriendForm() {
         navigate('/dashboard');
     };
 
+    const clearStep = () => {
+        // Reset fields for current step
+        const step = STEPS[currentStepIndex];
+        // This requires mapping steps to fields. A bit manual but safe.
+        // Or generic "clear form" button? User said "Clear button to wipe the fields content in the form."
+        // Likely means current visible fields.
+        let updates = {};
+        switch (step.id) {
+            case 'basics': updates = { birthday: '', anniversary: '' }; break;
+            case 'photo': updates = { photos: [] }; break;
+            case 'contact': updates = { phone: '', email: '' }; break;
+            case 'coordinates': updates = { address: '', city: '' }; break;
+            case 'vibe': updates = { how_we_met: '', memory: '' }; break;
+            case 'extra': updates = { gift_ideas: '', notes: '' }; break;
+        }
+        setFormData(prev => ({ ...prev, ...updates }));
+    };
+
     const renderStepContent = (stepId) => {
         switch (stepId) {
             case 'welcome':
@@ -80,14 +98,14 @@ export default function FriendForm() {
                 );
             case 'basics':
                 return (
-                    <div className="space-y-8 max-w-md mx-auto pt-10">
-                        <h2 className="text-2xl font-bold lowercase">the basics</h2>
-                        <div className="space-y-6">
-                            <div className="flex flex-col gap-2">
+                    <div className="space-y-8 w-full max-w-md mx-auto pt-10">
+                        {/* No Header */}
+                        <div className="space-y-10">
+                            <div className="flex flex-col gap-3 items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase">birthday</label>
                                 <DateSelector value={formData.birthday} onChange={(val) => setFormData({ ...formData, birthday: val })} />
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-3 items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase">anniversary</label>
                                 <DateSelector value={formData.anniversary} onChange={(val) => setFormData({ ...formData, anniversary: val })} />
                             </div>
@@ -96,49 +114,43 @@ export default function FriendForm() {
                 );
             case 'photo':
                 return (
-                    <div className="space-y-6 max-w-lg mx-auto pt-10 text-center">
-                        <h2 className="text-2xl font-bold lowercase">show me your face</h2>
-
-                        <div className="flex items-center justify-center min-h-[160px]">
+                    <div className="space-y-6 w-full max-w-lg mx-auto pt-10 text-center">
+                        <div className="flex items-center justify-center min-h-[200px]">
                             {/* Overlapping Cluster */}
-                            <div className="flex -space-x-8 items-center justify-center pl-8">
+                            <div className="flex -space-x-4 items-center justify-center">
                                 <AnimatePresence>
                                     {formData.photos.map((photoUrl, index) => (
                                         <motion.div
                                             key={`photo-${index}`}
-                                            initial={{ opacity: 0, scale: 0, x: -20 }}
-                                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                                            exit={{ opacity: 0, scale: 0, x: -20 }}
-                                            className="relative w-32 h-32 rounded-full shadow-lg border-4 border-white bg-gray-100 group flex-shrink-0 z-10 hover:z-20 transition-all hover:scale-105"
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0 }}
+                                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                                            className="relative w-24 h-24 rounded-full shadow-md border-2 border-white bg-gray-100 flex-shrink-0 z-10 hover:z-20 hover:scale-110 transition-transform overflow-hidden"
                                         >
-                                            <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover rounded-full" />
-
+                                            <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover" />
+                                            {/* Delete Overlay */}
                                             <button
                                                 onClick={() => {
                                                     const newPhotos = formData.photos.filter((_, i) => i !== index);
                                                     setFormData({ ...formData, photos: newPhotos });
                                                 }}
-                                                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
                                             >
-                                                <span className="text-white font-bold text-xl">✕</span>
+                                                <span className="text-white text-lg">✕</span>
                                             </button>
                                         </motion.div>
                                     ))}
 
-                                    {/* Upload Trigger */}
+                                    {/* Upload Trigger - Simple Plus Button */}
                                     {formData.photos.length < 5 && (
                                         <motion.label
-                                            initial={{ opacity: 0, scale: 0, x: -20 }}
-                                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                                            className={`relative w-32 h-32 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-200 transition-colors group z-0 ml-4 ${formData.photos.length > 0 ? '' : 'ml-0'
-                                                }`}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="relative w-24 h-24 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border border-gray-200 transition-all z-0 ml-4"
                                         >
-                                            <div className="flex flex-col items-center gap-2 text-text-secondary group-hover:text-brand transition-colors">
-                                                <Icons.Face className="w-8 h-8 opacity-50" />
-                                                <span className="lowercase text-sm opacity-50 group-hover:opacity-100">
-                                                    +
-                                                </span>
-                                            </div>
+                                            <span className="text-2xl text-gray-400 font-light">+</span>
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -159,70 +171,81 @@ export default function FriendForm() {
                 );
             case 'contact':
                 return (
-                    <div className="space-y-8 max-w-md mx-auto pt-10">
-                        <h2 className="text-2xl font-bold lowercase">stay close</h2>
-                        <div className="space-y-6">
+                    <div className="space-y-8 w-full max-w-md mx-auto pt-10">
+                        <div className="space-y-8">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">phone</label>
-                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="digits" className="text-xl" />
+                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="digits" className="text-xl lg:text-2xl w-full" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">email</label>
-                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="digital letter" className="text-xl" />
+                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="digital letter" className="text-xl lg:text-2xl w-full" />
                             </div>
                         </div>
                     </div>
                 );
             case 'coordinates':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10">
-                        <h2 className="text-2xl font-bold lowercase">coordinates</h2>
+                    <div className="space-y-6 w-full max-w-md mx-auto pt-10">
+                        {/* Location Type Toggle - Sliding Pill */}
+                        <div className="relative flex bg-gray-100 p-1 rounded-full mb-8 w-64 mx-auto">
+                            {/* Sliding Background */}
+                            <motion.div
+                                className="absolute top-1 bottom-1 bg-white rounded-full shadow-sm z-0"
+                                layoutId="activeTab"
+                                initial={false}
+                                animate={{
+                                    left: locationType === 'city' ? '4px' : '50%',
+                                    width: 'calc(50% - 4px)'
+                                }}
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            />
 
-                        {/* Location Type Toggle */}
-                        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6">
                             <button
                                 onClick={() => setLocationType('city')}
-                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'city'
-                                        ? 'bg-white shadow-sm text-text-primary'
-                                        : 'text-text-secondary hover:text-text-primary'
+                                className={`flex-1 relative z-10 py-1.5 text-sm font-medium transition-colors lowercase ${locationType === 'city' ? 'text-text-primary' : 'text-text-secondary'
                                     }`}
                             >
                                 country
                             </button>
                             <button
                                 onClick={() => setLocationType('address')}
-                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'address'
-                                        ? 'bg-white shadow-sm text-text-primary'
-                                        : 'text-text-secondary hover:text-text-primary'
+                                className={`flex-1 relative z-10 py-1.5 text-sm font-medium transition-colors lowercase ${locationType === 'address' ? 'text-text-primary' : 'text-text-secondary'
                                     }`}
                             >
                                 full address
                             </button>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 min-h-[120px]">
                             {locationType === 'address' ? (
                                 <motion.div
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    key="address"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="pt-2"
                                 >
-                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">full address</label>
-                                    <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." className="text-lg w-full" />
-                                    <p className="text-brand text-xs mt-2 lowercase italic">
-                                        "i can order something nice for you if you put your full address"
+                                    <label className="text-sm font-medium text-text-secondary lowercase mb-6 block text-center">where should i send it?</label>
+                                    <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." className="text-xl w-full" />
+                                    <p className="text-brand text-xs mt-4 lowercase italic text-center opacity-70">
+                                        "precise brings gifts."
                                     </p>
                                 </motion.div>
                             ) : (
                                 <motion.div
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    key="country"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    className="pt-2"
                                 >
-                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">country</label>
+                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block text-center">roughly where?</label>
                                     <CustomSelect
                                         options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
                                         value={formData.city}
                                         onChange={(val) => setFormData({ ...formData, city: val })}
-                                        placeholder="select details..."
+                                        placeholder="search countries..."
                                     />
                                 </motion.div>
                             )}
@@ -231,12 +254,11 @@ export default function FriendForm() {
                 );
             case 'vibe':
                 return (
-                    <div className="space-y-8 max-w-md mx-auto pt-10">
-                        <h2 className="text-2xl font-bold lowercase">the vibe</h2>
-                        <div className="space-y-6">
+                    <div className="space-y-8 w-full max-w-md mx-auto pt-10">
+                        <div className="space-y-8">
                             <div>
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">how do we know each other?</label>
-                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-lg w-full" />
+                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">how did we meet?</label>
+                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-xl w-full" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">favorite memory</label>
@@ -244,8 +266,8 @@ export default function FriendForm() {
                                     name="memory"
                                     value={formData.memory}
                                     onChange={handleChange}
-                                    className="flex w-full rounded-xl border border-dotted border-gray-300 bg-transparent px-4 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[100px] resize-none transition-colors"
-                                    placeholder="that one time..."
+                                    className="flex w-full bg-transparent border-b border-dashed border-gray-300 px-0 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[80px] resize-none transition-colors text-lg"
+                                    placeholder="..."
                                 />
                             </div>
                         </div>
@@ -253,12 +275,11 @@ export default function FriendForm() {
                 );
             case 'extra':
                 return (
-                    <div className="space-y-8 max-w-md mx-auto pt-10">
-                        <h2 className="text-2xl font-bold lowercase">extra love</h2>
-                        <div className="space-y-6">
+                    <div className="space-y-8 w-full max-w-md mx-auto pt-10">
+                        <div className="space-y-8">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">gift ideas</label>
-                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-lg w-full" />
+                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-xl w-full" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">notes</label>
@@ -266,8 +287,8 @@ export default function FriendForm() {
                                     name="notes"
                                     value={formData.notes}
                                     onChange={handleChange}
-                                    className="flex w-full rounded-xl border border-dotted border-gray-300 bg-transparent px-4 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[100px] resize-none transition-colors"
-                                    placeholder="anything else?"
+                                    className="flex w-full bg-transparent border-b border-dashed border-gray-300 px-0 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[80px] resize-none transition-colors text-lg"
+                                    placeholder="..."
                                 />
                             </div>
                         </div>
@@ -279,7 +300,7 @@ export default function FriendForm() {
     }
 
     return (
-        <div className="flex h-screen w-full bg-gray-50 items-center justify-center p-4 lowercase">
+        <div className="flex h-screen w-full bg-gray-50 items-center justify-center p-4 lowercase font-sans">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -371,29 +392,37 @@ export default function FriendForm() {
                         />
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-8 md:p-12 relative">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentStepIndex}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="h-full"
-                            >
-                                {renderStepContent(STEPS[currentStepIndex].id)}
-                            </motion.div>
-                        </AnimatePresence>
+                    <div className="flex-1 overflow-y-auto relative flex flex-col">
+                        <div className="flex-1 flex flex-col justify-center p-12">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStepIndex}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="w-full flex justify-center"
+                                >
+                                    {renderStepContent(STEPS[currentStepIndex].id)}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
                     </div>
 
                     {/* Footer Actions */}
                     {currentStepIndex > 0 && (
-                        <div className="p-8 border-t border-gray-100 flex justify-between items-center bg-white">
-                            <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase">
-                                back
+                        <div className="p-8 border-t border-gray-100 flex justify-between items-center bg-white sticky bottom-0 z-20">
+                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-xs hover:text-red-400 lowercase">
+                                clear
                             </Button>
-                            <Button onClick={next} className="min-w-[100px] lowercase">
-                                {currentStepIndex === STEPS.length - 1 ? 'finish' : 'next'}
-                            </Button>
+
+                            <div className="flex gap-4">
+                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase">
+                                    back
+                                </Button>
+                                <Button onClick={next} className="min-w-[100px] lowercase">
+                                    {currentStepIndex === STEPS.length - 1 ? 'finish' : 'next'}
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>

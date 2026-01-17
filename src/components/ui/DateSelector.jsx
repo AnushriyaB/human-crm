@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DynamicInput } from './DynamicInput';
 
 export function DateSelector({ value, onChange }) {
@@ -7,85 +7,87 @@ export function DateSelector({ value, onChange }) {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
 
+    const monthRef = useRef(null);
+    const dayRef = useRef(null);
+    const yearRef = useRef(null);
+
     useEffect(() => {
         if (value) {
             const [y, m, d] = value.split('-');
             setYear(y);
             setMonth(m);
             setDay(d);
+        } else {
+            setDay('');
+            setMonth('');
+            setYear('');
         }
     }, [value]);
 
     const updateDate = (d, m, y) => {
-        // Only update if we have valid parts or empty
-        // Simple logic: if all 3 set, emit date string. Else emit partial or handle properly?
-        // Standard HTML date input expects YYYY-MM-DD.
-        // Let's just track state and emit when valid.
+        let newD = d !== undefined ? d : day;
+        let newM = m !== undefined ? m : month;
+        let newY = y !== undefined ? y : year;
 
-        let newD = d || day;
-        let newM = m || month;
-        let newY = y || year;
-
-        // Auto-pad single digits if length is 1 and user blurred or typed 2 digits?
-        // Keep it simple for now: text inputs.
-
-        // Construct date:
         if (newY && newM && newD) {
             onChange(`${newY}-${newM.padStart(2, '0')}-${newD.padStart(2, '0')}`);
-        } else {
-            // Pass empty or partial? user might be clearing it.
-            // If completely empty, pass empty string to clear.
-            if (!newY && !newM && !newD) onChange('');
+        } else if (!newY && !newM && !newD) {
+            onChange('');
         }
-    };
-
-    const handleDayChange = (e) => {
-        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-        setDay(val);
-        updateDate(val, null, null);
     };
 
     const handleMonthChange = (e) => {
         const val = e.target.value.replace(/\D/g, '').slice(0, 2);
         setMonth(val);
-        updateDate(null, val, null);
+        updateDate(undefined, val, undefined);
+        if (val.length === 2) dayRef.current?.focus();
+    };
+
+    const handleDayChange = (e) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+        setDay(val);
+        updateDate(val, undefined, undefined);
+        if (val.length === 2) yearRef.current?.focus();
     };
 
     const handleYearChange = (e) => {
         const val = e.target.value.replace(/\D/g, '').slice(0, 4);
         setYear(val);
-        updateDate(null, null, val);
+        updateDate(undefined, undefined, val);
     };
+
+    // Helper to focus input on click of the parent div if needed, 
+    // but users will likely click inputs directly.
 
     return (
         <div className="flex items-center gap-2">
-            <div className="flex flex-col items-center">
-                <DynamicInput
-                    value={day}
-                    onChange={handleDayChange}
-                    placeholder="DD"
-                    className="text-center font-mono"
-                    maxLength={2}
-                />
-            </div>
-            <span className="text-gray-300">/</span>
-            <div className="flex flex-col items-center">
-                <DynamicInput
+            <div className="flex flex-col items-center w-12">
+                <input
+                    ref={monthRef}
                     value={month}
                     onChange={handleMonthChange}
                     placeholder="MM"
-                    className="text-center font-mono"
-                    maxLength={2}
+                    className="w-full text-center bg-transparent border-b border-gray-200 focus:border-brand outline-none pb-1 placeholder:text-gray-300 font-mono text-lg transition-colors"
                 />
             </div>
             <span className="text-gray-300">/</span>
-            <div className="flex flex-col items-center">
-                <DynamicInput
+            <div className="flex flex-col items-center w-12">
+                <input
+                    ref={dayRef}
+                    value={day}
+                    onChange={handleDayChange}
+                    placeholder="DD"
+                    className="w-full text-center bg-transparent border-b border-gray-200 focus:border-brand outline-none pb-1 placeholder:text-gray-300 font-mono text-lg transition-colors"
+                />
+            </div>
+            <span className="text-gray-300">/</span>
+            <div className="flex flex-col items-center w-20">
+                <input
+                    ref={yearRef}
                     value={year}
                     onChange={handleYearChange}
                     placeholder="YYYY"
-                    className="text-center font-mono"
-                    maxLength={4}
+                    className="w-full text-center bg-transparent border-b border-gray-200 focus:border-brand outline-none pb-1 placeholder:text-gray-300 font-mono text-lg transition-colors"
                 />
             </div>
         </div>
