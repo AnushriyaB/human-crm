@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Icons } from '../components/ui/Icons';
 import { useFriends } from '../context/FriendContext';
-import AddFriend from '../components/AddFriend';
+import AddFriendDropdown from '../components/AddFriendDropdown';
 import SideSheet from '../components/ui/SideSheet';
 import SettingsDropdown from '../components/SettingsDropdown';
 import { useNavigate } from 'react-router-dom';
@@ -69,9 +69,19 @@ export default function Dashboard() {
                             <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
                         </div>
 
-                        <Button onClick={() => setIsAdding(true)} className="pointer-events-auto rounded-full shadow-lg bg-white text-black hover:bg-gray-50 border border-gray-100 lowercase px-6">
-                            add friend
-                        </Button>
+                        <div className="relative">
+                            <Button
+                                onClick={() => setIsAdding(!isAdding)}
+                                className={`pointer-events-auto rounded-full shadow-lg border border-gray-100 lowercase px-6 transition-all ${isAdding ? 'bg-gray-50 text-text-primary shadow-inner' : 'bg-white text-black hover:bg-gray-50'}`}
+                            >
+                                {isAdding ? 'close' : 'add friend'}
+                            </Button>
+                            <AddFriendDropdown
+                                isOpen={isAdding}
+                                onClose={() => setIsAdding(false)}
+                                onComplete={handleFriendAdded}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
