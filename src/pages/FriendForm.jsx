@@ -304,15 +304,9 @@ export default function FriendForm() {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-5xl h-[80vh] flex bg-transparent" // Removed white bg and shadow
+                className="w-full max-w-5xl h-[80vh] flex bg-gray-50 rounded-[2rem] shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] overflow-hidden"
             >
-                {/* Sidebar Navigation - Kept separate or visible?
-                   User said "Keep the names in the side panel".
-                   So we keep the sidebar but make it unified or floating?
-                   User said "remove the card from behind 'add a friend' model".
-                   This implies the main white container.
-                   Let's make the container clear and maybe just the sidebar has a subtle BG or both are clean.
-                */}
+                {/* Sidebar Navigation */}
                 <div className="w-64 border-r border-gray-200 p-8 flex flex-col hidden md:flex">
                     <div className="mb-10">
                         <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Passkey</div>

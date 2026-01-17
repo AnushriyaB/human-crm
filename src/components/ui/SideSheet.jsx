@@ -9,12 +9,26 @@ import { DynamicInput } from './DynamicInput';
 export default function SideSheet({ isOpen, onClose, friend }) {
     const navigate = useNavigate();
     const { updateFriend } = useFriends();
+    const [draft, setDraft] = useState(null);
 
-    // Simple way to handle updates: 
-    // When input blurs, save update.
-    const handleUpdate = (field, value) => {
-        if (!friend) return;
-        updateFriend(friend.id, { [field]: value });
+    // Sync draft with friend prop when opened or friend changes (but not while typing?)
+    // Actually, if we type, we don't want external updates to overwrite immediately unless it's a new friend selection.
+    // We'll use a useEffect that resets draft when `friend.id` changes.
+    useEffect(() => {
+        setDraft(friend);
+    }, [friend?.id]); // Only reset if ID changes to avoid overwriting while typing if friend object updates reference
+
+    const handleDraftChange = (field, value) => {
+        if (!draft) return;
+        setDraft(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = (field) => {
+        if (!draft || !friend) return;
+        // Only save if changed
+        if (draft[field] !== friend[field]) {
+            updateFriend(friend.id, { [field]: draft[field] });
+        }
     };
 
     // Prevent body scroll when open
@@ -28,9 +42,11 @@ export default function SideSheet({ isOpen, onClose, friend }) {
 
     const [view, setView] = React.useState('details'); // details | audit
 
+    if (!isOpen || !draft) return null;
+
     return (
         <AnimatePresence>
-            {isOpen && friend && (
+            {isOpen && (
                 <>
                     {/* Backdrop */}
                     <motion.div
@@ -53,35 +69,35 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-full bg-gray-200 border-4 border-white shadow-lg overflow-hidden">
-                                        {(friend.photos?.[0] || friend.photo) ? (
-                                            <img src={friend.photos?.[0] || friend.photo} alt={friend.name} className="w-full h-full object-cover" />
+                                        {(draft.photos?.[0] || draft.photo) ? (
+                                            <img src={draft.photos?.[0] || draft.photo} alt={draft.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 font-bold">
-                                                {friend.name?.substring(0, 2)}
+                                                {draft.name?.substring(0, 2)}
                                             </div>
                                         )}
                                     </div>
                                     <div className="flex flex-col">
                                         {/* Inline Edit Name */}
                                         <DynamicInput
-                                            value={friend.name}
-                                            onChange={(e) => handleUpdate('name', e.target.value)}
+                                            value={draft.name}
+                                            onChange={(e) => handleDraftChange('name', e.target.value)}
+                                            onBlur={() => handleSave('name')}
                                             className="text-2xl font-bold text-text-primary leading-tight lowercase"
                                             placeholder="name"
                                         />
 
                                         {/* Inline Edit Location */}
                                         <DynamicInput
-                                            value={friend.location || friend.address || friend.city || ''}
-                                            onChange={(e) => handleUpdate('address', e.target.value)}
+                                            value={draft.location || draft.address || draft.city || ''}
+                                            onChange={(e) => handleDraftChange('address', e.target.value)}
+                                            onBlur={() => handleSave('address')}
                                             className="text-sm text-text-secondary lowercase"
                                             placeholder="add location..."
                                         />
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    {/* Removed separate Edit Button as inline editing handles it! */}
-
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -90,10 +106,8 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                         title="Audit Trail"
                                     >
                                         {view === 'details' ? (
-                                            // Gantt / Chart Icon
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M8 12h4" /><path d="M16 8h4" /><path d="M12 16h4" /></svg>
                                         ) : (
-                                            // User/Face Icon for flipping back
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                         )}
                                     </Button>
@@ -108,31 +122,32 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     <div className="space-y-6">
                                         {/* Details Section - Editable */}
                                         <div className="space-y-4">
-                                            <DetailRow label="birthday" value={friend.birthday} onChange={(val) => handleUpdate('birthday', val)} />
-                                            <DetailRow label="anniversary" value={friend.anniversary} onChange={(val) => handleUpdate('anniversary', val)} />
-                                            <DetailRow label="phone" value={friend.phone} onChange={(val) => handleUpdate('phone', val)} />
-                                            <DetailRow label="address" value={friend.address} onChange={(val) => handleUpdate('address', val)} />
-                                            <DetailRow label="partner" value={friend.partner} onChange={(val) => handleUpdate('partner', val)} />
+                                            <DetailRow label="birthday" value={draft.birthday} onChange={(val) => handleDraftChange('birthday', val)} onBlur={() => handleSave('birthday')} />
+                                            <DetailRow label="anniversary" value={draft.anniversary} onChange={(val) => handleDraftChange('anniversary', val)} onBlur={() => handleSave('anniversary')} />
+                                            <DetailRow label="phone" value={draft.phone} onChange={(val) => handleDraftChange('phone', val)} onBlur={() => handleSave('phone')} />
+                                            <DetailRow label="address" value={draft.address} onChange={(val) => handleDraftChange('address', val)} onBlur={() => handleSave('address')} />
+                                            <DetailRow label="partner" value={draft.partner} onChange={(val) => handleDraftChange('partner', val)} onBlur={() => handleSave('partner')} />
                                         </div>
 
                                         {/* Notes Section - Editable */}
                                         <div className="p-4 bg-gray-50 rounded-xl space-y-2 group hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
                                             <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider">notes</h3>
                                             <textarea
-                                                value={friend.notes || ''}
-                                                onChange={(e) => handleUpdate('notes', e.target.value)}
+                                                value={draft.notes || ''}
+                                                onChange={(e) => handleDraftChange('notes', e.target.value)}
+                                                onBlur={() => handleSave('notes')}
                                                 placeholder="add notes..."
-                                                className="w-full bg-transparent border-none focus:outline-none text-text-primary whitespace-pre-wrap resize-none"
+                                                className="w-full bg-transparent border-none focus:outline-none text-text-primary whitespace-pre-wrap resize-none caret-brand"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Photo Cluster */}
-                                    {(friend.photos?.length > 0 || friend.photo) && (
+                                    {(draft.photos?.length > 0 || draft.photo) && (
                                         <div className="pt-4">
                                             <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">photos</h3>
                                             <div className="flex -space-x-4 overflow-x-auto pb-4 pl-2 scrolbar-hide">
-                                                {(friend.photos || [friend.photo]).map((photo, i) => (
+                                                {(draft.photos || [draft.photo]).map((photo, i) => (
                                                     <motion.div
                                                         key={i}
                                                         initial={{ scale: 0 }}
@@ -187,7 +202,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
     );
 }
 
-function DetailRow({ label, value, onChange }) {
+function DetailRow({ label, value, onChange, onBlur }) {
     return (
         <div className="grid grid-cols-3 gap-4 pb-3 last:border-0 text-sm items-center">
             <span className="text-text-secondary font-medium lowercase">{label}</span>
@@ -195,6 +210,7 @@ function DetailRow({ label, value, onChange }) {
                 <DynamicInput
                     value={value || ''}
                     onChange={(e) => onChange && onChange(e.target.value)}
+                    onBlur={onBlur}
                     placeholder="add info..."
                     className="w-full text-text-primary"
                 />

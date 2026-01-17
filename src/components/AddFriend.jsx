@@ -29,7 +29,7 @@ export default function AddFriend({ onCancel, onComplete }) {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] w-full max-w-md mx-auto p-6 bg-white rounded-3xl shadow-sm border border-border">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] w-full max-w-md mx-auto p-6">
             <h2 className="text-2xl font-bold mb-6 text-text-primary">
                 {step === 'name' ? 'Add a friend' : 'Share this'}
             </h2>

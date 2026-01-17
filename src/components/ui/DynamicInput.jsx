@@ -30,10 +30,16 @@ export function DynamicInput({ value, onChange, placeholder, className = "", ...
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onFocus={(e) => {
+                    setIsFocused(true);
+                    props.onFocus && props.onFocus(e);
+                }}
+                onBlur={(e) => {
+                    setIsFocused(false);
+                    props.onBlur && props.onBlur(e);
+                }}
                 style={{ width: Math.max(width, 40) }} // Min width
-                className="bg-transparent border-none outline-none p-0 text-text-primary placeholder:text-gray-300 font-inherit transition-all duration-200 caret-brand"
+                className="bg-transparent border-none outline-none p-0 text-text-primary placeholder:text-gray-300 font-inherit transition-all duration-200 caret-brand font-medium"
             />
         </div>
     );
