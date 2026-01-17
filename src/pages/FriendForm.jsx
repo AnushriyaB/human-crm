@@ -275,16 +275,14 @@ export default function FriendForm() {
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
-                                            ? 'bg-white shadow-sm text-brand'
-                                            : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
+                                        ? 'bg-white shadow-sm text-brand'
+                                        : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
                                     {step.title}
                                     {isPast && <div className="ml-auto text-brand text-xs">✓</div>}
                                 </button>
-                            )
-                        })}
                     </nav>
 
                     {/* Archive Button for Edit Mode */}
@@ -304,6 +302,17 @@ export default function FriendForm() {
                             </button>
                         </div>
                     )}
+
+                    {/* Explicit Exit Button */}
+                    <div className="pt-4 mt-auto">
+                        <button
+                            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 rounded-xl w-full transition-colors lowercase"
+                            onClick={() => navigate('/dashboard')}
+                        >
+                            <span className="text-lg">✕</span>
+                            exit
+                        </button>
+                    </div>
                 </div>
 
                 {/* Main Content Area */}
