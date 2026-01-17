@@ -86,7 +86,10 @@ export default function Dashboard() {
                         <div className="relative">
                             <button
                                 onClick={() => setSettingsOpen(!settingsOpen)}
-                                className={`pointer-events-auto rounded-full p-3 transition-all border border-gray-100 shadow-lg ${settingsOpen ? 'bg-gray-50 text-text-primary shadow-inner' : 'bg-white text-text-secondary hover:bg-gray-50'}`}
+                                className={`pointer-events-auto rounded-full p-3 transition-all duration-200 ${settingsOpen
+                                        ? 'bg-transparent border border-transparent shadow-none text-text-primary'
+                                        : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/50 hover:shadow-sm hover:text-text-primary'
+                                    }`}
                             >
                                 <Icons.Settings className="w-6 h-6" />
                             </button>
@@ -96,7 +99,10 @@ export default function Dashboard() {
                         <div className="relative">
                             <Button
                                 onClick={() => setIsAdding(!isAdding)}
-                                className={`pointer-events-auto rounded-full shadow-lg border border-gray-100 lowercase px-6 transition-all ${isAdding ? 'bg-gray-50 text-text-primary shadow-inner' : 'bg-white text-black hover:bg-gray-50'}`}
+                                className={`pointer-events-auto rounded-full lowercase px-6 transition-all duration-200 ${isAdding
+                                        ? 'bg-transparent border border-transparent shadow-none text-text-primary hover:bg-transparent'
+                                        : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/50 hover:shadow-sm'
+                                    }`}
                             >
                                 {isAdding ? 'close' : 'add friend'}
                             </Button>
@@ -168,30 +174,31 @@ export default function Dashboard() {
 
 
 
-                {/* The Shelf (Bottom) */}
+                {/* The Shelf (Left Side) */}
                 {friends.some(f => f.x === null) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100/80 to-transparent z-20 flex items-end justify-center pb-8 pointer-events-none">
-                        <div className="flex gap-4 px-8 py-4 bg-white/40 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm pointer-events-auto">
+                    <div className="absolute top-32 left-8 w-64 z-20 flex flex-col gap-4 pointer-events-none">
+                        <h3 className="text-xs font-medium text-text-gray pl-1 lowercase tracking-wide opacity-50">add location</h3>
+                        <div className="flex flex-col gap-3 pointer-events-auto">
                             {friends.filter(f => f.x === null).map((f) => (
                                 <motion.div
                                     key={f.id}
                                     layoutId={`card-${f.id}`}
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
                                     onClick={() => setSelectedFriend(f)}
                                     className="relative group cursor-pointer"
                                 >
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
+                                    <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-white transition-all w-full">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 border border-white shadow-inner overflow-hidden flex-shrink-0">
                                             {(f.photos?.[0] || f.photo) ? (
                                                 <img src={f.photos?.[0] || f.photo} alt={f.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400">
                                                     {f.name.substring(0, 2).toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        <span className="text-xs font-medium text-text-secondary lowercase">{f.name}</span>
+                                        <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary lowercase truncate">{f.name}</span>
                                     </div>
                                 </motion.div>
                             ))}
