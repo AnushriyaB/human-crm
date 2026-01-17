@@ -144,27 +144,7 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                {/* Empty State Overlay */}
-                {friends.length === 0 && !isOnboarding && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-white/90 backdrop-blur-md p-10 rounded-[2.5rem] shadow-xl border border-white text-center pointer-events-auto"
-                        >
-                            <h2 className="text-2xl font-medium text-text-primary leading-tight mb-8">
-                                your world is empty.<br />start with one.
-                            </h2>
-                            <Button
-                                onClick={() => setIsOnboarding(true)}
-                                size="lg"
-                                className="rounded-full px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all lowercase"
-                            >
-                                add a friend
-                            </Button>
-                        </motion.div>
-                    </div>
-                )}
+
 
                 {/* The Shelf (Bottom) */}
                 {friends.some(f => f.x === null) && (
