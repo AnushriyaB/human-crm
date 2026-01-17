@@ -35,33 +35,51 @@ export default function Dashboard() {
         }
     };
 
-    if (isOnboarding) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50/50">
-                <AddFriend
-                    onCancel={() => setIsOnboarding(false)}
-                    onComplete={handleFriendAdded}
-                />
-            </div>
-        );
-    }
     if (friends.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center">
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center transition-all duration-500">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.8 }}
-                    className="max-w-md w-full space-y-2"
+                    className="max-w-md w-full space-y-8"
+                    layout
                 >
-
-                    <Button
-                        onClick={() => setIsOnboarding(true)}
-                        size="lg"
-                        className="px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary transition-all"
-                    >
-                        add your first friend
-                    </Button>
+                    <AnimatePresence mode="wait">
+                        {!isOnboarding && (
+                            <motion.div
+                                key="cta"
+                                exit={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                            >
+                                <Button
+                                    onClick={() => setIsOnboarding(true)}
+                                    size="lg"
+                                    className="px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary transition-all"
+                                >
+                                    add your first friend
+                                </Button>
+                            </motion.div>
+                        )}
+                        {isOnboarding && (
+                            <motion.div
+                                key="onboarding"
+                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                onLayoutAnimationComplete={() => {
+                                    // Shift focus/view
+                                    window.scrollTo({ top: 100, behavior: 'smooth' });
+                                }}
+                            >
+                                <AddFriend
+                                    onCancel={() => setIsOnboarding(false)}
+                                    onComplete={handleFriendAdded}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
             </div>
         );

@@ -39,53 +39,70 @@ export default function AddFriend({ onCancel, onComplete }) {
                     {step === 'name' ? 'add a friend' : 'share this'}
                 </h2>
 
-                {step === 'name' ? (
-                    <form onSubmit={handleNameSubmit} className="w-full space-y-6">
-                        <Input
-                            placeholder="friend's name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            autoFocus
-                            className="text-center text-xl bg-gray-50 border-transparent focus:bg-white transition-all h-14 rounded-2xl"
-                        />
-                        <div className="flex gap-3 pt-2">
-                            <Button type="button" variant="ghost" onClick={onCancel} className="flex-1 rounded-xl lowercase">
-                                cancel
-                            </Button>
-                            <Button type="submit" className="flex-1 rounded-xl lowercase shadow-lg shadow-brand/20">
-                                next
-                            </Button>
-                        </div>
-                    </form>
-                ) : (
-                    <div className="w-full space-y-8 text-center">
-                        <div
-                            className="p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
-                            onClick={() => {
-                                navigator.clipboard.writeText(passphrase);
-                                setTimeout(onCancel, 200);
-                            }}
+                <AnimatePresence mode="wait">
+                    {step === 'name' ? (
+                        <motion.form
+                            key="name"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            onSubmit={handleNameSubmit}
+                            className="w-full space-y-6"
                         >
-                            <p className="text-sm text-text-secondary mb-3">their unique key (click to copy)</p>
-                            <p className="text-3xl font-mono text-brand select-all tracking-wider break-all group-hover:line-through decoration-brand">{passphrase}</p>
-                        </div>
-                        <p className="text-text-secondary text-sm px-4 leading-relaxed">
-                            share this with <b className="text-text-primary">{name}</b> so they can join your world.
-                        </p>
-                        <div className="flex gap-3 flex-col pt-2">
-                            <Button onClick={() => onComplete({ name, passphrase })} className="w-full rounded-xl py-6 lowercase shadow-lg shadow-brand/20">
-                                simulate friend filling form
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                onClick={onCancel}
-                                className="lowercase border border-gray-200 rounded-xl hover:bg-gray-50 bg-white"
+                            <Input
+                                placeholder="friend's name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                autoFocus
+                                className="text-center text-xl bg-gray-50 border-transparent focus:bg-white transition-all h-14 rounded-2xl"
+                            />
+                            <div className="flex gap-3 pt-2">
+                                <Button type="button" variant="ghost" onClick={onCancel} className="flex-1 rounded-xl lowercase">
+                                    cancel
+                                </Button>
+                                <Button type="submit" className="flex-1 rounded-xl lowercase shadow-lg shadow-brand/20">
+                                    next
+                                </Button>
+                            </div>
+                        </motion.form>
+                    ) : (
+                        <motion.div
+                            key="share"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="w-full space-y-8 text-center"
+                        >
+                            <div
+                                className="p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(passphrase);
+                                    setTimeout(onCancel, 200);
+                                }}
                             >
-                                close
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                                <p className="text-sm text-text-secondary mb-3">their unique key (click to copy)</p>
+                                <p className="text-3xl font-mono text-brand select-all tracking-wider break-all group-hover:line-through decoration-brand">{passphrase}</p>
+                            </div>
+                            <p className="text-text-secondary text-sm px-4 leading-relaxed">
+                                share this with <b className="text-text-primary">{name}</b> so they can join your world.
+                            </p>
+                            <div className="flex gap-3 flex-col pt-2">
+                                <Button onClick={() => onComplete({ name, passphrase, navigate: true, isEdit: true })} className="w-full rounded-xl py-6 lowercase shadow-lg shadow-brand/20">
+                                    simulate friend filling form
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    onClick={onCancel}
+                                    className="lowercase border border-gray-200 rounded-xl hover:bg-gray-50 bg-white"
+                                >
+                                    close
+                                </Button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </motion.div>
         </div>
     );
