@@ -1,11 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './Button';
 import { Icons } from './Icons';
+import { useFriends } from '../../context/FriendContext';
+import { DynamicInput } from './DynamicInput';
 
 export default function SideSheet({ isOpen, onClose, friend }) {
     const navigate = useNavigate();
+    const { updateFriend } = useFriends();
+
+    // Simple way to handle updates: 
+    // When input blurs, save update.
+    const handleUpdate = (field, value) => {
+        if (!friend) return;
+        updateFriend(friend.id, { [field]: value });
+    };
+
     // Prevent body scroll when open
     useEffect(() => {
         if (isOpen) {
@@ -50,30 +61,26 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                             </div>
                                         )}
                                     </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-text-primary leading-tight">{friend.name}</h2>
-                                        {friend.location ? (
-                                            <p className="text-sm text-text-secondary">{friend.location}</p>
-                                        ) : (
-                                            <button
-                                                onClick={() => navigate('/friend-form', { state: { ...friend, isEdit: true } })}
-                                                className="text-xs text-brand lowercase underline"
-                                            >
-                                                add location
-                                            </button>
-                                        )}
+                                    <div className="flex flex-col">
+                                        {/* Inline Edit Name */}
+                                        <DynamicInput
+                                            value={friend.name}
+                                            onChange={(e) => handleUpdate('name', e.target.value)}
+                                            className="text-2xl font-bold text-text-primary leading-tight lowercase"
+                                            placeholder="name"
+                                        />
+
+                                        {/* Inline Edit Location */}
+                                        <DynamicInput
+                                            value={friend.location || friend.address || friend.city || ''}
+                                            onChange={(e) => handleUpdate('address', e.target.value)}
+                                            className="text-sm text-text-secondary lowercase"
+                                            placeholder="add location..."
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => navigate('/friend-form', { state: { ...friend, isEdit: true } })}
-                                        className="rounded-full text-text-secondary hover:text-brand"
-                                        title="Edit Profile"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                    </Button>
+                                    {/* Removed separate Edit Button as inline editing handles it! */}
 
                                     <Button
                                         variant="ghost"
@@ -99,22 +106,25 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             {view === 'details' ? (
                                 <div className="space-y-8">
                                     <div className="space-y-6">
-                                        {/* Details Section */}
+                                        {/* Details Section - Editable */}
                                         <div className="space-y-4">
-                                            <DetailRow label="birthday" value={friend.birthday} />
-                                            <DetailRow label="anniversary" value={friend.anniversary} />
-                                            <DetailRow label="phone" value={friend.phone} />
-                                            <DetailRow label="address" value={friend.address} />
-                                            <DetailRow label="partner" value={friend.partner} />
+                                            <DetailRow label="birthday" value={friend.birthday} onChange={(val) => handleUpdate('birthday', val)} />
+                                            <DetailRow label="anniversary" value={friend.anniversary} onChange={(val) => handleUpdate('anniversary', val)} />
+                                            <DetailRow label="phone" value={friend.phone} onChange={(val) => handleUpdate('phone', val)} />
+                                            <DetailRow label="address" value={friend.address} onChange={(val) => handleUpdate('address', val)} />
+                                            <DetailRow label="partner" value={friend.partner} onChange={(val) => handleUpdate('partner', val)} />
                                         </div>
 
-                                        {/* Notes Section */}
-                                        {friend.notes && (
-                                            <div className="p-4 bg-gray-50 rounded-xl space-y-2">
-                                                <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider">notes</h3>
-                                                <p className="text-text-primary whitespace-pre-wrap">{friend.notes}</p>
-                                            </div>
-                                        )}
+                                        {/* Notes Section - Editable */}
+                                        <div className="p-4 bg-gray-50 rounded-xl space-y-2 group hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
+                                            <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider">notes</h3>
+                                            <textarea
+                                                value={friend.notes || ''}
+                                                onChange={(e) => handleUpdate('notes', e.target.value)}
+                                                placeholder="add notes..."
+                                                className="w-full bg-transparent border-none focus:outline-none text-text-primary whitespace-pre-wrap resize-none"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Photo Cluster */}
@@ -177,12 +187,18 @@ export default function SideSheet({ isOpen, onClose, friend }) {
     );
 }
 
-function DetailRow({ label, value }) {
-    if (!value) return null;
+function DetailRow({ label, value, onChange }) {
     return (
-        <div className="grid grid-cols-3 gap-4 border-b border-gray-100 pb-3 last:border-0 text-sm">
+        <div className="grid grid-cols-3 gap-4 border-b border-gray-100 pb-3 last:border-0 text-sm items-center">
             <span className="text-text-secondary font-medium lowercase">{label}</span>
-            <span className="col-span-2 text-text-primary">{value}</span>
+            <div className="col-span-2">
+                <DynamicInput
+                    value={value || ''}
+                    onChange={(e) => onChange && onChange(e.target.value)}
+                    placeholder="add info..."
+                    className="w-full text-text-primary"
+                />
+            </div>
         </div>
     );
 }

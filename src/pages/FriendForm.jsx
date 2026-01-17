@@ -6,6 +6,8 @@ import { Input } from '../components/ui/Input';
 import { useFriends } from '../context/FriendContext';
 import { Icons } from '../components/ui/Icons';
 import { CustomSelect } from '../components/ui/CustomSelect';
+import { DynamicInput } from '../components/ui/DynamicInput';
+import { DateSelector } from '../components/ui/DateSelector';
 import { countries } from 'countries-list';
 
 const STEPS = [
@@ -78,16 +80,16 @@ export default function FriendForm() {
                 );
             case 'basics':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10">
+                    <div className="space-y-8 max-w-md mx-auto pt-10">
                         <h2 className="text-2xl font-bold lowercase">the basics</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">birthday</label>
-                                <Input name="birthday" type="date" value={formData.birthday} onChange={handleChange} />
+                        <div className="space-y-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-text-secondary lowercase">birthday</label>
+                                <DateSelector value={formData.birthday} onChange={(val) => setFormData({ ...formData, birthday: val })} />
                             </div>
-                            <div>
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">anniversary</label>
-                                <Input name="anniversary" type="date" value={formData.anniversary} onChange={handleChange} />
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-text-secondary lowercase">anniversary</label>
+                                <DateSelector value={formData.anniversary} onChange={(val) => setFormData({ ...formData, anniversary: val })} />
                             </div>
                         </div>
                     </div>
@@ -97,79 +99,76 @@ export default function FriendForm() {
                     <div className="space-y-6 max-w-lg mx-auto pt-10 text-center">
                         <h2 className="text-2xl font-bold lowercase">show me your face</h2>
 
-                        <div className="flex flex-wrap items-center justify-center gap-4 min-h-[160px]">
-                            <AnimatePresence>
-                                {/* Existing Photos */}
-                                {formData.photos.map((photoUrl, index) => (
-                                    <motion.div
-                                        key={`photo-${index}`}
-                                        initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0 }}
-                                        className="relative w-32 h-32 rounded-full shadow-lg border-4 border-white bg-gray-100 group"
-                                    >
-                                        <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover rounded-full" />
-
-                                        {/* Delete Button (Overlay) */}
-                                        <button
-                                            onClick={() => {
-                                                const newPhotos = formData.photos.filter((_, i) => i !== index);
-                                                setFormData({ ...formData, photos: newPhotos });
-                                            }}
-                                            className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        <div className="flex items-center justify-center min-h-[160px]">
+                            {/* Overlapping Cluster */}
+                            <div className="flex -space-x-8 items-center justify-center pl-8">
+                                <AnimatePresence>
+                                    {formData.photos.map((photoUrl, index) => (
+                                        <motion.div
+                                            key={`photo-${index}`}
+                                            initial={{ opacity: 0, scale: 0, x: -20 }}
+                                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                                            exit={{ opacity: 0, scale: 0, x: -20 }}
+                                            className="relative w-32 h-32 rounded-full shadow-lg border-4 border-white bg-gray-100 group flex-shrink-0 z-10 hover:z-20 transition-all hover:scale-105"
                                         >
-                                            <span className="text-white font-bold text-xl">✕</span>
-                                        </button>
-                                    </motion.div>
-                                ))}
+                                            <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover rounded-full" />
 
-                                {/* Upload Trigger (Shows if photos < 5) */}
-                                {formData.photos.length < 5 && (
-                                    <motion.label
-                                        initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.2 }}
-                                        className={`relative w-32 h-32 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-200 transition-colors group overflow-hidden ${formData.photos.length > 0 ? 'opacity-80 scale-90' : ''
-                                            }`}
-                                    >
-                                        <div className="flex flex-col items-center gap-2 text-text-secondary group-hover:text-brand transition-colors">
-                                            <Icons.Face className="w-8 h-8 opacity-50" />
-                                            <span className="lowercase text-sm">
-                                                {formData.photos.length === 0 ? 'upload' : 'add more'}
-                                            </span>
-                                        </div>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                if (e.target.files && e.target.files[0]) {
-                                                    const url = URL.createObjectURL(e.target.files[0]);
-                                                    setFormData({ ...formData, photos: [...formData.photos, url] });
-                                                }
-                                            }}
-                                        />
-                                    </motion.label>
-                                )}
-                            </AnimatePresence>
+                                            <button
+                                                onClick={() => {
+                                                    const newPhotos = formData.photos.filter((_, i) => i !== index);
+                                                    setFormData({ ...formData, photos: newPhotos });
+                                                }}
+                                                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <span className="text-white font-bold text-xl">✕</span>
+                                            </button>
+                                        </motion.div>
+                                    ))}
+
+                                    {/* Upload Trigger */}
+                                    {formData.photos.length < 5 && (
+                                        <motion.label
+                                            initial={{ opacity: 0, scale: 0, x: -20 }}
+                                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                                            className={`relative w-32 h-32 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-200 transition-colors group z-0 ml-4 ${formData.photos.length > 0 ? '' : 'ml-0'
+                                                }`}
+                                        >
+                                            <div className="flex flex-col items-center gap-2 text-text-secondary group-hover:text-brand transition-colors">
+                                                <Icons.Face className="w-8 h-8 opacity-50" />
+                                                <span className="lowercase text-sm opacity-50 group-hover:opacity-100">
+                                                    +
+                                                </span>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        const url = URL.createObjectURL(e.target.files[0]);
+                                                        setFormData({ ...formData, photos: [...formData.photos, url] });
+                                                    }
+                                                }}
+                                            />
+                                        </motion.label>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                        <p className="text-xs text-text-secondary lowercase">
-                            {formData.photos.length === 0 ? 'start with one.' : 'looks good. add another?'}
-                        </p>
                     </div>
                 );
             case 'contact':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10">
+                    <div className="space-y-8 max-w-md mx-auto pt-10">
                         <h2 className="text-2xl font-bold lowercase">stay close</h2>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">phone</label>
-                                <Input name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="digits" />
+                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="digits" className="text-xl" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">email</label>
-                                <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="digital letter" />
+                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="digital letter" className="text-xl" />
                             </div>
                         </div>
                     </div>
@@ -184,8 +183,8 @@ export default function FriendForm() {
                             <button
                                 onClick={() => setLocationType('city')}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'city'
-                                    ? 'bg-white shadow-sm text-text-primary'
-                                    : 'text-text-secondary hover:text-text-primary'
+                                        ? 'bg-white shadow-sm text-text-primary'
+                                        : 'text-text-secondary hover:text-text-primary'
                                     }`}
                             >
                                 country
@@ -193,8 +192,8 @@ export default function FriendForm() {
                             <button
                                 onClick={() => setLocationType('address')}
                                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all lowercase ${locationType === 'address'
-                                    ? 'bg-white shadow-sm text-text-primary'
-                                    : 'text-text-secondary hover:text-text-primary'
+                                        ? 'bg-white shadow-sm text-text-primary'
+                                        : 'text-text-secondary hover:text-text-primary'
                                     }`}
                             >
                                 full address
@@ -208,7 +207,7 @@ export default function FriendForm() {
                                     animate={{ opacity: 1, y: 0 }}
                                 >
                                     <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">full address</label>
-                                    <Input name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." />
+                                    <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street, etc." className="text-lg w-full" />
                                     <p className="text-brand text-xs mt-2 lowercase italic">
                                         "i can order something nice for you if you put your full address"
                                     </p>
@@ -232,12 +231,12 @@ export default function FriendForm() {
                 );
             case 'vibe':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10">
+                    <div className="space-y-8 max-w-md mx-auto pt-10">
                         <h2 className="text-2xl font-bold lowercase">the vibe</h2>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">how do we know each other?</label>
-                                <Input name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" />
+                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-lg w-full" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">favorite memory</label>
@@ -245,7 +244,7 @@ export default function FriendForm() {
                                     name="memory"
                                     value={formData.memory}
                                     onChange={handleChange}
-                                    className="flex w-full rounded-xl border border-border bg-white px-4 py-2 text-text-primary placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 min-h-[100px] resize-none"
+                                    className="flex w-full rounded-xl border border-dotted border-gray-300 bg-transparent px-4 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[100px] resize-none transition-colors"
                                     placeholder="that one time..."
                                 />
                             </div>
@@ -254,12 +253,12 @@ export default function FriendForm() {
                 );
             case 'extra':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10">
+                    <div className="space-y-8 max-w-md mx-auto pt-10">
                         <h2 className="text-2xl font-bold lowercase">extra love</h2>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">gift ideas</label>
-                                <Input name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" />
+                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-lg w-full" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">notes</label>
@@ -267,7 +266,7 @@ export default function FriendForm() {
                                     name="notes"
                                     value={formData.notes}
                                     onChange={handleChange}
-                                    className="flex w-full rounded-xl border border-border bg-white px-4 py-2 text-text-primary placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 min-h-[100px] resize-none"
+                                    className="flex w-full rounded-xl border border-dotted border-gray-300 bg-transparent px-4 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[100px] resize-none transition-colors"
                                     placeholder="anything else?"
                                 />
                             </div>
