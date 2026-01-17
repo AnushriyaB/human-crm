@@ -11,7 +11,6 @@ import {
     MessageSquare,
     User,
     Link,
-    Link,
     Settings,
     UserPlus
 } from 'lucide-react';
