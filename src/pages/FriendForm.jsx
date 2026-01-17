@@ -16,7 +16,7 @@ const STEPS = [
     { id: 'photo', title: 'face', icon: Icons.Face },
     { id: 'contact', title: 'contact', icon: Icons.Contact },
     { id: 'socials', title: 'socials', icon: Icons.Sparkles }, // Using Sparkles as temp icon for socials or maybe we add one?
-    { id: 'coordinates', title: 'coordinates', icon: Icons.Coordinates },
+    { id: 'location', title: 'location', icon: Icons.Coordinates },
     { id: 'vibe', title: 'vibe', icon: Icons.Vibe },
     { id: 'extra', title: 'extra love', icon: Icons.ExtraLove }
 ];
@@ -84,7 +84,7 @@ export default function FriendForm() {
             case 'photo': updates = { photos: [] }; break;
             case 'contact': updates = { phone: '', email: '' }; break;
             case 'socials': updates = { socials: { instagram: '', twitter: '', linkedin: '' } }; break;
-            case 'coordinates': updates = { address: '', city: '', zip: '' }; break;
+            case 'location': updates = { address: '', city: '', zip: '' }; break;
             case 'vibe': updates = { how_we_met: '', memory: '' }; break;
             case 'extra': updates = { gift_ideas: '', notes: '' }; break;
         }
@@ -188,14 +188,14 @@ export default function FriendForm() {
             case 'contact':
                 return (
                     <Wrapper>
-                        <div className="space-y-8">
-                            <motion.div variants={itemVariants}>
+                        <div className="space-y-8 text-center">
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">phone</label>
-                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="(555) 123-4567" className="text-xl lg:text-2xl w-full" />
+                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="(555) 123-4567" className="text-xl lg:text-2xl w-full text-center" />
                             </motion.div>
-                            <motion.div variants={itemVariants}>
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">email</label>
-                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="hello@example.com" className="text-xl lg:text-2xl w-full" />
+                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="hello@example.com" className="text-xl lg:text-2xl w-full text-center" />
                             </motion.div>
                         </div>
                     </Wrapper>
@@ -203,19 +203,19 @@ export default function FriendForm() {
             case 'socials':
                 return (
                     <Wrapper>
-                        <div className="space-y-6">
-                            <motion.div variants={itemVariants}>
+                        <div className="space-y-6 text-center">
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">instagram</label>
-                                <DynamicInput name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full" />
+                                <DynamicInput name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center" />
                             </motion.div>
-                            <motion.div variants={itemVariants}>
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">twitter / x</label>
-                                <DynamicInput name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full" />
+                                <DynamicInput name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center" />
                             </motion.div>
                         </div>
                     </Wrapper>
                 );
-            case 'coordinates':
+            case 'location':
                 return (
                     <div className="space-y-6 w-full max-w-md mx-auto pt-10">
                         <div className="relative flex bg-gray-100 p-1 rounded-full mb-8 w-64 mx-auto">
@@ -240,17 +240,16 @@ export default function FriendForm() {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="pt-2 space-y-4"
+                                    className="pt-2 space-y-4 text-center"
                                 >
                                     <label className="text-sm font-medium text-text-secondary lowercase mb-2 block text-center">where should i send it?</label>
-                                    <div className="space-y-4">
-                                        <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street address" className="text-xl w-full" />
-                                        <div className="flex gap-4">
-                                            <DynamicInput name="city" value={formData.city} onChange={handleChange} placeholder="city" className="text-lg w-2/3" />
-                                            <DynamicInput name="zip" value={formData.zip} onChange={handleChange} placeholder="zip" className="text-lg w-1/3" />
+                                    <div className="space-y-4 flex flex-col items-center">
+                                        <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street address" className="text-xl w-full text-center" />
+                                        <div className="flex gap-4 w-full">
+                                            <DynamicInput name="city" value={formData.city} onChange={handleChange} placeholder="city" className="text-lg w-2/3 text-center" />
+                                            <DynamicInput name="zip" value={formData.zip} onChange={handleChange} placeholder="zip" className="text-lg w-1/3 text-center" />
                                         </div>
                                     </div>
-                                    <p className="text-brand text-xs mt-4 lowercase italic text-center opacity-70">"precise brings gifts."</p>
                                 </motion.div>
                             ) : (
                                 <motion.div
@@ -260,7 +259,6 @@ export default function FriendForm() {
                                     exit={{ opacity: 0, x: 20 }}
                                     className="pt-2"
                                 >
-                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block text-center">roughly where?</label>
                                     <CustomSelect
                                         options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
                                         value={formData.city}
