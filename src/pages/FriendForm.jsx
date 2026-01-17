@@ -143,7 +143,7 @@ export default function FriendForm() {
                         <h1 className="text-4xl font-bold text-text-primary">hello, {initialName}.</h1>
                         <p className="text-xl text-text-secondary max-w-md">welcome to my inner circle. help me keep you close by filling out your card.</p>
                         <div className="pt-8">
-                            <Button onClick={next} size="lg" className="px-12 rounded-full lowercase">start</Button>
+                            <Button onClick={next} size="lg" className="px-12 py-6 text-lg rounded-full lowercase shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all bg-brand text-white border-none">start</Button>
                         </div>
                     </div>
                 );
@@ -309,9 +309,9 @@ export default function FriendForm() {
             >
                 {/* Sidebar Navigation */}
                 <div className="w-64 border-r border-gray-100 p-8 flex flex-col hidden md:flex">
-                    <div className="mb-10">
-                        <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Passkey</div>
-                        <div className="font-mono text-brand truncate pr-2" title={passphrase}>{passphrase}</div>
+                    <div className="mb-10 group cursor-copy" onClick={() => navigator.clipboard.writeText(passphrase)}>
+                        <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 group-hover:text-brand transition-colors">Passkey</div>
+                        <div className="font-mono text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>{passphrase}</div>
                     </div>
 
                     <nav className="space-y-2 flex-1">
@@ -358,9 +358,8 @@ export default function FriendForm() {
                     <div className="absolute top-6 right-6 z-50">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:border-gray-300 flex items-center gap-2 transition-all shadow-sm"
+                            className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-full text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
                         >
-                            <span className="text-lg leading-none">✕</span>
                             <span className="lowercase">close</span>
                         </button>
                     </div>

@@ -85,11 +85,11 @@ export default function Dashboard() {
                             <button
                                 onClick={() => setSettingsOpen(!settingsOpen)}
                                 className={`pointer-events-auto rounded-full p-3 transition-all duration-300 ${settingsOpen
-                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30'
+                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6'
                                     : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary'
                                     }`}
                             >
-                                <Icons.Settings className="w-6 h-6" />
+                                {settingsOpen ? <span className="text-sm font-medium lowercase">close</span> : <Icons.Settings className="w-6 h-6" />}
                             </button>
                             <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
                         </div>
