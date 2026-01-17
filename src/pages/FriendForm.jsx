@@ -8,6 +8,8 @@ import { Icons } from '../components/ui/Icons';
 import { CustomSelect } from '../components/ui/CustomSelect';
 import { DynamicInput } from '../components/ui/DynamicInput';
 import { DateSelector } from '../components/ui/DateSelector';
+import { PhoneInput } from '../components/ui/PhoneInput';
+import { EmailInput } from '../components/ui/EmailInput';
 import { countries } from 'countries-list';
 
 const STEPS = [
@@ -209,12 +211,14 @@ export default function FriendForm() {
                     <Wrapper>
                         <div className="space-y-8 text-center">
                             <motion.div variants={itemVariants} className="flex flex-col items-center">
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">phone</label>
-                                <DynamicInput name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="(555) 123-4567" className="text-xl lg:text-2xl w-full text-center" />
+                                <label className="text-sm font-medium text-text-secondary lowercase mb-4 block">phone</label>
+                                {/* 10 boxes phone input */}
+                                <PhoneInput value={formData.phone} onChange={handleChange} />
                             </motion.div>
                             <motion.div variants={itemVariants} className="flex flex-col items-center">
-                                <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">email</label>
-                                <DynamicInput name="email" type="email" value={formData.email} onChange={handleChange} placeholder="hello@example.com" className="text-xl lg:text-2xl w-full text-center" />
+                                <label className="text-sm font-medium text-text-secondary lowercase mb-4 block">email</label>
+                                {/* User @ Domain input */}
+                                <EmailInput value={formData.email} onChange={handleChange} className="w-full" />
                             </motion.div>
                         </div>
                     </Wrapper>
@@ -240,7 +244,6 @@ export default function FriendForm() {
                         <div className="relative flex bg-gray-100 p-1 rounded-full mb-8 w-64 mx-auto">
                             <motion.div
                                 className="absolute top-1 bottom-1 bg-white rounded-full shadow-sm z-0"
-                                layoutId="activeTab"
                                 initial={false}
                                 animate={{
                                     left: locationType === 'city' ? '4px' : '50%',
