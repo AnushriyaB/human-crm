@@ -17,7 +17,7 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                         animate={{ opacity: 1, y: 0, height: 'auto' }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.2, ease: "linear" }} // Linear animation
-                        className="absolute top-full left-0 mt-4 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-48"
+                        className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-48"
                     >
                         <div className="p-2">
                             {/* Visual Toggle */}
@@ -32,12 +32,14 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                 />
                                 <button
+                                    type="button"
                                     onClick={() => setFrequency('weekly')}
                                     className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer ${frequency === 'weekly' ? 'text-text-primary' : 'text-text-secondary'}`}
                                 >
                                     weekly
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setFrequency('daily')}
                                     className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer ${frequency === 'daily' ? 'text-text-primary' : 'text-text-secondary'}`}
                                 >

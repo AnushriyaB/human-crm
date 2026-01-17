@@ -38,17 +38,15 @@ export default function Dashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.8 }}
-                    className="max-w-md w-full space-y-12"
+                    className="max-w-md w-full space-y-2"
                 >
-                    <h2 className="text-4xl font-medium text-text-primary leading-tight tracking-tight">
-                        your world is empty.<br />start with one.
-                    </h2>
+
                     <Button
                         onClick={() => setIsOnboarding(true)}
                         size="lg"
                         className="rounded-full px-12 py-8 text-xl shadow-2xl shadow-brand/10 hover:shadow-brand/20 transition-all lowercase"
                     >
-                        add a friend
+                        add your first friend
                     </Button>
                 </motion.div>
             </div>
@@ -86,9 +84,9 @@ export default function Dashboard() {
                         <div className="relative">
                             <button
                                 onClick={() => setSettingsOpen(!settingsOpen)}
-                                className={`pointer-events-auto rounded-full p-3 transition-all duration-200 ${settingsOpen
-                                        ? 'bg-transparent border border-transparent shadow-none text-text-primary'
-                                        : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/50 hover:shadow-sm hover:text-text-primary'
+                                className={`pointer-events-auto rounded-full p-3 transition-all duration-300 ${settingsOpen
+                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30'
+                                    : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary'
                                     }`}
                             >
                                 <Icons.Settings className="w-6 h-6" />
@@ -99,9 +97,9 @@ export default function Dashboard() {
                         <div className="relative">
                             <Button
                                 onClick={() => setIsAdding(!isAdding)}
-                                className={`pointer-events-auto rounded-full lowercase px-6 transition-all duration-200 ${isAdding
-                                        ? 'bg-transparent border border-transparent shadow-none text-text-primary hover:bg-transparent'
-                                        : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/50 hover:shadow-sm'
+                                className={`pointer-events-auto rounded-full lowercase px-6 transition-all duration-300 ${isAdding
+                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30'
+                                    : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/20'
                                     }`}
                             >
                                 {isAdding ? 'close' : 'add friend'}
@@ -176,7 +174,7 @@ export default function Dashboard() {
 
                 {/* The Shelf (Left Side) */}
                 {friends.some(f => f.x === null) && (
-                    <div className="absolute top-32 left-8 w-64 z-20 flex flex-col gap-4 pointer-events-none">
+                    <div className="absolute top-32 left-8 w-fit z-20 flex flex-col gap-4 pointer-events-none">
                         <h3 className="text-xs font-medium text-text-gray pl-1 lowercase tracking-wide opacity-50">add location</h3>
                         <div className="flex flex-col gap-3 pointer-events-auto">
                             {friends.filter(f => f.x === null).map((f) => (
