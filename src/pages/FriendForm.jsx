@@ -283,6 +283,8 @@ export default function FriendForm() {
                                     {step.title}
                                     {isPast && <div className="ml-auto text-brand text-xs">✓</div>}
                                 </button>
+                            )
+                        })}
                     </nav>
 
                     {/* Archive Button for Edit Mode */}
