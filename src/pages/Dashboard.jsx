@@ -5,7 +5,7 @@ import { Icons } from '../components/ui/Icons';
 import { useFriends } from '../context/FriendContext';
 import AddFriend from '../components/AddFriend';
 import SideSheet from '../components/ui/SideSheet';
-import SettingsModal from '../components/SettingsModal';
+import SettingsDropdown from '../components/SettingsDropdown';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -59,12 +59,15 @@ export default function Dashboard() {
                             Wait, the previous setting was Top Right.
                             Let's try putting Settings on the LEFT and Add Friend on the RIGHT.
                         */}
-                        <button
-                            onClick={() => setSettingsOpen(true)}
-                            className="pointer-events-auto text-text-secondary hover:text-text-primary transition-colors p-2 rounded-full hover:bg-gray-50"
-                        >
-                            <Icons.Settings className="w-6 h-6" />
-                        </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setSettingsOpen(!settingsOpen)}
+                                className={`pointer-events-auto text-text-secondary hover:text-text-primary transition-colors p-2 rounded-full hover:bg-gray-50 ${settingsOpen ? 'bg-gray-50 text-text-primary' : ''}`}
+                            >
+                                <Icons.Settings className="w-6 h-6" />
+                            </button>
+                            <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+                        </div>
 
                         <Button onClick={() => setIsAdding(true)} className="pointer-events-auto rounded-full shadow-lg bg-white text-black hover:bg-gray-50 border border-gray-100 lowercase px-6">
                             add friend
@@ -79,7 +82,7 @@ export default function Dashboard() {
                 friend={selectedFriend}
             />
 
-            <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
         </>
     );
 }
