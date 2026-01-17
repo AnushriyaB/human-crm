@@ -35,7 +35,8 @@ export default function Dashboard() {
         }
     };
 
-    if (friends.length === 0) {
+    // Fix: Keep empty state view active if we are currently onboarding, even if a friend was added (Quick Add)
+    if (friends.length === 0 || isOnboarding) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center transition-all duration-500">
                 <motion.div
@@ -50,7 +51,7 @@ export default function Dashboard() {
                             onClick={() => setIsOnboarding(true)}
                             size="lg"
                             disabled={isOnboarding}
-                            className={`px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary transition-all ${isOnboarding ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/20 hover:text-text-primary'}`}
+                            className={`px-8 py-4 text-lg rounded-[2px] lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary transition-all ${isOnboarding ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/20 hover:text-text-primary'}`}
                         >
                             add your first friend
                         </Button>
@@ -92,57 +93,39 @@ export default function Dashboard() {
             <div className="relative w-full h-screen overflow-hidden bg-white">
                 {/* Top Navigation */}
                 <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-30 pointer-events-none">
-                    {/* Left side empty for now, or branding? User said "Add a top nav and keep two button". 
-                         "Keep the settings button as an icon." 
-                         "Add friend button goes to the top right."
-                         If I put Settings on the left, it separates them nicely. 
-                         Let's put Settings on the left for balance?
-                         "Keep the settings button as an icon" (it was top right).
-                         "Add friend button goes to the top right".
-                         This implies Add Friend is taking the Top Right spot.
-                         Maybe Settings should stay Top Right? 
-                         If so: <div className="flex gap-4 pointer-events-auto ml-auto">
-                     */}
+                    {/* Settings Button (Left) */}
+                    <div className="relative pointer-events-auto">
+                        <button
+                            onClick={() => setSettingsOpen(!settingsOpen)}
+                            className={`rounded-[2px] p-3 transition-all duration-300 ${settingsOpen
+                                ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6'
+                                : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary'
+                                }`}
+                        >
+                            {settingsOpen ? <span className="text-sm font-medium lowercase">close</span> : <Icons.Settings className="w-6 h-6" />}
+                        </button>
+                        <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+                    </div>
 
-                    <div className="flex w-full justify-between items-center">
-                        {/* Settings Button (Left or Right? Let's assume Left for balance if Add Friend is Right, or maybe grouped?) 
-                            The user said "Add friend button goes to the top right". 
-                            And "Keep the settings button as an icon".
-                            "Top nav... keep two button".
-                            I will group them in the top right for "App Controls" pattern, or split them?
-                            Let's split them. Settings Left, Add Friend Right. It feels like a standard nav.
-                            Wait, the previous setting was Top Right.
-                            Let's try putting Settings on the LEFT and Add Friend on the RIGHT.
-                        */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setSettingsOpen(!settingsOpen)}
-                                className={`pointer-events-auto rounded-full p-3 transition-all duration-300 ${settingsOpen
-                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6'
-                                    : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary'
-                                    }`}
-                            >
-                                {settingsOpen ? <span className="text-sm font-medium lowercase">close</span> : <Icons.Settings className="w-6 h-6" />}
-                            </button>
-                            <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-                        </div>
+                    {/* Middle Title */}
+                    <h1 className="text-sm font-medium text-text-primary lowercase tracking-wide pointer-events-auto">book of humans</h1>
 
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsAdding(!isAdding)}
-                                className={`pointer-events-auto rounded-full p-3 transition-all duration-300 ${isAdding
-                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6' // wider for "close" text
-                                    : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/20'
-                                    }`}
-                            >
-                                {isAdding ? <span className="text-sm font-medium lowercase">close</span> : <Icons.UserPlus className="w-6 h-6" />}
-                            </button>
-                            <AddFriendDropdown
-                                isOpen={isAdding}
-                                onClose={() => setIsAdding(false)}
-                                onComplete={handleFriendAdded}
-                            />
-                        </div>
+                    {/* Add Friend Button (Right) */}
+                    <div className="relative pointer-events-auto">
+                        <button
+                            onClick={() => setIsAdding(!isAdding)}
+                            className={`rounded-[2px] p-3 transition-all duration-300 ${isAdding
+                                ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6' // wider for "close" text
+                                : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/20'
+                                }`}
+                        >
+                            {isAdding ? <span className="text-sm font-medium lowercase">close</span> : <Icons.UserPlus className="w-6 h-6" />}
+                        </button>
+                        <AddFriendDropdown
+                            isOpen={isAdding}
+                            onClose={() => setIsAdding(false)}
+                            onComplete={handleFriendAdded}
+                        />
                     </div>
                 </div>
 

@@ -308,10 +308,15 @@ export default function FriendForm() {
                 className="w-full max-w-4xl h-[80vh] flex bg-white rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100"
             >
                 {/* Sidebar Navigation */}
-                <div className="w-64 border-r border-gray-100 p-8 flex flex-col hidden md:flex">
-                    <div className="mb-10 group cursor-copy" onClick={() => navigator.clipboard.writeText(passphrase)}>
-                        <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 group-hover:text-brand transition-colors">Passkey</div>
-                        <div className="font-mono text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>{passphrase}</div>
+                <div className="w-[400px] border-r border-gray-100 p-10 flex flex-col hidden md:flex bg-gray-50/30">
+                    <div className="mb-12 group cursor-copy" onClick={() => navigator.clipboard.writeText(passphrase)}>
+                        {passphrase && (
+                            <>
+                                <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 group-hover:text-brand transition-colors">Passkey</div>
+                                <div className="font-mono text-xl text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>{passphrase}</div>
+                                <p className="text-xs text-text-secondary mt-2 leading-relaxed">share this key with them so they can join your circle.</p>
+                            </>
+                        )}
                     </div>
 
                     <nav className="space-y-2 flex-1">
@@ -358,7 +363,7 @@ export default function FriendForm() {
                     <div className="absolute top-6 right-6 z-50">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-full text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
+                            className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[2px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
                         >
                             <span className="lowercase">close</span>
                         </button>
