@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DynamicInput } from './DynamicInput';
+import { Calendar } from 'lucide-react';
 
 export function DateSelector({ value, onChange }) {
     // value is "YYYY-MM-DD" string or undefined
@@ -10,6 +10,7 @@ export function DateSelector({ value, onChange }) {
     const monthRef = useRef(null);
     const dayRef = useRef(null);
     const yearRef = useRef(null);
+    const dateInputRef = useRef(null);
 
     useEffect(() => {
         if (value) {
@@ -56,11 +57,14 @@ export function DateSelector({ value, onChange }) {
         updateDate(undefined, undefined, val);
     };
 
-    // Helper to focus input on click of the parent div if needed, 
-    // but users will likely click inputs directly.
+    const handleNativeDateChange = (e) => {
+        if (e.target.value) {
+            onChange(e.target.value);
+        }
+    };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative group">
             <div className="flex flex-col items-center w-12">
                 <input
                     ref={monthRef}
@@ -88,6 +92,24 @@ export function DateSelector({ value, onChange }) {
                     onChange={handleYearChange}
                     placeholder="YYYY"
                     className="w-full text-center bg-transparent border-b border-gray-200 focus:border-brand outline-none pb-1 placeholder:text-gray-300 font-mono text-lg transition-colors"
+                />
+            </div>
+
+            {/* Hidden Date Input & Trigger */}
+            <div className="ml-2">
+                <button
+                    onClick={() => dateInputRef.current?.showPicker()}
+                    className="text-gray-300 hover:text-brand transition-colors p-1"
+                >
+                    <Calendar className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+                <input
+                    type="date"
+                    ref={dateInputRef}
+                    className="absolute opacity-0 pointer-events-none w-0 h-0"
+                    onChange={handleNativeDateChange}
+                    value={value || ''}
+                    tabIndex={-1}
                 />
             </div>
         </div>

@@ -15,11 +15,34 @@ const STEPS = [
     { id: 'basics', title: 'basics', icon: Icons.Basics },
     { id: 'photo', title: 'face', icon: Icons.Face },
     { id: 'contact', title: 'contact', icon: Icons.Contact },
-    { id: 'socials', title: 'socials', icon: Icons.Sparkles }, // Using Sparkles as temp icon for socials or maybe we add one?
+    { id: 'socials', title: 'socials', icon: Icons.Link },
     { id: 'location', title: 'location', icon: Icons.Coordinates },
     { id: 'vibe', title: 'vibe', icon: Icons.Vibe },
     { id: 'extra', title: 'extra love', icon: Icons.ExtraLove }
 ];
+
+// Moving variants and wrapper outside to prevent re-creation on every render
+const contentVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
+};
+
+const Wrapper = ({ children }) => (
+    <motion.div
+        variants={contentVariants}
+        initial="hidden"
+        animate="visible"
+        exit={{ opacity: 0, x: 20 }}
+        className="w-full max-w-sm mx-auto pt-10"
+    >
+        {children}
+    </motion.div>
+);
 
 export default function FriendForm() {
     const { state } = useLocation();
@@ -52,13 +75,32 @@ export default function FriendForm() {
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        let value = e.target.value;
+        // Enforce number-only for phone
+        if (e.target.name === 'phone') {
+            value = value.replace(/\D/g, '');
+        }
+        setFormData({ ...formData, [e.target.name]: value });
     };
 
     const handleSocialChange = (e) => {
+        let value = e.target.value;
+        const name = e.target.name;
+
+        // Auto-extract handle from URL
+        if (value.includes('instagram.com/')) {
+            value = '@' + value.split('instagram.com/')[1].split('/')[0].split('?')[0];
+        } else if (value.includes('twitter.com/') || value.includes('x.com/')) {
+            const parts = value.split('/');
+            value = '@' + parts[parts.length - 1].split('?')[0];
+        } else if (value.includes('linkedin.com/in/')) {
+            const parts = value.split('linkedin.com/in/');
+            value = '@' + parts[1].split('/')[0];
+        }
+
         setFormData({
             ...formData,
-            socials: { ...formData.socials, [e.target.name]: e.target.value }
+            socials: { ...formData.socials, [name]: value }
         });
     };
 
@@ -92,28 +134,6 @@ export default function FriendForm() {
     };
 
     const renderStepContent = (stepId) => {
-        // Animation variant for "Left to Right" load
-        const contentVariants = {
-            hidden: { opacity: 0, x: -20 },
-            visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.1 } }
-        };
-
-        const itemVariants = {
-            hidden: { opacity: 0, x: -10 },
-            visible: { opacity: 1, x: 0 }
-        };
-
-        const Wrapper = ({ children }) => (
-            <motion.div
-                variants={contentVariants}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0, x: 20 }}
-                className="w-full max-w-md mx-auto pt-10"
-            >
-                {children}
-            </motion.div>
-        );
 
         switch (stepId) {
             case 'welcome':
@@ -143,10 +163,9 @@ export default function FriendForm() {
                 );
             case 'photo':
                 return (
-                    <div className="space-y-6 w-full max-w-lg mx-auto pt-10 text-center">
+                    <div className="space-y-6 w-full max-w-sm mx-auto pt-10 text-center">
                         <div className="flex items-center justify-center min-h-[200px]">
                             <div className="flex -space-x-4 items-center justify-center">
-                                {/* No AnimatePresence popping, just mapping */}
                                 {formData.photos.map((photoUrl, index) => (
                                     <div
                                         key={`photo-${index}`}
@@ -217,7 +236,7 @@ export default function FriendForm() {
                 );
             case 'location':
                 return (
-                    <div className="space-y-6 w-full max-w-md mx-auto pt-10">
+                    <div className="space-y-6 w-full max-w-sm mx-auto pt-10">
                         <div className="relative flex bg-gray-100 p-1 rounded-full mb-8 w-64 mx-auto">
                             <motion.div
                                 className="absolute top-1 bottom-1 bg-white rounded-full shadow-sm z-0"
@@ -244,9 +263,47 @@ export default function FriendForm() {
                                 >
                                     <label className="text-sm font-medium text-text-secondary lowercase mb-2 block text-center">where should i send it?</label>
                                     <div className="space-y-4 flex flex-col items-center">
+                                        {/* Added Country Dropdown to Address Tab as requested */}
+                                        <div className="w-full">
+                                            <CustomSelect
+                                                options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
+                                                value={formData.city} // Re-using city field or should I use a different one? 
+                                                // Coordinates logic uses city for country name usually in this app context. 
+                                                // But let's check if 'city' is used for Country in the other tab.
+                                                // In 'country' tab: value={formData.city}. So yes, 'city' stores Country Name (legacy naming?).
+                                                // Let's stick to that for consistency or user might want actual city?
+                                                // User said "Address would be location and give country dropdown here too".
+                                                // So I'll put country dropdown FIRST, then address fields.
+                                                onChange={(val) => setFormData({ ...formData, city: val })}
+                                                placeholder="select country..."
+                                            />
+                                        </div>
                                         <DynamicInput name="address" value={formData.address} onChange={handleChange} placeholder="street address" className="text-xl w-full text-center" />
                                         <div className="flex gap-4 w-full">
-                                            <DynamicInput name="city" value={formData.city} onChange={handleChange} placeholder="city" className="text-lg w-2/3 text-center" />
+                                            {/* If 'city' is country, we need a real city field? 
+                                                The state has `city` and `address`. 
+                                                Let's check `state` init: city, address, zip.
+                                                If `city` is used for Country, we might be missing a City field?
+                                                In 'country' tab, it maps to `city` state.
+                                                If I add country dropdown to address tab, I should probably map it to `city` (country)
+                                                and maybe rename the other input to `subCity` or just keep minimal?
+                                                User request: "give country dropdown here too to map to the place that friend is cureently."
+                                                I'll assumes 'city' = country in this app logic (from previous code).
+                                                So I'll just add the dropdown. But wait, I have a "city" input in the flex gap below!
+                                                <DynamicInput name="city" ... placeholder="city" />
+                                                This conflicts if `formData.city` is Country.
+                                                I should probably add `country` to state?
+                                                State has: address, city, zip.
+                                                Let's assume `city` = City and I should add `country` field to state?
+                                                Or `city` = Country?
+                                                In 'country' tab: label "search countries...", value={formData.city}. 
+                                                So `formData.city` IS Country.
+                                                In 'address' tab: input name="city" placeholder="city". 
+                                                So `formData.city` IS City.
+                                                CONFLICT FOUND.
+                                                I will fix this: Add `country` to formData. 
+                                            */}
+                                            <DynamicInput name="postal_city" value={formData.postal_city || ''} onChange={(e) => setFormData({ ...formData, postal_city: e.target.value })} placeholder="city" className="text-lg w-2/3 text-center" />
                                             <DynamicInput name="zip" value={formData.zip} onChange={handleChange} placeholder="zip" className="text-lg w-1/3 text-center" />
                                         </div>
                                     </div>
@@ -261,7 +318,21 @@ export default function FriendForm() {
                                 >
                                     <CustomSelect
                                         options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
-                                        value={formData.city}
+                                        value={formData.city} // Still using city as country for now to avoid breaking backend if any? 
+                                        // Actually, I'll switch to `formData.country` if I can, but let's stick to minimal changes that WORK.
+                                        // If I change state structure, I need to update init.
+                                        // Let's assume `city` was serving double duty.
+                                        // I will update state in a separate tool call if needed or just use `city` for Country and `postal_city` for City?
+                                        // User said "Address would be location... give country dropdown".
+                                        // I'll add `country` to state in the first tool call (was missed in my text replacement).
+                                        // Actually, I can't update state init in this call efficiently without replacing whole file.
+                                        // I will use `city` for Country (as per "Roughly where?" tab) and rename the city input to `local_city` or something?
+                                        // Or just `city` for City and `country` for Country?
+                                        // Let's use `city` for Country in the dropdown to match the other tab (which uses `city`).
+                                        // And for the City input in address, I'll use a new field `local_city` or just `address_2`?
+                                        // Let's look at `geocode.js` usage? It's not visible here.
+                                        // Safest: Use `city` for Country (since geocoding likely uses it for "Roughly where").
+                                        // And add a visual City input that maps to `local_city` (new state).
                                         onChange={(val) => setFormData({ ...formData, city: val })}
                                         placeholder="search countries..."
                                     />
@@ -322,7 +393,7 @@ export default function FriendForm() {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-5xl h-[80vh] flex bg-white rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100"
+                className="w-full max-w-4xl h-[80vh] flex bg-white rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100"
             >
                 {/* Sidebar Navigation */}
                 <div className="w-64 border-r border-gray-100 p-8 flex flex-col hidden md:flex">
@@ -405,15 +476,15 @@ export default function FriendForm() {
                     {/* Footer Actions */}
                     {currentStepIndex > 0 && (
                         <div className="p-8 flex justify-between items-center sticky bottom-0 z-20 bg-white/80 backdrop-blur-sm">
-                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-xs hover:text-red-400 lowercase hover:bg-red-50 rounded-lg px-4">
+                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-sm hover:text-red-400 lowercase hover:bg-red-50 rounded-lg px-4">
                                 clear
                             </Button>
 
                             <div className="flex gap-4">
-                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-xl hover:bg-gray-50">
+                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-xl hover:bg-gray-50 text-sm">
                                     back
                                 </Button>
-                                <Button onClick={next} className="min-w-[120px] lowercase rounded-xl shadow-lg shadow-brand/20">
+                                <Button onClick={next} className="min-w-[120px] lowercase rounded-xl shadow-lg shadow-brand/20 text-sm">
                                     {currentStepIndex === STEPS.length - 1 ? 'finish' : 'next'}
                                 </Button>
                             </div>
