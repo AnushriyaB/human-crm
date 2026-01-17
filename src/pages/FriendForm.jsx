@@ -239,6 +239,20 @@ export default function FriendForm() {
                 );
             case 'location':
                 return (
+                    <Wrapper>
+                        <div className="space-y-6 w-full max-w-sm mx-auto pt-10 text-center">
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                                <label className="text-sm font-medium text-text-secondary lowercase mb-4 block">country</label>
+                                <CustomSelect
+                                    options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
+                                    value={formData.city}
+                                    onChange={(val) => setFormData({ ...formData, city: val })}
+                                    placeholder="select country..."
+                                />
+                            </motion.div>
+                        </div>
+                    </Wrapper>
+                );
             case 'vibe':
                 return (
                     <Wrapper>
