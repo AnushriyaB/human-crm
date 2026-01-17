@@ -116,7 +116,7 @@ export default function Dashboard() {
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="absolute group cursor-pointer pointer-events-auto"
-                            style={{ left: '29.44%', top: '27.38%' }}
+                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
                             onClick={() => setSelectedFriend(f)}
                         >
                             <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
