@@ -95,15 +95,15 @@ export default function Dashboard() {
                         </div>
 
                         <div className="relative">
-                            <Button
+                            <button
                                 onClick={() => setIsAdding(!isAdding)}
-                                className={`pointer-events-auto rounded-full lowercase px-6 transition-all duration-300 ${isAdding
-                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30'
+                                className={`pointer-events-auto rounded-full p-3 transition-all duration-300 ${isAdding
+                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-6' // wider for "close" text
                                     : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/20'
                                     }`}
                             >
-                                {isAdding ? 'close' : 'add friend'}
-                            </Button>
+                                {isAdding ? <span className="text-sm font-medium lowercase">close</span> : <Icons.UserPlus className="w-6 h-6" />}
+                            </button>
                             <AddFriendDropdown
                                 isOpen={isAdding}
                                 onClose={() => setIsAdding(false)}

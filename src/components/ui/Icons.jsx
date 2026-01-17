@@ -11,7 +11,9 @@ import {
     MessageSquare,
     User,
     Link,
-    Settings
+    Link,
+    Settings,
+    UserPlus
 } from 'lucide-react';
 
 export const Icons = {
@@ -31,4 +33,5 @@ export const Icons = {
     Image: ({ className }) => <ImageIcon className={className} strokeWidth={1.5} />,
     Link: ({ className }) => <Link className={className} strokeWidth={1.5} />,
     Settings: ({ className }) => <Settings className={className} strokeWidth={1.5} />,
+    UserPlus: ({ className }) => <UserPlus className={className} strokeWidth={1.5} />,
 };
