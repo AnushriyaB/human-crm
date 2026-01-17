@@ -264,7 +264,6 @@ export default function FriendForm() {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="pt-2 space-y-4 text-center"
                                 >
-                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block text-center">where should i send it?</label>
                                     <div className="space-y-4 flex flex-col items-center">
                                         {/* Added Country Dropdown to Address Tab as requested */}
                                         <div className="w-full">
