@@ -56,7 +56,6 @@ export default function FriendForm() {
     const isEdit = state?.isEdit || false;
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
-    const [locationType, setLocationType] = useState(state?.address ? 'address' : 'city');
 
     const [formData, setFormData] = useState({
         name: initialName,
