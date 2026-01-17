@@ -119,7 +119,7 @@ export default function Dashboard() {
                             style={{ left: `${f.x}%`, top: `${f.y}%` }}
                             onClick={() => setSelectedFriend(f)}
                         >
-                            <div className="relative bg-white pl-8 pr-4 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2">
+                            <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
                                 {/* Photo overlapping left edge */}
                                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
                                     {f.photo ? (
@@ -131,10 +131,6 @@ export default function Dashboard() {
                                     )}
                                 </div>
                                 <span className="font-medium text-sm text-text-primary whitespace-nowrap lowercase">{f.name}</span>
-
-                                <div className="w-0 overflow-hidden group-hover:w-4 transition-all duration-300">
-                                    <span className="text-brand">→</span>
-                                </div>
                             </div>
                         </motion.div>
                     ))}
@@ -154,7 +150,7 @@ export default function Dashboard() {
                                     className="relative group cursor-pointer"
                                 >
                                     <div className="flex flex-col items-center gap-2">
-                                        <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:-translate-y-1 transition-transform">
+                                        <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
                                             {f.photo ? (
                                                 <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
                                             ) : (

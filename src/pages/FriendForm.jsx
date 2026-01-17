@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useFriends } from '../context/FriendContext';
 import { Icons } from '../components/ui/Icons';
+import { countries } from 'countries-list';
 
 const STEPS = [
     { id: 'welcome', title: 'welcome', icon: null },
@@ -149,7 +150,7 @@ export default function FriendForm() {
                                     : 'text-text-secondary hover:text-text-primary'
                                     }`}
                             >
-                                city / country
+                                country
                             </button>
                             <button
                                 onClick={() => setLocationType('address')}
@@ -179,8 +180,21 @@ export default function FriendForm() {
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                 >
-                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">city / country</label>
-                                    <Input name="city" value={formData.city} onChange={handleChange} placeholder="current base" />
+                                    <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">country</label>
+                                    <select
+                                        name="city" // Keeping name 'city' for backward compat or strictly mapping to 'country' now. 
+                                        // Plan says Rename City/Country. I will use 'city' field to store country for now to avoid major schema refactor, 
+                                        // or better, I should rename the label and keep the field if permissible.
+                                        // Let's use the 'city' state field but treat it as location.
+                                        value={formData.city}
+                                        onChange={handleChange}
+                                        className="flex w-full rounded-xl border border-border bg-white px-4 py-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 appearance-none lowercase"
+                                    >
+                                        <option value="">select a country</option>
+                                        {Object.values(countries).map((c) => (
+                                            <option key={c.name} value={c.name}>{c.name.toLowerCase()}</option>
+                                        ))}
+                                    </select>
                                 </motion.div>
                             )}
                         </div>
@@ -261,8 +275,8 @@ export default function FriendForm() {
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
-                                        ? 'bg-white shadow-sm text-brand'
-                                        : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
+                                            ? 'bg-white shadow-sm text-brand'
+                                            : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
@@ -272,10 +286,42 @@ export default function FriendForm() {
                             )
                         })}
                     </nav>
+
+                    {/* Archive Button for Edit Mode */}
+                    {isEdit && (
+                        <div className="pt-4 mt-4 border-t border-gray-200">
+                            <button
+                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl w-full transition-colors lowercase"
+                                onClick={() => {
+                                    // Archive logic here (could be context update, for now just log or navigate)
+                                    // Ideally, add archiveFriend to context.
+                                    alert('archived (simulated)');
+                                    navigate('/dashboard');
+                                }}
+                            >
+                                <span className="text-lg">🗑</span>
+                                archive friend
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 flex flex-col relative">
+                <div className="flex-1 flex flex-col relative text-left">
+                    {/* Pull Tab Close Button */}
+                    <div className="absolute top-0 right-8 z-50">
+                        <motion.button
+                            initial={{ y: -40 }}
+                            animate={{ y: 0 }}
+                            whileHover={{ y: 5 }}
+                            onClick={() => navigate('/dashboard')}
+                            className="bg-white border-x border-b border-gray-200 px-6 py-3 rounded-b-xl shadow-sm text-sm font-medium text-text-secondary hover:text-brand flex items-center gap-2 transition-all"
+                        >
+                            <span className="text-lg leading-none">✕</span>
+                            <span className="lowercase">close</span>
+                        </motion.button>
+                    </div>
+
                     {/* Progress Bar (Mobile) */}
                     <div className="h-1 bg-gray-100 w-full md:hidden">
                         <motion.div
