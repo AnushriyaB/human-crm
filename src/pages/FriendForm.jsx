@@ -57,11 +57,11 @@ export default function FriendForm() {
         else handleSubmit();
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (isEdit && state?.id) {
-            updateFriend(state.id, { ...formData });
+            await updateFriend(state.id, { ...formData });
         } else {
-            addFriend({ ...formData, passphrase });
+            await addFriend({ ...formData, passphrase });
         }
         navigate('/dashboard');
     };
@@ -125,8 +125,8 @@ export default function FriendForm() {
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0 }}
-                                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                                            className="relative w-24 h-24 rounded-full shadow-md border-2 border-white bg-gray-100 flex-shrink-0 z-10 hover:z-20 hover:scale-110 transition-transform overflow-hidden"
+                                            transition={{ duration: 0.2 }}
+                                            className="relative w-24 h-24 rounded-full bg-gray-100 flex-shrink-0 z-10 hover:z-20 hover:scale-105 transition-transform overflow-hidden"
                                         >
                                             <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover" />
                                             {/* Delete Overlay */}
@@ -146,11 +146,11 @@ export default function FriendForm() {
                                     {formData.photos.length < 5 && (
                                         <motion.label
                                             layout
-                                            initial={{ opacity: 0, scale: 0 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            className="relative w-24 h-24 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border border-gray-200 transition-all z-0 ml-4"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="relative w-24 h-24 rounded-full bg-gray-100 hover:bg-gray-200 cursor-pointer flex items-center justify-center transition-all z-0 ml-4 group"
                                         >
-                                            <span className="text-2xl text-gray-400 font-light">+</span>
+                                            <Icons.Image className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -266,7 +266,7 @@ export default function FriendForm() {
                                     name="memory"
                                     value={formData.memory}
                                     onChange={handleChange}
-                                    className="flex w-full bg-transparent border-b border-dashed border-gray-300 px-0 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[80px] resize-none transition-colors text-lg"
+                                    className="flex w-full bg-transparent border-none px-0 py-2 text-text-primary placeholder:text-gray-300 focus:outline-none min-h-[80px] resize-none transition-colors text-lg caret-brand"
                                     placeholder="..."
                                 />
                             </div>
@@ -287,7 +287,7 @@ export default function FriendForm() {
                                     name="notes"
                                     value={formData.notes}
                                     onChange={handleChange}
-                                    className="flex w-full bg-transparent border-b border-dashed border-gray-300 px-0 py-2 text-text-primary placeholder:text-gray-300 focus:border-brand outline-none min-h-[80px] resize-none transition-colors text-lg"
+                                    className="flex w-full bg-transparent border-none px-0 py-2 text-text-primary placeholder:text-gray-300 focus:outline-none min-h-[80px] resize-none transition-colors text-lg caret-brand"
                                     placeholder="..."
                                 />
                             </div>
@@ -304,10 +304,16 @@ export default function FriendForm() {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white w-full max-w-5xl h-[80vh] rounded-[2rem] shadow-2xl overflow-hidden flex"
+                className="w-full max-w-5xl h-[80vh] flex bg-transparent" // Removed white bg and shadow
             >
-                {/* Sidebar Navigation */}
-                <div className="w-64 bg-gray-50 border-r border-gray-100 p-8 flex flex-col hidden md:flex">
+                {/* Sidebar Navigation - Kept separate or visible?
+                   User said "Keep the names in the side panel".
+                   So we keep the sidebar but make it unified or floating?
+                   User said "remove the card from behind 'add a friend' model".
+                   This implies the main white container.
+                   Let's make the container clear and maybe just the sidebar has a subtle BG or both are clean.
+                */}
+                <div className="w-64 border-r border-gray-200 p-8 flex flex-col hidden md:flex">
                     <div className="mb-10">
                         <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Passkey</div>
                         <div className="font-mono text-brand">{passphrase}</div>
@@ -325,8 +331,8 @@ export default function FriendForm() {
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
-                                        ? 'bg-white shadow-sm text-brand'
-                                        : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
+                                        ? 'text-brand'
+                                        : 'text-text-secondary hover:text-text-primary'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
@@ -341,7 +347,7 @@ export default function FriendForm() {
                     {isEdit && (
                         <div className="pt-4 mt-4 border-t border-gray-200">
                             <button
-                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl w-full transition-colors lowercase"
+                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-xl w-full transition-colors lowercase"
                                 onClick={() => {
                                     // Archive logic here (could be context update, for now just log or navigate)
                                     // Ideally, add archiveFriend to context.
@@ -358,7 +364,7 @@ export default function FriendForm() {
                     {/* Explicit Exit Button */}
                     <div className="pt-4 mt-auto">
                         <button
-                            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 rounded-xl w-full transition-colors lowercase"
+                            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary rounded-xl w-full transition-colors lowercase"
                             onClick={() => navigate('/dashboard')}
                         >
                             <span className="text-lg">✕</span>
@@ -369,14 +375,17 @@ export default function FriendForm() {
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col relative text-left">
-                    {/* Pull Tab Close Button */}
+                    {/* Pull Tab Close Button - Maybe simplified now?
+                       User asked to remove specific elements.
+                       "remove the card from behind 'add a friend' model".
+                    */}
                     <div className="absolute top-0 right-8 z-50">
                         <motion.button
                             initial={{ y: -40 }}
                             animate={{ y: 0 }}
                             whileHover={{ y: 5 }}
                             onClick={() => navigate('/dashboard')}
-                            className="bg-white border-x border-b border-gray-200 px-6 py-3 rounded-b-xl shadow-sm text-sm font-medium text-text-secondary hover:text-brand flex items-center gap-2 transition-all"
+                            className="bg-transparent border-none px-6 py-3 text-sm font-medium text-text-secondary hover:text-brand flex items-center gap-2 transition-all"
                         >
                             <span className="text-lg leading-none">✕</span>
                             <span className="lowercase">close</span>
@@ -410,7 +419,7 @@ export default function FriendForm() {
 
                     {/* Footer Actions */}
                     {currentStepIndex > 0 && (
-                        <div className="p-8 border-t border-gray-100 flex justify-between items-center bg-white sticky bottom-0 z-20">
+                        <div className="p-8 flex justify-between items-center sticky bottom-0 z-20">
                             <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-xs hover:text-red-400 lowercase">
                                 clear
                             </Button>

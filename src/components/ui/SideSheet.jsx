@@ -189,7 +189,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
 
 function DetailRow({ label, value, onChange }) {
     return (
-        <div className="grid grid-cols-3 gap-4 border-b border-gray-100 pb-3 last:border-0 text-sm items-center">
+        <div className="grid grid-cols-3 gap-4 pb-3 last:border-0 text-sm items-center">
             <span className="text-text-secondary font-medium lowercase">{label}</span>
             <div className="col-span-2">
                 <DynamicInput

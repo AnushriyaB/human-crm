@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { geocodeLocation } from '../lib/geocode';
 
 const FriendContext = createContext();
 
