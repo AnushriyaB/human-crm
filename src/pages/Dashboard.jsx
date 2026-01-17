@@ -31,20 +31,20 @@ export default function Dashboard() {
 
     if (friends.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center">
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#F8F9FA] text-center">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", duration: 0.8 }}
-                    className="space-y-6"
+                    className="space-y-8 bg-white/80 backdrop-blur-sm p-16 rounded-[3rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)] border border-white/60"
                 >
-                    <h2 className="text-2xl font-medium text-text-primary">
+                    <h2 className="text-3xl font-medium text-text-primary leading-tight">
                         your world is empty.<br />start with one.
                     </h2>
                     <Button
                         onClick={() => setIsAdding(true)}
                         size="lg"
-                        className="rounded-full px-8 shadow-lg shadow-brand/20 lowercase"
+                        className="rounded-full px-10 py-6 text-lg shadow-xl shadow-brand/10 hover:shadow-brand/20 transition-all lowercase"
                     >
                         add a friend
                     </Button>
@@ -55,7 +55,7 @@ export default function Dashboard() {
 
     return (
         <>
-            <div className="relative w-full h-screen overflow-hidden bg-[#F8F9FA]">
+            <div className="relative w-full h-screen overflow-hidden bg-white">
                 {/* Settings Toggle */}
                 <button
                     onClick={() => setSettingsOpen(true)}
@@ -64,22 +64,12 @@ export default function Dashboard() {
                     Settings
                 </button>
 
-                {/* Timeline Ribbon (Top) */}
-                <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white to-transparent z-20 flex items-center justify-center pointer-events-none">
-                    <div className="w-full max-w-sm h-[1px] bg-gray-200 relative flex justify-between items-center px-8 pointer-events-auto">
-                        {/* Simulated timeline dots */}
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="w-1.5 h-1.5 rounded-full bg-gray-300 hover:bg-brand cursor-pointer transition-colors" />
-                        ))}
-                    </div>
-                </div>
-
                 {/* Map Background */}
-                <div className="absolute inset-0 flex items-center justify-center p-4 md:p-20 opacity-80 pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center p-4 md:p-20 opacity-100 pointer-events-none">
                     <img
                         src="/src/assets/world-map.png"
                         alt="world map"
-                        className="w-full max-w-6xl object-contain opacity-20"
+                        className="w-full max-w-6xl object-contain opacity-100" // Increased opacity as per request for "white bg" cleaning
                     />
                 </div>
 
@@ -95,14 +85,9 @@ export default function Dashboard() {
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="w-4 h-4 bg-brand rounded-full shadow-[0_0_20px_rgba(59,130,246,0.6)] relative z-10"
+                            className="w-3 h-3 bg-brand rounded-full shadow-sm relative z-10"
                         >
-                            <div className="absolute inset-0 bg-brand rounded-full animate-ping opacity-20" />
                         </motion.div>
-                        {/* Hover Tooltip for Me */}
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-2 py-1 rounded-md whitespace-nowrap pointer-events-none">
-                            my profile
-                        </div>
                     </div>
                 </div>
 
