@@ -45,33 +45,34 @@ export default function Dashboard() {
                     className="max-w-md w-full space-y-8"
                     layout
                 >
-                    <AnimatePresence mode="wait">
-                        {!isOnboarding && (
-                            <motion.div
-                                key="cta"
-                                exit={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                            >
-                                <Button
-                                    onClick={() => setIsOnboarding(true)}
-                                    size="lg"
-                                    className="px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary transition-all"
-                                >
-                                    add your first friend
-                                </Button>
-                            </motion.div>
-                        )}
+                    <motion.div layout className="relative z-10">
+                        <Button
+                            onClick={() => setIsOnboarding(true)}
+                            size="lg"
+                            disabled={isOnboarding}
+                            className={`px-8 py-4 text-lg rounded-full lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary transition-all ${isOnboarding ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/20 hover:text-text-primary'}`}
+                        >
+                            add your first friend
+                        </Button>
+                    </motion.div>
+
+                    <AnimatePresence>
                         {isOnboarding && (
                             <motion.div
                                 key="onboarding"
-                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 50 }}
+                                transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
                                 onLayoutAnimationComplete={() => {
-                                    // Shift focus/view
-                                    window.scrollTo({ top: 100, behavior: 'smooth' });
+                                    // Smooth scroll to ensure visibility
+                                    const element = document.getElementById('onboarding-card');
+                                    if (element) {
+                                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
                                 }}
+                                className="w-full"
+                                id="onboarding-card"
                             >
                                 <AddFriend
                                     onCancel={() => setIsOnboarding(false)}

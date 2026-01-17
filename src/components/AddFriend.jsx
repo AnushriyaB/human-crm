@@ -25,6 +25,8 @@ export default function AddFriend({ onCancel, onComplete }) {
             const code = generatePassphrase();
             setPassphrase(code);
             setStep('share');
+            // Auto-save friend (Quick Add) so they appear on shelf if abandoned
+            onComplete({ name, passphrase: code, navigate: false });
         }
     };
 
