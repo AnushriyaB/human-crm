@@ -67,12 +67,15 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                             ) : (
                                 <div className="space-y-4 text-center">
                                     <div
-                                        className="p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200 cursor-pointer active:scale-95 transition-transform group"
-                                        onClick={() => navigator.clipboard.writeText(passphrase)}
+                                        className="p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(passphrase);
+                                            setTimeout(reset, 200);
+                                        }}
                                     >
                                         <p className="text-xs text-text-secondary mb-1 lowercase">click to copy key</p>
                                         <div className="flex items-center justify-center gap-2">
-                                            <p className="text-lg font-mono text-brand tracking-wider">{passphrase}</p>
+                                            <p className="text-lg font-mono text-brand tracking-wider group-hover:line-through decoration-brand">{passphrase}</p>
                                             <Icons.Link className="w-3 h-3 text-gray-300 group-hover:text-brand transition-colors" />
                                         </div>
                                     </div>

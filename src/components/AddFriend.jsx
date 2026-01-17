@@ -60,13 +60,14 @@ export default function AddFriend({ onCancel, onComplete }) {
                 ) : (
                     <div className="w-full space-y-8 text-center">
                         <div
-                            className="p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform"
+                            className="p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
                             onClick={() => {
                                 navigator.clipboard.writeText(passphrase);
+                                setTimeout(onCancel, 200);
                             }}
                         >
                             <p className="text-sm text-text-secondary mb-3">their unique key (click to copy)</p>
-                            <p className="text-3xl font-mono text-brand select-all tracking-wider break-all">{passphrase}</p>
+                            <p className="text-3xl font-mono text-brand select-all tracking-wider break-all group-hover:line-through decoration-brand">{passphrase}</p>
                         </div>
                         <p className="text-text-secondary text-sm px-4 leading-relaxed">
                             share this with <b className="text-text-primary">{name}</b> so they can join your world.
