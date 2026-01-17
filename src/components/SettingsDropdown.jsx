@@ -17,7 +17,7 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                         animate={{ opacity: 1, y: 0, height: 'auto' }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.2, ease: "linear" }} // Linear animation
-                        className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-48 pointer-events-auto"
+                        className="absolute top-full left-0 mt-2 bg-white rounded-[2px] shadow-xl border border-gray-100 overflow-hidden z-50 w-48 pointer-events-auto"
                     >
                         <div className="p-2">
                             {/* Visual Toggle */}

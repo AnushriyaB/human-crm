@@ -50,7 +50,7 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                         animate={{ opacity: 1, y: 0, height: 'auto' }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.2, ease: "linear" }}
-                        className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 w-80 pointer-events-auto"
+                        className="absolute top-full right-0 mt-2 bg-white rounded-[2px] shadow-xl border border-gray-100 overflow-hidden z-50 w-80 pointer-events-auto"
                     >
                         <div className="p-4">
                             {step === 'name' ? (
@@ -60,7 +60,7 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         autoFocus
-                                        className="text-center bg-gray-50 border-transparent focus:bg-white transition-all rounded-xl text-lg font-medium"
+                                        className="text-center bg-gray-50 border-transparent focus:bg-white transition-all rounded-[2px] text-lg font-medium"
                                     />
                                     <Button type="submit" className="w-full rounded-xl lowercase shadow-sm h-10 text-sm">
                                         generate invite
