@@ -31,7 +31,29 @@ export default function Dashboard() {
             </div>
         );
     }
-
+    if (friends.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", duration: 0.8 }}
+                    className="max-w-md w-full space-y-12"
+                >
+                    <h2 className="text-4xl font-medium text-text-primary leading-tight tracking-tight">
+                        your world is empty.<br />start with one.
+                    </h2>
+                    <Button
+                        onClick={() => setIsOnboarding(true)}
+                        size="lg"
+                        className="rounded-full px-12 py-8 text-xl shadow-2xl shadow-brand/10 hover:shadow-brand/20 transition-all lowercase"
+                    >
+                        add a friend
+                    </Button>
+                </motion.div>
+            </div>
+        );
+    }
 
 
     return (
