@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useFriends } from '../context/FriendContext';
 import { Icons } from '../components/ui/Icons';
+import { CustomSelect } from '../components/ui/CustomSelect';
 import { countries } from 'countries-list';
 
 const STEPS = [
@@ -31,7 +32,7 @@ export default function FriendForm() {
 
     const [formData, setFormData] = useState({
         name: initialName,
-        photo: state?.photo || null,
+        photos: state?.photos || (state?.photo ? [state.photo] : []), // Migration support: if old 'photo' exists, put in array
         birthday: state?.birthday || '',
         anniversary: state?.anniversary || '',
         partner: state?.partner || '',
@@ -93,31 +94,68 @@ export default function FriendForm() {
                 );
             case 'photo':
                 return (
-                    <div className="space-y-6 max-w-md mx-auto pt-10 text-center">
+                    <div className="space-y-6 max-w-lg mx-auto pt-10 text-center">
                         <h2 className="text-2xl font-bold lowercase">show me your face</h2>
-                        <div className="flex flex-col items-center justify-center space-y-6">
-                            <label className="relative w-40 h-40 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-200 transition-colors group overflow-hidden">
-                                {formData.photo ? (
-                                    <img src={formData.photo} alt="preview" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="flex flex-col items-center gap-2 text-text-secondary group-hover:text-brand transition-colors">
-                                        <Icons.Face className="w-8 h-8 opacity-50" />
-                                        <span className="lowercase text-sm">upload</span>
-                                    </div>
+
+                        <div className="flex flex-wrap items-center justify-center gap-4 min-h-[160px]">
+                            <AnimatePresence>
+                                {/* Existing Photos */}
+                                {formData.photos.map((photoUrl, index) => (
+                                    <motion.div
+                                        key={`photo-${index}`}
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0 }}
+                                        className="relative w-32 h-32 rounded-full shadow-lg border-4 border-white bg-gray-100 group"
+                                    >
+                                        <img src={photoUrl} alt="uploaded" className="w-full h-full object-cover rounded-full" />
+
+                                        {/* Delete Button (Overlay) */}
+                                        <button
+                                            onClick={() => {
+                                                const newPhotos = formData.photos.filter((_, i) => i !== index);
+                                                setFormData({ ...formData, photos: newPhotos });
+                                            }}
+                                            className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <span className="text-white font-bold text-xl">✕</span>
+                                        </button>
+                                    </motion.div>
+                                ))}
+
+                                {/* Upload Trigger (Shows if photos < 5) */}
+                                {formData.photos.length < 5 && (
+                                    <motion.label
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: 0.2 }}
+                                        className={`relative w-32 h-32 rounded-full bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center border-2 border-dashed border-gray-200 transition-colors group overflow-hidden ${formData.photos.length > 0 ? 'opacity-80 scale-90' : ''
+                                            }`}
+                                    >
+                                        <div className="flex flex-col items-center gap-2 text-text-secondary group-hover:text-brand transition-colors">
+                                            <Icons.Face className="w-8 h-8 opacity-50" />
+                                            <span className="lowercase text-sm">
+                                                {formData.photos.length === 0 ? 'upload' : 'add more'}
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    const url = URL.createObjectURL(e.target.files[0]);
+                                                    setFormData({ ...formData, photos: [...formData.photos, url] });
+                                                }
+                                            }}
+                                        />
+                                    </motion.label>
                                 )}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            const url = URL.createObjectURL(e.target.files[0]);
-                                            setFormData({ ...formData, photo: url });
-                                        }
-                                    }}
-                                />
-                            </label>
+                            </AnimatePresence>
                         </div>
+                        <p className="text-xs text-text-secondary lowercase">
+                            {formData.photos.length === 0 ? 'start with one.' : 'looks good. add another?'}
+                        </p>
                     </div>
                 );
             case 'contact':
@@ -181,20 +219,12 @@ export default function FriendForm() {
                                     animate={{ opacity: 1, y: 0 }}
                                 >
                                     <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">country</label>
-                                    <select
-                                        name="city" // Keeping name 'city' for backward compat or strictly mapping to 'country' now. 
-                                        // Plan says Rename City/Country. I will use 'city' field to store country for now to avoid major schema refactor, 
-                                        // or better, I should rename the label and keep the field if permissible.
-                                        // Let's use the 'city' state field but treat it as location.
+                                    <CustomSelect
+                                        options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
                                         value={formData.city}
-                                        onChange={handleChange}
-                                        className="flex w-full rounded-xl border border-border bg-white px-4 py-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 appearance-none lowercase"
-                                    >
-                                        <option value="">select a country</option>
-                                        {Object.values(countries).map((c) => (
-                                            <option key={c.name} value={c.name}>{c.name.toLowerCase()}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, city: val })}
+                                        placeholder="select details..."
+                                    />
                                 </motion.div>
                             )}
                         </div>

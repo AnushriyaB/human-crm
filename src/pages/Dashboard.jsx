@@ -116,14 +116,14 @@ export default function Dashboard() {
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             className="absolute group cursor-pointer pointer-events-auto"
-                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
+                            style={{ left: '29.44%', top: '27.38%' }}
                             onClick={() => setSelectedFriend(f)}
                         >
                             <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
                                 {/* Photo overlapping left edge */}
                                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
-                                    {f.photo ? (
-                                        <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
+                                    {(f.photos?.[0] || f.photo) ? (
+                                        <img src={f.photos?.[0] || f.photo} alt={f.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
                                             {f.name.substring(0, 2).toUpperCase()}
@@ -151,8 +151,8 @@ export default function Dashboard() {
                                 >
                                     <div className="flex flex-col items-center gap-2">
                                         <div className="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                                            {f.photo ? (
-                                                <img src={f.photo} alt={f.name} className="w-full h-full object-cover" />
+                                            {(f.photos?.[0] || f.photo) ? (
+                                                <img src={f.photos?.[0] || f.photo} alt={f.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
                                                     {f.name.substring(0, 2).toUpperCase()}

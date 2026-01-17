@@ -42,8 +42,8 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-full bg-gray-200 border-4 border-white shadow-lg overflow-hidden">
-                                        {friend.photo ? (
-                                            <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
+                                        {(friend.photos?.[0] || friend.photo) ? (
+                                            <img src={friend.photos?.[0] || friend.photo} alt={friend.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 font-bold">
                                                 {friend.name?.substring(0, 2)}
@@ -117,15 +117,25 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                         )}
                                     </div>
 
-                                    {/* Photo Cluster Placeholder */}
-                                    <div className="pt-4">
-                                        <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">photos</h3>
-                                        <div className="flex -space-x-4 overflow-x-auto pb-4 pl-2">
-                                            {[1, 2, 3].map((i) => (
-                                                <div key={i} className="w-20 h-20 rounded-full bg-gray-200 border-4 border-white shadow-md flex-shrink-0 hover:scale-110 hover:z-10 transition-transform duration-300" />
-                                            ))}
+                                    {/* Photo Cluster */}
+                                    {(friend.photos?.length > 0 || friend.photo) && (
+                                        <div className="pt-4">
+                                            <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">photos</h3>
+                                            <div className="flex -space-x-4 overflow-x-auto pb-4 pl-2 scrolbar-hide">
+                                                {(friend.photos || [friend.photo]).map((photo, i) => (
+                                                    <motion.div
+                                                        key={i}
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        transition={{ delay: i * 0.1 }}
+                                                        className="w-20 h-20 rounded-full bg-gray-200 border-4 border-white shadow-md flex-shrink-0 hover:scale-110 hover:z-10 transition-transform duration-300 overflow-hidden"
+                                                    >
+                                                        <img src={photo} alt="memory" className="w-full h-full object-cover" />
+                                                    </motion.div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             ) : (
                                 // Audit Trail / Gantt View
