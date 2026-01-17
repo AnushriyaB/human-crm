@@ -43,8 +43,9 @@ export default function Dashboard() {
 
                     <Button
                         onClick={() => setIsOnboarding(true)}
-                        size="lg"
-                        className="rounded-full px-12 py-8 text-xl shadow-2xl shadow-brand/10 hover:shadow-brand/20 transition-all lowercase"
+
+                        variant="ghost"
+                        className="px-12 py-8 text-3xl border border-gray-50 shadow-lg shadow-brand/20 transition-all lowercase"
                     >
                         add your first friend
                     </Button>
