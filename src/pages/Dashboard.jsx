@@ -86,7 +86,7 @@ export default function Dashboard() {
                         <div className="relative">
                             <button
                                 onClick={() => setSettingsOpen(!settingsOpen)}
-                                className={`pointer-events-auto text-text-secondary hover:text-text-primary transition-colors p-2 rounded-full hover:bg-gray-50 ${settingsOpen ? 'bg-gray-50 text-text-primary' : ''}`}
+                                className={`pointer-events-auto rounded-full p-3 transition-all border border-gray-100 shadow-lg ${settingsOpen ? 'bg-gray-50 text-text-primary shadow-inner' : 'bg-white text-text-secondary hover:bg-gray-50'}`}
                             >
                                 <Icons.Settings className="w-6 h-6" />
                             </button>
