@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
+import { Icons } from './ui/Icons';
 
 const WORDS = ['sun', 'moon', 'river', 'sky', 'star', 'tree', 'flower', 'ocean', 'mountain', 'cloud'];
 
@@ -9,6 +10,7 @@ export default function AddFriend({ onCancel, onComplete }) {
     const [step, setStep] = useState('name'); // name | share
     const [name, setName] = useState('');
     const [passphrase, setPassphrase] = useState('');
+    const [copied, setCopied] = useState(false);
 
     const generatePassphrase = () => {
         const w1 = WORDS[Math.floor(Math.random() * WORDS.length)];
@@ -25,45 +27,73 @@ export default function AddFriend({ onCancel, onComplete }) {
             const code = generatePassphrase();
             setPassphrase(code);
             setStep('share');
-            // Auto-save friend (Quick Add) so they appear on shelf if abandoned
+            // Auto-save friend (Quick Add)
             onComplete({ name, passphrase: code, navigate: false });
         }
     };
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(passphrase);
+        setCopied(true);
+        setTimeout(() => {
+            onCancel(); // Close modal/go to dashboard
+        }, 800);
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] w-full max-w-md mx-auto p-6">
+        <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto pt-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-10 rounded-[2.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1)] w-full border border-gray-50"
+                className="w-full"
             >
-                <h2 className="text-2xl font-bold mb-8 text-text-primary text-center">
-                    {step === 'name' ? 'add a friend' : 'share this'}
-                </h2>
-
                 <AnimatePresence mode="wait">
                     {step === 'name' ? (
                         <motion.form
                             key="name"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
                             onSubmit={handleNameSubmit}
-                            className="w-full space-y-6"
+                            className="w-full flex flex-col items-center space-y-8"
                         >
-                            <Input
-                                placeholder="friend's name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                autoFocus
-                                className="text-center text-xl bg-gray-50 border-transparent focus:bg-white transition-all h-14 rounded-2xl"
-                            />
-                            <div className="flex gap-3 pt-2">
-                                <Button type="button" variant="ghost" onClick={onCancel} className="flex-1 rounded-xl lowercase">
+                            <div className="relative w-full max-w-xs">
+                                <input
+                                    placeholder="Friend's name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    autoFocus
+                                    className="w-full text-center text-3xl font-medium bg-transparent border-none outline-none placeholder:text-gray-200 text-text-primary caret-brand caret-[4px]"
+                                    style={{ caretColor: '#3B82F6' }} // Ensure brand color
+                                />
+                                {name === '' && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="absolute inset-0 pointer-events-none flex items-center justify-center"
+                                    >
+                                        {/* Optional: Blinking cursor visual if native isn't thick enough, 
+                                            but native caret-brand is usually good. 
+                                            User asked for "Friend's name" placeholder. */}
+                                    </motion.div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-4">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={onCancel}
+                                    className="rounded-full px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-gray-50 transition-colors lowercase"
+                                >
                                     cancel
                                 </Button>
-                                <Button type="submit" className="flex-1 rounded-xl lowercase shadow-lg shadow-brand/20">
+                                <Button
+                                    type="submit"
+                                    disabled={!name}
+                                    className="rounded-full px-10 py-3 bg-brand text-white shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all lowercase disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
                                     next
                                 </Button>
                             </div>
@@ -71,35 +101,34 @@ export default function AddFriend({ onCancel, onComplete }) {
                     ) : (
                         <motion.div
                             key="share"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            className="w-full space-y-8 text-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.4 }}
+                            className="w-full flex flex-col items-center space-y-8 text-center"
                         >
-                            <div
-                                className="p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(passphrase);
-                                    setTimeout(onCancel, 200);
-                                }}
-                            >
-                                <p className="text-sm text-text-secondary mb-3">their unique key (click to copy)</p>
-                                <p className="text-3xl font-mono text-brand select-all tracking-wider break-all group-hover:line-through decoration-brand">{passphrase}</p>
+                            <div className="space-y-2">
+                                <p className="text-text-secondary text-sm lowercase">invite code for <span className="font-semibold text-text-primary">{name}</span></p>
+                                <div
+                                    className="text-4xl font-mono text-brand font-medium tracking-tight cursor-pointer selection:bg-blue-100"
+                                    onClick={handleCopy}
+                                >
+                                    {passphrase}
+                                </div>
                             </div>
-                            <p className="text-text-secondary text-sm px-4 leading-relaxed">
-                                share this with <b className="text-text-primary">{name}</b> so they can join your world.
-                            </p>
-                            <div className="flex gap-3 flex-col pt-2">
-                                <Button onClick={() => onComplete({ name, passphrase, navigate: true, isEdit: true })} className="w-full rounded-xl py-6 lowercase shadow-lg shadow-brand/20">
-                                    simulate friend filling form
+
+                            <div className="flex flex-col gap-3 w-full max-w-xs">
+                                <Button
+                                    onClick={() => onComplete({ name, passphrase, navigate: true, isEdit: true })}
+                                    className="w-full rounded-full py-4 lowercase bg-white border border-gray-100 shadow-sm text-text-primary hover:bg-gray-50 transition-all"
+                                >
+                                    fill details manually
                                 </Button>
                                 <Button
-                                    variant="ghost"
-                                    onClick={onCancel}
-                                    className="lowercase border border-gray-200 rounded-xl hover:bg-gray-50 bg-white"
+                                    onClick={handleCopy}
+                                    className={`w-full rounded-full py-4 lowercase transition-all ${copied ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/20' : 'bg-brand text-white shadow-brand/20'}`}
                                 >
-                                    close
+                                    {copied ? 'copied! sending you back...' : 'copy passkey'}
                                 </Button>
                             </div>
                         </motion.div>
