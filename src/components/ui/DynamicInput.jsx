@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export function DynamicInput({ value, onChange, placeholder, className = "", ...props }) {
+export function DynamicInput({ value, onChange, placeholder, className = "", inputClassName = "", ...props }) {
     // We use a hidden span to measure the width of the text
     const spanRef = useRef(null);
     const [width, setWidth] = useState(0);
@@ -39,7 +39,7 @@ export function DynamicInput({ value, onChange, placeholder, className = "", ...
                     props.onBlur && props.onBlur(e);
                 }}
                 style={{ width: Math.max(width, 40) }} // Min width
-                className="bg-transparent border-none outline-none p-0 text-text-primary placeholder:text-gray-300 font-inherit transition-all duration-200 caret-brand font-medium"
+                className={`bg-transparent border-none outline-none p-0 text-text-primary placeholder:text-gray-300 font-inherit transition-all duration-200 caret-brand font-medium ${inputClassName}`}
             />
         </div>
     );

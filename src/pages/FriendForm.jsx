@@ -228,11 +228,11 @@ export default function FriendForm() {
                         <div className="space-y-6 text-center">
                             <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">instagram</label>
-                                <DynamicInput name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center" />
+                                <DynamicInput name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center items-center" inputClassName="text-center" />
                             </motion.div>
                             <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">twitter / x</label>
-                                <DynamicInput name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center" />
+                                <DynamicInput name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center items-center" inputClassName="text-center" />
                             </motion.div>
                         </div>
                     </Wrapper>
