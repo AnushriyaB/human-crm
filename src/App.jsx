@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import FriendForm from './pages/FriendForm';
+import Join from './pages/Join';
+import ThankYou from './pages/ThankYou';
 import { FriendProvider } from './context/FriendContext';
 
 function App() {
@@ -13,6 +15,8 @@ function App() {
                     <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/" element={<Navigate to="/login" replace />} />
+                        <Route path="/join" element={<Join />} />
+                        <Route path="/thank-you" element={<ThankYou />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/friend-form" element={<FriendForm />} />
                     </Routes>

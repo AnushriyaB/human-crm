@@ -53,6 +53,7 @@ export default function FriendForm() {
 
     const initialName = state?.name || 'friend';
     const passphrase = state?.passphrase || '';
+    const isGuest = state?.isGuest || false;
     const isEdit = state?.isEdit || false;
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -116,7 +117,12 @@ export default function FriendForm() {
         } else {
             await addFriend({ ...formData, passphrase });
         }
-        navigate('/dashboard');
+
+        if (isGuest) {
+            navigate('/thank-you');
+        } else {
+            navigate('/dashboard');
+        }
     };
 
     const clearStep = () => {
@@ -143,7 +149,7 @@ export default function FriendForm() {
                         <h1 className="text-4xl font-bold text-text-primary">hello, {initialName}.</h1>
                         <p className="text-xl text-text-secondary max-w-md">welcome to my inner circle. help me keep you close by filling out your card.</p>
                         <div className="pt-8">
-                            <Button onClick={next} size="lg" className="px-12 py-6 text-lg rounded-full lowercase shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all bg-brand text-white border-none">start</Button>
+                            <Button onClick={next} size="lg" className="px-12 py-6 text-lg rounded-[2px] lowercase shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all bg-brand text-white border-none">start</Button>
                         </div>
                     </div>
                 );
@@ -256,19 +262,20 @@ export default function FriendForm() {
             case 'vibe':
                 return (
                     <Wrapper>
-                        <div className="space-y-8">
-                            <motion.div variants={itemVariants}>
+                        <div className="space-y-8 text-center">
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">how did we meet?</label>
-                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-xl w-full" />
+                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-xl w-full text-center items-center" inputClassName="text-center" />
                             </motion.div>
-                            <motion.div variants={itemVariants}>
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">favorite memory</label>
-                                <textarea
+                                <DynamicInput
                                     name="memory"
                                     value={formData.memory}
                                     onChange={handleChange}
-                                    className="flex w-full bg-transparent border-none px-0 py-2 text-text-primary placeholder:text-gray-300 focus:outline-none min-h-[80px] resize-none transition-colors text-lg caret-brand"
                                     placeholder="..."
+                                    className="text-xl w-full text-center items-center"
+                                    inputClassName="text-center"
                                 />
                             </motion.div>
                         </div>
@@ -277,19 +284,20 @@ export default function FriendForm() {
             case 'extra':
                 return (
                     <Wrapper>
-                        <div className="space-y-8">
-                            <motion.div variants={itemVariants}>
+                        <div className="space-y-8 text-center">
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">gift ideas</label>
-                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-xl w-full" />
+                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-xl w-full text-center items-center" inputClassName="text-center" />
                             </motion.div>
-                            <motion.div variants={itemVariants}>
+                            <motion.div variants={itemVariants} className="flex flex-col items-center">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">notes</label>
-                                <textarea
+                                <DynamicInput
                                     name="notes"
                                     value={formData.notes}
                                     onChange={handleChange}
-                                    className="flex w-full bg-transparent border-none px-0 py-2 text-text-primary placeholder:text-gray-300 focus:outline-none min-h-[80px] resize-none transition-colors text-lg caret-brand"
                                     placeholder="..."
+                                    className="text-xl w-full text-center items-center"
+                                    inputClassName="text-center"
                                 />
                             </motion.div>
                         </div>
@@ -308,13 +316,12 @@ export default function FriendForm() {
                 className="w-full max-w-4xl h-[80vh] flex bg-white rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100"
             >
                 {/* Sidebar Navigation */}
-                <div className="w-[400px] border-r border-gray-100 p-10 flex flex-col hidden md:flex bg-gray-50/30">
+                <div className="w-[300px] border-r border-gray-100 p-10 flex flex-col hidden md:flex bg-gray-50/30">
                     <div className="mb-12 group cursor-copy" onClick={() => navigator.clipboard.writeText(passphrase)}>
                         {passphrase && (
                             <>
                                 <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 group-hover:text-brand transition-colors">Passkey</div>
                                 <div className="font-mono text-xl text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>{passphrase}</div>
-                                <p className="text-xs text-text-secondary mt-2 leading-relaxed">share this key with them so they can join your circle.</p>
                             </>
                         )}
                     </div>
@@ -330,27 +337,27 @@ export default function FriendForm() {
                                 <button
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5' : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-[2px] text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5' : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
+                                    {isPast && <div className="text-brand text-xs">✓</div>}
                                     {step.title}
-                                    {isPast && <div className="ml-auto text-brand text-xs">✓</div>}
                                 </button>
                             )
                         })}
                     </nav>
 
                     {/* Archive Button for Edit Mode */}
-                    {isEdit && (
+                    {isEdit && !isGuest && (
                         <div className="pt-4 mt-4 border-t border-gray-100">
                             <button
-                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-xl w-full transition-colors lowercase hover:bg-red-50"
+                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-[2px] w-full transition-colors lowercase hover:bg-red-50"
                                 onClick={() => {
                                     navigate('/dashboard');
                                 }}
                             >
-                                <span className="text-lg">🗑</span>
+                                <Icons.Trash className="w-4 h-4" />
                                 archive friend
                             </button>
                         </div>
@@ -360,14 +367,16 @@ export default function FriendForm() {
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col relative text-left">
                     {/* Integrated Close Button (Top Right) */}
-                    <div className="absolute top-6 right-6 z-50">
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[2px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
-                        >
-                            <span className="lowercase">close</span>
-                        </button>
-                    </div>
+                    {!isGuest && (
+                        <div className="absolute top-6 right-6 z-50">
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[2px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
+                            >
+                                <span className="lowercase">close</span>
+                            </button>
+                        </div>
+                    )}
 
                     {/* Progress Bar (Mobile) */}
                     <div className="h-1 bg-gray-100 w-full md:hidden">
@@ -392,15 +401,15 @@ export default function FriendForm() {
                     {/* Footer Actions */}
                     {currentStepIndex > 0 && (
                         <div className="p-8 flex justify-between items-center sticky bottom-0 z-20 bg-white/80 backdrop-blur-sm">
-                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-sm hover:text-red-400 lowercase hover:bg-red-50 rounded-lg px-4">
+                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-sm hover:text-red-400 lowercase hover:bg-red-50 rounded-[2px] px-4">
                                 clear
                             </Button>
 
                             <div className="flex gap-4">
-                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-xl hover:bg-gray-50 text-sm">
+                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-[2px] hover:bg-gray-50 text-sm">
                                     back
                                 </Button>
-                                <Button onClick={next} className="min-w-[120px] lowercase rounded-xl shadow-lg shadow-brand/20 text-sm">
+                                <Button onClick={next} className="min-w-[120px] lowercase rounded-[2px] shadow-lg shadow-brand/20 text-sm">
                                     {currentStepIndex === STEPS.length - 1 ? 'finish' : 'next'}
                                 </Button>
                             </div>

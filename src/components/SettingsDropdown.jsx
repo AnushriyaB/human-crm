@@ -21,9 +21,9 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                     >
                         <div className="p-2">
                             {/* Visual Toggle */}
-                            <div className="flex bg-gray-50 rounded-xl p-1 relative">
+                            <div className="flex bg-gray-50 rounded-[2px] p-1 relative">
                                 <motion.div
-                                    className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm"
+                                    className="absolute top-1 bottom-1 bg-white rounded-[2px] shadow-sm"
                                     initial={false}
                                     animate={{
                                         left: frequency === 'weekly' ? '4px' : '50%',

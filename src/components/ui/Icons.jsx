@@ -12,7 +12,9 @@ import {
     User,
     Link,
     Settings,
-    UserPlus
+    UserPlus,
+    Trash2,
+    Plus
 } from 'lucide-react';
 
 export const Icons = {
@@ -33,4 +35,6 @@ export const Icons = {
     Link: ({ className }) => <Link className={className} strokeWidth={1.5} />,
     Settings: ({ className }) => <Settings className={className} strokeWidth={1.5} />,
     UserPlus: ({ className }) => <UserPlus className={className} strokeWidth={1.5} />,
+    Trash: ({ className }) => <Trash2 className={className} strokeWidth={1.5} />,
+    Plus: ({ className }) => <Plus className={className} strokeWidth={1.5} />,
 };

@@ -4,15 +4,16 @@ import { Button } from '../components/ui/Button';
 import { Icons } from '../components/ui/Icons';
 import { useFriends } from '../context/FriendContext';
 import AddFriendDropdown from '../components/AddFriendDropdown';
-import AddFriend from '../components/AddFriend';
 import SideSheet from '../components/ui/SideSheet';
 import SettingsDropdown from '../components/SettingsDropdown';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-    const { friends, addFriend } = useFriends();
+    const context = useFriends() || {};
+    const friends = Array.isArray(context.friends) ? context.friends : [];
+    const addFriend = context.addFriend || (() => { });
+
     const [isAdding, setIsAdding] = useState(false);
-    const [isOnboarding, setIsOnboarding] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const navigate = useNavigate();
@@ -35,207 +36,166 @@ export default function Dashboard() {
         }
     };
 
-    // Fix: Keep empty state view active if we are currently onboarding, even if a friend was added (Quick Add)
-    if (friends.length === 0 || isOnboarding) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-center transition-all duration-500">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", duration: 0.8 }}
-                    className="max-w-md w-full space-y-8"
-                    layout
-                >
-                    <motion.div layout className="relative z-10">
-                        <Button
-                            onClick={() => setIsOnboarding(true)}
-                            size="lg"
-                            disabled={isOnboarding}
-                            className={`px-8 py-4 text-lg rounded-[2px] lowercase bg-gray-50 border border-gray-100 shadow-inner text-text-secondary transition-all ${isOnboarding ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/20 hover:text-text-primary'}`}
-                        >
-                            add your first friend
-                        </Button>
-                    </motion.div>
-
-                    <AnimatePresence>
-                        {isOnboarding && (
-                            <motion.div
-                                key="onboarding"
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 50 }}
-                                transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
-                                onLayoutAnimationComplete={() => {
-                                    // Smooth scroll to ensure visibility
-                                    const element = document.getElementById('onboarding-card');
-                                    if (element) {
-                                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }
-                                }}
-                                className="w-full"
-                                id="onboarding-card"
-                            >
-                                <AddFriend
-                                    onCancel={() => setIsOnboarding(false)}
-                                    onComplete={handleFriendAdded}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-            </div>
-        );
-    }
-
+    const [showAbout, setShowAbout] = useState(false);
 
     return (
-        <>
-            ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-5'
-            : 'bg-gray-50 border border-gray-100 shadow-inner text-text-secondary hover:bg-blue-50/20 hover:text-text-primary'
-                                    }`}
-                            >
-            {settingsOpen ? <span className="text-sm font-medium lowercase">close</span> : <Icons.Settings className="w-6 h-6" />}
-        </button >
-            <SettingsDropdown isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-                        </div >
+        <div className="relative w-full h-screen overflow-hidden bg-gray-50">
+            {/* World Map Background */}
+            <div
+                className="absolute inset-0 z-0 opacity-20"
+                style={{
+                    backgroundImage: `url('/src/assets/world-map.png')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            />
 
-        {/* Add Friend Button (Right) */ }
-        < div className = "relative pointer-events-auto" >
-                            <button
-                                onClick={() => setIsAdding(!isAdding)}
-                                className={`rounded-[2px] p-2 transition-all duration-300 ${isAdding
-                                    ? 'bg-blue-50/30 text-brand shadow-[inset_0_0_10px_rgba(59,130,246,0.1)] border border-blue-100/30 px-5'
-                                    : 'bg-gray-50 border border-gray-100 shadow-inner text-text-primary hover:bg-blue-50/20'
-                                    }`}
-                            >
-                                {isAdding ? <span className="text-sm font-medium lowercase">close</span> : <Icons.UserPlus className="w-6 h-6" />}
-                            </button>
-                            <AddFriendDropdown
-                                isOpen={isAdding}
-                                onClose={() => setIsAdding(false)}
-                                onComplete={handleFriendAdded}
-                            />
-                        </div >
-                    </div >
-
-        {/* Top Navigation - Title (Centered & Stable) */ }
-        < div className = "absolute top-0 left-0 right-0 p-6 flex justify-center z-30 pointer-events-none h-fit" >
-            <div className="pointer-events-auto relative flex flex-col items-center">
-                <h1
-                    onClick={() => setShowAbout(!showAbout)}
-                    className="text-sm font-medium text-text-primary lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none"
-                >
-                    book of humans
-                </h1>
-
-                <AnimatePresence>
-                    {showAbout && (
-                        <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowAbout(false)} />
-                            <motion.div
-                                initial={{ opacity: 0, y: -5, height: 0 }}
-                                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                                exit={{ opacity: 0, y: -5, height: 0 }}
-                                className="absolute top-full mt-4 bg-white border border-gray-100 shadow-xl rounded-[2px] p-5 w-64 text-center z-50 overflow-hidden"
-                            >
-                                <p className="text-xs text-text-secondary leading-relaxed mb-3">
-                                    a personal crm to help you stay close to the people who matter most. built with love.
-                                </p>
-                                <a
-                                    href="https://x.com/Anushriya_UX"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-xs font-medium text-brand hover:underline block mb-4"
-                                >
-                                    address: 'My Coordinates',
-                                    notes: 'This is my world.',
-                                    photo: null
-            })}>
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="w-3 h-3 bg-brand rounded-full shadow-sm relative z-10"
-                                    >
-                                    </motion.div>
-                                </div>
-                            </div >
-
-                            {/* Friend Cards Layer (Map) */}
-                            < div className="absolute inset-0 z-20 pointer-events-none" >
-                                {
-                                    friends.filter(f => f.x !== null).map((f) => (
-                                        <motion.div
-                                            key={f.id}
-                                            layoutId={`card-${f.id}`}
-                                            initial={{ scale: 0, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                            className="absolute group cursor-pointer pointer-events-auto"
-                                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
-                                            onClick={() => setSelectedFriend(f)}
-                                        >
-                                            <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
-                                                {/* Photo overlapping left edge */}
-                                                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
-                                                    {(f.photos?.[0] || f.photo) ? (
-                                                        <img src={f.photos?.[0] || f.photo} alt={f.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                                                            {f.name.substring(0, 2).toUpperCase()}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="font-medium text-sm text-text-primary whitespace-nowrap lowercase">{f.name}</span>
-                                            </div>
-                                        </motion.div>
-                                    ))
-                                }
-                            </div >
-
-
-
-                            {/* The Shelf (Left Side) */}
-                            {
-                                friends.some(f => f.x === null) && (
-                                    <div className="absolute top-32 left-8 w-fit z-20 flex flex-col gap-4 pointer-events-none">
-                                        <h3 className="text-xs font-medium text-text-gray pl-1 lowercase tracking-wide opacity-50">add location</h3>
-                                        <div className="flex flex-col gap-3 pointer-events-auto">
-                                            {friends.filter(f => f.x === null).map((f) => (
-                                                <motion.div
-                                                    key={f.id}
-                                                    layoutId={`card-${f.id}`}
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    onClick={() => setSelectedFriend(f)}
-                                                    className="relative group cursor-pointer"
-                                                >
-                                                    <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-white transition-all w-full">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-100 border border-white shadow-inner overflow-hidden flex-shrink-0">
-                                                            {(f.photos?.[0] || f.photo) ? (
-                                                                <img src={f.photos?.[0] || f.photo} alt={f.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400">
-                                                                    {f.name.substring(0, 2).toUpperCase()}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary lowercase truncate">{f.name}</span>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )
-                            }
-                        </div >
-
-                    <SideSheet
-                        isOpen={!!selectedFriend}
-                        onClose={() => setSelectedFriend(null)}
-                        friend={selectedFriend}
+            {/* Header */}
+            <div className="relative z-30 flex items-center justify-between px-8 py-6 pointer-events-none">
+                {/* Left: Settings */}
+                <div className="pointer-events-auto relative">
+                    <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(!settingsOpen)} className="rounded-full w-10 h-10 hover:bg-gray-50 text-text-secondary transition-colors">
+                        <Icons.Settings className="w-5 h-5" strokeWidth={1.5} />
+                    </Button>
+                    <SettingsDropdown
+                        isOpen={settingsOpen}
+                        onClose={() => setSettingsOpen(false)}
                     />
+                </div>
+
+                {/* Center: Title */}
+                <div className="pointer-events-auto">
+                    <h1 className="text-sm font-medium text-text-primary lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none">
+                        book of humans
+                    </h1>
+                </div>
+
+                {/* Right: Add Friend */}
+                <div className="pointer-events-auto relative">
+                    <Button variant="ghost" size="icon" onClick={() => setIsAdding(!isAdding)} className="rounded-full w-10 h-10 hover:bg-gray-50 text-text-secondary transition-colors">
+                        <Icons.Plus className="w-5 h-5" strokeWidth={1.5} />
+                    </Button>
+                    <AddFriendDropdown
+                        isOpen={isAdding}
+                        onClose={() => setIsAdding(false)}
+                        onComplete={(data) => {
+                            handleFriendAdded(data);
+                            setIsAdding(false);
+                        }}
+                    />
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {showAbout && (
+                    <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowAbout(false)} />
+                        <motion.div
+                            initial={{ opacity: 0, y: -5, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: -5, height: 0 }}
+                            className="absolute top-full mt-4 bg-white border border-gray-100 shadow-xl rounded-[2px] p-5 w-64 text-center z-50 overflow-hidden"
+                        >
+                            <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                                a personal crm to help you stay close to the people who matter most. built with love.
+                            </p>
+                            <a
+                                href="https://x.com/Anushriya_UX"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs font-medium text-brand hover:underline block mb-4"
+                            >
+                                @Anushriya_UX
+                            </a>
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="w-3 h-3 bg-brand rounded-full shadow-sm relative z-10"
+                            >
+                            </motion.div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Friend Cards Layer (Map) */}
+            <div className="absolute inset-0 z-20 pointer-events-none">
+                {
+                    friends.filter(f => f && typeof f.x === 'number' && typeof f.y === 'number').map((f) => (
+                        <motion.div
+                            key={f.id}
+                            layoutId={`card-${f.id}`}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="absolute group cursor-pointer pointer-events-auto"
+                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
+                            onClick={() => setSelectedFriend(f)}
+                        >
+                            <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
+                                {/* Photo overlapping left edge */}
+                                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
+                                    {(f.photos && f.photos.length > 0) || f.photo ? (
+                                        <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                                            {(f.name || '?').substring(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="font-medium text-sm text-text-primary whitespace-nowrap lowercase">{f.name || 'friend'}</span>
+                            </div>
+                        </motion.div>
+                    ))
+                }
+            </div>
 
 
-                </>
-                );
+
+            {/* The Shelf (Left Side) */}
+            {
+                friends.some(f => f && (f.x === null || typeof f.x !== 'number')) && (
+                    <div className="absolute top-32 left-8 w-fit z-20 flex flex-col gap-4 pointer-events-none">
+                        <h3 className="text-xs font-medium text-text-gray pl-1 lowercase tracking-wide opacity-50">add location</h3>
+                        <div className="flex flex-col gap-3 pointer-events-auto">
+                            {friends.filter(f => f && (f.x === null || typeof f.x !== 'number')).map((f) => (
+                                <motion.div
+                                    key={f.id}
+                                    layoutId={`card-${f.id}`}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    onClick={() => setSelectedFriend(f)}
+                                    className="relative group cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-[2px] p-3 shadow-sm hover:shadow-md hover:bg-white transition-all w-full">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 border border-white shadow-inner overflow-hidden flex-shrink-0">
+                                            {(f.photos && f.photos.length > 0) || f.photo ? (
+                                                <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400">
+                                                    {(f.name || '?').substring(0, 2).toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary lowercase truncate">{f.name || 'friend'}</span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                )
+            }
+
+
+
+            <SideSheet
+                isOpen={!!selectedFriend}
+                onClose={() => setSelectedFriend(null)}
+                friend={selectedFriend}
+            />
+
+
+        </div>
+    );
 }

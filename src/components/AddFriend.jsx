@@ -85,14 +85,14 @@ export default function AddFriend({ onCancel, onComplete }) {
                                     type="button"
                                     variant="ghost"
                                     onClick={onCancel}
-                                    className="rounded-full px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-gray-50 transition-colors lowercase"
+                                    className="rounded-[2px] px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-gray-50 transition-colors lowercase"
                                 >
                                     cancel
                                 </Button>
                                 <Button
                                     type="submit"
                                     disabled={!name}
-                                    className="rounded-full px-10 py-3 bg-brand text-white shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all lowercase disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="rounded-[2px] px-10 py-3 bg-brand text-white shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all lowercase disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     next
                                 </Button>
@@ -120,16 +120,22 @@ export default function AddFriend({ onCancel, onComplete }) {
                             <div className="flex flex-col gap-3 w-full max-w-xs">
                                 <Button
                                     onClick={() => onComplete({ name, passphrase, navigate: true, isEdit: true })}
-                                    className="w-full rounded-full py-4 lowercase bg-white border border-gray-100 shadow-sm text-text-primary hover:bg-gray-50 transition-all"
+                                    className="w-full rounded-[2px] py-4 lowercase bg-white border border-gray-100 shadow-sm text-text-primary hover:bg-gray-50 transition-all"
                                 >
                                     fill details manually
                                 </Button>
                                 <Button
                                     onClick={handleCopy}
-                                    className={`w-full rounded-full py-4 lowercase transition-all ${copied ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/20' : 'bg-brand text-white shadow-brand/20'}`}
+                                    className={`w-full rounded-[2px] py-4 lowercase transition-all ${copied ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/20' : 'bg-brand text-white shadow-brand/20'}`}
                                 >
                                     {copied ? 'copied! sending you back...' : 'copy passkey'}
                                 </Button>
+                                <button
+                                    onClick={onCancel}
+                                    className="text-sm text-text-secondary hover:text-text-primary transition-colors lowercase pt-2"
+                                >
+                                    done, take me to dashboard
+                                </button>
                             </div>
                         </motion.div>
                     )}

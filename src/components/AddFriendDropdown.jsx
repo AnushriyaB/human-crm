@@ -62,14 +62,14 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                                         autoFocus
                                         className="text-center bg-gray-50 border-transparent focus:bg-white transition-all rounded-[2px] text-lg font-medium"
                                     />
-                                    <Button type="submit" className="w-full rounded-xl lowercase shadow-sm h-10 text-sm">
+                                    <Button type="submit" className="w-full rounded-[2px] lowercase shadow-sm h-10 text-sm">
                                         generate invite
                                     </Button>
                                 </form>
                             ) : (
                                 <div className="space-y-4 text-center">
                                     <div
-                                        className="p-3 bg-gray-50 rounded-xl border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
+                                        className="p-3 bg-gray-50 rounded-[2px] border border-dashed border-gray-200 cursor-copy active:scale-95 transition-transform group hover:border-brand/30"
                                         onClick={() => {
                                             navigator.clipboard.writeText(passphrase);
                                             setTimeout(reset, 200);
@@ -148,7 +148,7 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                                                 onComplete({ name, passphrase, navigate: true, isEdit: true });
                                                 reset();
                                             }}
-                                            className="w-full rounded-xl py-2 h-auto text-sm lowercase"
+                                            className="w-full rounded-[2px] py-2 h-auto text-sm lowercase"
                                         >
                                             fill it out myself
                                         </Button>

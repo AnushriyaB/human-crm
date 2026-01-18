@@ -33,12 +33,12 @@ export default function SettingsModal({ isOpen, onClose }) {
                         <div className="space-y-4">
                             <div>
                                 <label className="text-sm font-medium text-text-secondary block mb-3 lowercase">digest frequency</label>
-                                <div className="grid grid-cols-2 gap-2 bg-gray-50 p-1 rounded-xl">
+                                <div className="grid grid-cols-2 gap-2 bg-gray-50 p-1 rounded-[2px]">
                                     {['daily', 'weekly'].map((freq) => (
                                         <button
                                             key={freq}
                                             onClick={() => setDigestFrequency(freq)}
-                                            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${digestFrequency === freq
+                                            className={`py-2 px-4 rounded-[2px] text-sm font-medium transition-all ${digestFrequency === freq
                                                 ? 'bg-white text-brand shadow-sm lowercase'
                                                 : 'text-text-secondary hover:text-text-primary lowercase'
                                                 }`}
