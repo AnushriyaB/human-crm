@@ -1,35 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './Button';
 import { Icons } from './Icons';
 import { useFriends } from '../../context/FriendContext';
-import { DynamicInput } from './DynamicInput';
+import BentoGrid from '../bento/Grid';
+import CoreIdentityCard from '../bento/modules/CoreIdentityCard';
+import FinancialCard from '../bento/modules/FinancialCard';
+import DateCard from '../bento/modules/DateCard';
+import SocialCard from '../bento/modules/SocialCard';
+import FamilyCard from '../bento/modules/FamilyCard';
+import WorkCard from '../bento/modules/WorkCard';
+import PreferencesCard from '../bento/modules/PreferencesCard';
+import MemoriesCard from '../bento/modules/MemoriesCard';
+import BentoCard from '../bento/Card';
+import ModuleLibrary from '../bento/ModuleLibrary';
+import { Plus, Check } from 'lucide-react';
 
 export default function SideSheet({ isOpen, onClose, friend }) {
     const navigate = useNavigate();
     const { updateFriend } = useFriends();
-    const [draft, setDraft] = useState(null);
 
-    // Sync draft with friend prop when opened or friend changes (but not while typing?)
-    // Actually, if we type, we don't want external updates to overwrite immediately unless it's a new friend selection.
-    // We'll use a useEffect that resets draft when `friend.id` changes.
-    useEffect(() => {
-        setDraft(friend);
-    }, [friend?.id]); // Only reset if ID changes to avoid overwriting while typing if friend object updates reference
-
-    const handleDraftChange = (field, value) => {
-        if (!draft) return;
-        setDraft(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSave = (field) => {
-        if (!draft || !friend) return;
-        // Only save if changed
-        if (draft[field] !== friend[field]) {
-            updateFriend(friend.id, { [field]: draft[field] });
-        }
-    };
+    // Edit mode state
+    const [isEditing, setIsEditing] = useState(false);
 
     // Prevent body scroll when open
     useEffect(() => {
@@ -40,9 +33,46 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         }
     }, [isOpen]);
 
-    const [view, setView] = React.useState('details'); // details | audit
+    const [view, setView] = useState('details'); // details | audit
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
-    if (!isOpen || !draft) return null;
+    // Reset edit mode when sheet closes or friend changes
+    useEffect(() => {
+        setIsEditing(false);
+    }, [isOpen, friend?.id]);
+
+    if (!isOpen || !friend) return null;
+
+    // Helper to find specific module type
+    const getModule = (type) => friend.modules?.find(m => m.type === type) || { type, data: {} };
+    // Helper to check existence for conditional rendering
+    const hasModule = (type) => friend.modules?.some(m => m.type === type);
+
+    const handleAddModule = (type) => {
+        const newModule = { type, data: {} };
+        const updatedModules = [...(friend.modules || []), newModule];
+        updateFriend(friend.id, { modules: updatedModules });
+        setIsLibraryOpen(false);
+    };
+
+    const handleModuleUpdate = (type, newData) => {
+        const updatedModules = (friend.modules || []).map(m => {
+            if (m.type === type) {
+                return { ...m, data: newData };
+            }
+            return m;
+        });
+        updateFriend(friend.id, { modules: updatedModules });
+    };
+
+    const handleToggleEdit = () => {
+        setIsEditing(!isEditing);
+    };
+
+    const handleSaveEdit = () => {
+        setIsEditing(false);
+        // Data is already saved via handleModuleUpdate
+    };
 
     return (
         <AnimatePresence>
@@ -62,106 +92,170 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
-                        transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto border-l border-border"
+                        transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                        className="fixed right-0 top-0 bottom-0 w-full max-w-2xl shadow-2xl z-50 overflow-y-auto border-l"
+                        style={{
+                            backgroundColor: 'var(--color-card-bg)',
+                            borderColor: 'var(--color-border)'
+                        }}
                     >
                         <div className="p-6 md:p-8 space-y-8">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-gray-200 border-4 border-white shadow-lg overflow-hidden">
-                                        {(draft.photos?.[0] || draft.photo) ? (
-                                            <img src={draft.photos?.[0] || draft.photo} alt={draft.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 font-bold">
-                                                {draft.name?.substring(0, 2)}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        {/* Inline Edit Name */}
-                                        <DynamicInput
-                                            value={draft.name}
-                                            onChange={(e) => handleDraftChange('name', e.target.value)}
-                                            onBlur={() => handleSave('name')}
-                                            className="text-2xl font-bold text-text-primary leading-tight lowercase"
-                                            placeholder="name"
-                                        />
-
-                                        {/* Inline Edit Location */}
-                                        <DynamicInput
-                                            value={draft.location || draft.address || draft.city || ''}
-                                            onChange={(e) => handleDraftChange('address', e.target.value)}
-                                            onBlur={() => handleSave('address')}
-                                            className="text-sm text-text-secondary lowercase"
-                                            placeholder="add location..."
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
+                            {/* Header Actions */}
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">Profile</h4>
+                                <div className="flex items-center p-1 rounded-full border shadow-sm gap-1"
+                                    style={{
+                                        backgroundColor: 'var(--color-button-bg)',
+                                        borderColor: 'var(--color-border)'
+                                    }}
+                                >
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => setView(view === 'details' ? 'audit' : 'details')}
-                                        className="rounded-full text-text-secondary hover:text-brand"
+                                        className="rounded-full w-9 h-9 hover:bg-black/5"
                                         title="Audit Trail"
+                                        style={{ color: 'var(--color-text-secondary)' }}
                                     >
                                         {view === 'details' ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M8 12h4" /><path d="M16 8h4" /><path d="M12 16h4" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M8 12h4" /><path d="M16 8h4" /><path d="M12 16h4" /></svg>
                                         ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                         )}
                                     </Button>
-                                    <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+
+                                    <div className="w-px h-4 bg-gray-200" />
+
+                                    {/* Edit/Save Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={isEditing ? handleSaveEdit : handleToggleEdit}
+                                        className={`rounded-full w-9 h-9 ${isEditing ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'hover:bg-black/5'}`}
+                                        title={isEditing ? "Save" : "Edit"}
+                                        style={{ color: isEditing ? undefined : 'var(--color-text-secondary)' }}
+                                    >
+                                        {isEditing ? (
+                                            <Check className="w-4 h-4" />
+                                        ) : (
+                                            <Icons.Pencil className="w-4 h-4" />
+                                        )}
+                                    </Button>
+
+                                    <div className="w-px h-4 bg-gray-200" />
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={onClose}
+                                        className="rounded-full w-9 h-9 hover:bg-red-50 hover:text-red-500"
+                                        style={{ color: 'var(--color-text-secondary)' }}
+                                    >
                                         ✕
                                     </Button>
                                 </div>
                             </div>
 
+                            {/* Edit Mode Banner */}
+                            {isEditing && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800 flex items-center justify-between"
+                                >
+                                    <span>✏️ Editing mode — click tiles to add data</span>
+                                    <button
+                                        onClick={handleSaveEdit}
+                                        className="font-medium hover:underline"
+                                    >
+                                        Done
+                                    </button>
+                                </motion.div>
+                            )}
+
                             {view === 'details' ? (
-                                <div className="space-y-8">
-                                    <div className="space-y-6">
-                                        {/* Details Section - Editable */}
-                                        <div className="space-y-4">
-                                            <DetailRow label="birthday" value={draft.birthday} onChange={(val) => handleDraftChange('birthday', val)} onBlur={() => handleSave('birthday')} />
-                                            <DetailRow label="anniversary" value={draft.anniversary} onChange={(val) => handleDraftChange('anniversary', val)} onBlur={() => handleSave('anniversary')} />
-                                            <DetailRow label="phone" value={draft.phone} onChange={(val) => handleDraftChange('phone', val)} onBlur={() => handleSave('phone')} />
-                                            <DetailRow label="address" value={draft.address} onChange={(val) => handleDraftChange('address', val)} onBlur={() => handleSave('address')} />
-                                            <DetailRow label="partner" value={draft.partner} onChange={(val) => handleDraftChange('partner', val)} onBlur={() => handleSave('partner')} />
-                                        </div>
+                                <>
+                                    <BentoGrid>
+                                        {/* 1. Core Identity (Always First) */}
+                                        <CoreIdentityCard
+                                            friend={friend}
+                                            isEditing={isEditing}
+                                            onUpdate={(data) => updateFriend(friend.id, data)}
+                                        />
 
-                                        {/* Notes Section - Editable */}
-                                        <div className="p-4 bg-gray-50 rounded-xl space-y-2 group hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
-                                            <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider">notes</h3>
-                                            <textarea
-                                                value={draft.notes || ''}
-                                                onChange={(e) => handleDraftChange('notes', e.target.value)}
-                                                onBlur={() => handleSave('notes')}
-                                                placeholder="add notes..."
-                                                className="w-full bg-transparent border-none focus:outline-none text-text-primary whitespace-pre-wrap resize-none caret-brand"
+                                        {/* 2. Dynamic Modules */}
+                                        {hasModule('family') && (
+                                            <FamilyCard
+                                                module={getModule('family')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('family', data)}
                                             />
-                                        </div>
-                                    </div>
+                                        )}
+                                        {hasModule('dates') && (
+                                            <DateCard
+                                                module={getModule('dates')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('dates', data)}
+                                            />
+                                        )}
+                                        {hasModule('work') && (
+                                            <WorkCard
+                                                module={getModule('work')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('work', data)}
+                                            />
+                                        )}
+                                        {hasModule('preferences') && (
+                                            <PreferencesCard
+                                                module={getModule('preferences')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('preferences', data)}
+                                            />
+                                        )}
+                                        {hasModule('memories') && (
+                                            <MemoriesCard
+                                                module={getModule('memories')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('memories', data)}
+                                            />
+                                        )}
+                                        {hasModule('social') && (
+                                            <SocialCard
+                                                module={getModule('social')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('social', data)}
+                                            />
+                                        )}
+                                        {hasModule('financial') && (
+                                            <FinancialCard
+                                                module={getModule('financial')}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => handleModuleUpdate('financial', data)}
+                                            />
+                                        )}
 
-                                    {/* Photo Cluster */}
-                                    {(draft.photos?.length > 0 || draft.photo) && (
-                                        <div className="pt-4">
-                                            <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">photos</h3>
-                                            <div className="flex -space-x-4 overflow-x-auto pb-4 pl-2 scrolbar-hide">
-                                                {(draft.photos || [draft.photo]).map((photo, i) => (
-                                                    <motion.div
-                                                        key={i}
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        transition={{ delay: i * 0.1 }}
-                                                        className="w-20 h-20 rounded-full bg-gray-200 border-4 border-white shadow-md flex-shrink-0 hover:scale-110 hover:z-10 transition-transform duration-300 overflow-hidden"
-                                                    >
-                                                        <img src={photo} alt="memory" className="w-full h-full object-cover" />
-                                                    </motion.div>
-                                                ))}
+                                        {/* 3. Add Module Placeholder */}
+                                        <BentoCard
+                                            className="flex items-center justify-center min-h-[160px] border-dashed border-2 bg-transparent hover:bg-[var(--color-bg-secondary)] cursor-pointer group"
+                                            onClick={() => setIsLibraryOpen(true)}
+                                        >
+                                            <div className="text-center space-y-2 group-hover:scale-105 transition-transform">
+                                                <div className="mx-auto w-10 h-10 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center group-hover:bg-[var(--color-highlight)] group-hover:text-white transition-colors">
+                                                    <Plus size={20} />
+                                                </div>
+                                                <p className="text-xs font-semibold uppercase tracking-wider opacity-50">Add Tile</p>
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
+                                        </BentoCard>
+                                    </BentoGrid>
+
+                                    <ModuleLibrary
+                                        isOpen={isLibraryOpen}
+                                        onClose={() => setIsLibraryOpen(false)}
+                                        onSelect={handleAddModule}
+                                        existingModules={friend.modules || []}
+                                    />
+                                </>
                             ) : (
                                 // Audit Trail / Gantt View
                                 <div className="space-y-6">
@@ -199,22 +293,5 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                 </>
             )}
         </AnimatePresence>
-    );
-}
-
-function DetailRow({ label, value, onChange, onBlur }) {
-    return (
-        <div className="grid grid-cols-3 gap-4 pb-3 last:border-0 text-sm items-center">
-            <span className="text-text-secondary font-medium lowercase">{label}</span>
-            <div className="col-span-2">
-                <DynamicInput
-                    value={value || ''}
-                    onChange={(e) => onChange && onChange(e.target.value)}
-                    onBlur={onBlur}
-                    placeholder="add info..."
-                    className="w-full text-text-primary"
-                />
-            </div>
-        </div>
     );
 }

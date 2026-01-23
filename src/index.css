@@ -5,9 +5,46 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Default (tactical) theme variables */
+    --color-brand: #3B82F6;
+    --color-background: #FFFFFF;
+    --color-text-primary: #1A1A1A;
+    --color-text-secondary: #4D4D4D;
+    --color-border: #E5E5E5;
+    --color-card-bg: #FFFFFF;
+    --color-button-bg: #F9FAFB;
+    --radius-button: 2px;
+    --radius-card: 2px;
+    --radius-input: 0.75rem;
+    --shadow-active: inset 0 2px 4px 0 rgba(59, 130, 246, 0.5);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --map-opacity: 0.2;
+  }
+
+  /* Dark theme overrides */
+  .theme-dark {
+    --color-brand: #60A5FA;
+    --color-background: #0F172A;
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #94A3B8;
+    --color-border: #1E293B;
+    --color-card-bg: #1E293B;
+    --color-button-bg: #1E293B;
+    --radius-button: 2px;
+    --radius-card: 2px;
+    --radius-input: 0.75rem;
+    --shadow-active: inset 0 2px 4px 0 rgba(96, 165, 250, 0.5);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --map-opacity: 0.1;
+  }
+
   body {
-    @apply bg-white text-text-primary antialiased;
+    @apply antialiased;
     font-family: 'Satoshi', sans-serif;
     text-transform: lowercase;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

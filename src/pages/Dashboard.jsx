@@ -6,6 +6,8 @@ import { useFriends } from '../context/FriendContext';
 import AddFriendDropdown from '../components/AddFriendDropdown';
 import SideSheet from '../components/ui/SideSheet';
 import SettingsDropdown from '../components/SettingsDropdown';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
+import WorldMap from '../components/WorldMap';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -39,43 +41,24 @@ export default function Dashboard() {
     const [showAbout, setShowAbout] = useState(false);
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-gray-50">
-            {/* World Map Background */}
-            <div
-                className="absolute inset-0 z-0 opacity-20"
-                style={{
-                    backgroundImage: `url('/src/assets/world-map.png')`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
-            />
+        <div className="flex flex-col w-full h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
+
 
             {/* Header */}
             <div className="relative z-30 flex items-center justify-between px-8 py-6 pointer-events-none">
-                {/* Left: Settings */}
+                {/* Left: Add Human */}
                 <div className="pointer-events-auto relative">
-                    <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(!settingsOpen)} className="rounded-full w-10 h-10 hover:bg-gray-50 text-text-secondary transition-colors">
-                        <Icons.Settings className="w-5 h-5" strokeWidth={1.5} />
-                    </Button>
-                    <SettingsDropdown
-                        isOpen={settingsOpen}
-                        onClose={() => setSettingsOpen(false)}
-                    />
-                </div>
-
-                {/* Center: Title */}
-                <div className="pointer-events-auto">
-                    <h1 className="text-sm font-medium text-text-primary lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none">
-                        book of humans
-                    </h1>
-                </div>
-
-                {/* Right: Add Friend */}
-                <div className="pointer-events-auto relative">
-                    <Button variant="ghost" size="icon" onClick={() => setIsAdding(!isAdding)} className="rounded-full w-10 h-10 hover:bg-gray-50 text-text-secondary transition-colors">
+                    <button onClick={() => setIsAdding(!isAdding)} className={`w-10 h-10 rounded-full transition-all flex items-center justify-center ${isAdding ? 'shadow-active' : 'shadow-inner hover:shadow-sm'}`}
+                        style={{
+                            backgroundColor: 'var(--color-button-bg)',
+                            borderColor: 'var(--color-border)',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                            color: isAdding ? 'var(--color-brand)' : 'var(--color-text-secondary)'
+                        }}
+                    >
                         <Icons.Plus className="w-5 h-5" strokeWidth={1.5} />
-                    </Button>
+                    </button>
                     <AddFriendDropdown
                         isOpen={isAdding}
                         onClose={() => setIsAdding(false)}
@@ -85,107 +68,132 @@ export default function Dashboard() {
                         }}
                     />
                 </div>
-            </div>
 
-            <AnimatePresence>
-                {showAbout && (
-                    <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowAbout(false)} />
-                        <motion.div
-                            initial={{ opacity: 0, y: -5, height: 0 }}
-                            animate={{ opacity: 1, y: 0, height: 'auto' }}
-                            exit={{ opacity: 0, y: -5, height: 0 }}
-                            className="absolute top-full mt-4 bg-white border border-gray-100 shadow-xl rounded-[2px] p-5 w-64 text-center z-50 overflow-hidden"
-                        >
-                            <p className="text-xs text-text-secondary leading-relaxed mb-3">
-                                a personal crm to help you stay close to the people who matter most. built with love.
-                            </p>
-                            <a
-                                href="https://x.com/Anushriya_UX"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-xs font-medium text-brand hover:underline block mb-4"
-                            >
-                                @Anushriya_UX
-                            </a>
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="w-3 h-3 bg-brand rounded-full shadow-sm relative z-10"
-                            >
-                            </motion.div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                {/* Center: Title */}
+                {/* Center: Title */}
+                <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <h1 onClick={() => setShowAbout(!showAbout)} className="text-sm font-medium lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none text-center" style={{ color: 'var(--color-text-primary)' }}>
+                        book of humans
+                    </h1>
 
-            {/* Friend Cards Layer (Map) */}
-            <div className="absolute inset-0 z-20 pointer-events-none">
-                {
-                    friends.filter(f => f && typeof f.x === 'number' && typeof f.y === 'number').map((f) => (
-                        <motion.div
-                            key={f.id}
-                            layoutId={`card-${f.id}`}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="absolute group cursor-pointer pointer-events-auto"
-                            style={{ left: `${f.x}%`, top: `${f.y}%` }}
-                            onClick={() => setSelectedFriend(f)}
-                        >
-                            <div className="relative bg-white pl-8 pr-8 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition-all duration-200 transform -translate-x-1/2 -translate-y-1/2">
-                                {/* Photo overlapping left edge */}
-                                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
-                                    {(f.photos && f.photos.length > 0) || f.photo ? (
-                                        <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                                            {(f.name || '?').substring(0, 2).toUpperCase()}
-                                        </div>
-                                    )}
-                                </div>
-                                <span className="font-medium text-sm text-text-primary whitespace-nowrap lowercase">{f.name || 'friend'}</span>
-                            </div>
-                        </motion.div>
-                    ))
-                }
-            </div>
-
-
-
-            {/* The Shelf (Left Side) */}
-            {
-                friends.some(f => f && (f.x === null || typeof f.x !== 'number')) && (
-                    <div className="absolute top-32 left-8 w-fit z-20 flex flex-col gap-4 pointer-events-none">
-                        <h3 className="text-xs font-medium text-text-gray pl-1 lowercase tracking-wide opacity-50">add location</h3>
-                        <div className="flex flex-col gap-3 pointer-events-auto">
-                            {friends.filter(f => f && (f.x === null || typeof f.x !== 'number')).map((f) => (
+                    <AnimatePresence>
+                        {showAbout && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowAbout(false)} />
                                 <motion.div
-                                    key={f.id}
-                                    layoutId={`card-${f.id}`}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    onClick={() => setSelectedFriend(f)}
-                                    className="relative group cursor-pointer"
+                                    initial={{ opacity: 0, y: -6, height: 0 }}
+                                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                    exit={{ opacity: 0, y: -6, height: 0 }}
+                                    className="absolute top-full mt-4 shadow-xl rounded-[8px] p-5 w-72 z-50 overflow-hidden flex flex-col items-center"
+                                    style={{
+                                        backgroundColor: 'var(--color-card-bg)',
+                                        borderColor: 'var(--color-border)',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)'
+                                    }}
                                 >
-                                    <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-[2px] p-3 shadow-sm hover:shadow-md hover:bg-white transition-all w-full">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 border border-white shadow-inner overflow-hidden flex-shrink-0">
-                                            {(f.photos && f.photos.length > 0) || f.photo ? (
-                                                <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400">
-                                                    {(f.name || '?').substring(0, 2).toUpperCase()}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary lowercase truncate">{f.name || 'friend'}</span>
+                                    <p className="text-xs leading-relaxed mb-3 text-center" style={{ color: 'var(--color-text-secondary)' }}>
+                                        a personal crm to help you stay close to the people who matter most.
+                                    </p>
+                                    <div className="flex items-center justify-center gap-1 w-full">
+                                        <p className="text-xs leading-relaxed text-center" style={{ color: 'var(--color-text-secondary)' }}>
+                                            made by
+                                        </p>
+                                        <motion.div
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="w-2 h-2 bg-brand rounded-full shadow-sm"
+                                        >
+                                        </motion.div>
+                                        <a
+                                            href="https://x.com/Anushriya_UX"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-xs font-medium text-brand hover:underline"
+                                        >
+                                            @Anushriya_UX
+                                        </a>
+
                                     </div>
                                 </motion.div>
-                            ))}
-                        </div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Right: Settings and Theme Toggle */}
+                <div className="pointer-events-auto relative flex items-center gap-2">
+                    <ThemeToggle />
+                    <button onClick={() => setSettingsOpen(!settingsOpen)} className={`w-10 h-10 rounded-full transition-all flex items-center justify-center ${settingsOpen ? 'shadow-active' : 'shadow-inner hover:shadow-sm'}`}
+                        style={{
+                            backgroundColor: 'var(--color-button-bg)',
+                            borderColor: 'var(--color-border)',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                            color: settingsOpen ? 'var(--color-brand)' : 'var(--color-text-secondary)'
+                        }}
+                    >
+                        <Icons.Settings className="w-4 h-4" strokeWidth={1.5} />
+                    </button>
+                    <SettingsDropdown
+                        isOpen={settingsOpen}
+                        onClose={() => setSettingsOpen(false)}
+                    />
+                </div>
+            </div>
+
+            {/* World Map Container */}
+            <div className="flex-1 relative w-full overflow-hidden">
+                <WorldMap
+                    friends={friends}
+                    onFriendClick={setSelectedFriend}
+                />
+
+                {/* Left: Friend Shelf (Only unmapped friends) */}
+                <div className="absolute left-8 top-8 bottom-8 w-64 pointer-events-none flex flex-col justify-center">
+                    <div className="pointer-events-auto space-y-3">
+                        {friends.filter(f => !f.lat || !f.lon).length > 0 && (
+                            <div className="mb-2">
+                                <h3 className="text-xs font-medium pl-1 lowercase tracking-wide opacity-50" style={{ color: 'var(--color-text-secondary)' }}>add location</h3>
+                            </div>
+                        )}
+                        {friends.filter(f => !f.lat || !f.lon).map((f) => (
+                            <motion.div
+                                key={f.id}
+                                layoutId={`card-${f.id}`}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                onClick={() => setSelectedFriend(f)}
+                                className="relative group cursor-pointer"
+                            >
+                                <div
+                                    className="flex items-center gap-4 backdrop-blur-sm rounded-[8px] p-3 shadow-sm hover:shadow-md transition-all w-full"
+                                    style={{
+                                        backgroundColor: 'var(--color-card-bg)',
+                                        borderColor: 'var(--color-border)',
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        color: 'var(--color-text-primary)'
+                                    }}
+                                >
+                                    <div className={`w-10 h-10 rounded-full shadow-inner overflow-hidden flex-shrink-0 border ${f.isMe ? 'bg-brand border-brand' : 'bg-gray-100 border-white'}`}>
+                                        {(f.photos && f.photos.length > 0) || f.photo ? (
+                                            <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className={`w-full h-full flex items-center justify-center text-[10px] font-bold ${f.isMe ? 'text-white' : 'text-gray-400'}`}>
+                                                {(f.name || '?').substring(0, 2).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className={`text-sm font-medium lowercase truncate ${f.isMe ? 'text-brand' : 'text-text-secondary group-hover:text-text-primary'}`}>{f.name || 'friend'}</span>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
-                )
-            }
+                </div>
+            </div>
 
 
 

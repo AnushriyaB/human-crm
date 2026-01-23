@@ -14,10 +14,14 @@ import {
     Settings,
     UserPlus,
     Trash2,
-    Plus
+    Plus,
+    Copy,
+    Pencil
 } from 'lucide-react';
+import { PixelIcons } from './PixelIcons';
 
 export const Icons = {
+    // Standard lucide icons
     Basics: ({ className }) => <User className={className} strokeWidth={1.5} />,
     Face: ({ className }) => <ImageIcon className={className} strokeWidth={1.5} />,
     Contact: ({ className }) => <Phone className={className} strokeWidth={1.5} />,
@@ -37,4 +41,9 @@ export const Icons = {
     UserPlus: ({ className }) => <UserPlus className={className} strokeWidth={1.5} />,
     Trash: ({ className }) => <Trash2 className={className} strokeWidth={1.5} />,
     Plus: ({ className }) => <Plus className={className} strokeWidth={1.5} />,
+    Copy: ({ className }) => <Copy className={className} strokeWidth={1.5} />,
+    Pencil: ({ className }) => <Pencil className={className} strokeWidth={1.5} />,
+
+    // Custom pixel-style icons
+    ...PixelIcons,
 };

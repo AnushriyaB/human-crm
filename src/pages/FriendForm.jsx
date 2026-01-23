@@ -149,7 +149,7 @@ export default function FriendForm() {
                         <h1 className="text-4xl font-bold text-text-primary">hello, {initialName}.</h1>
                         <p className="text-xl text-text-secondary max-w-md">welcome to my inner circle. help me keep you close by filling out your card.</p>
                         <div className="pt-8">
-                            <Button onClick={next} size="lg" className="px-12 py-6 text-lg rounded-[2px] lowercase shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all bg-brand text-white border-none">start</Button>
+                            <Button onClick={next} size="lg" className="px-12 py-6 text-lg rounded-[8px] lowercase shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all bg-brand text-white border-none">start</Button>
                         </div>
                     </div>
                 );
@@ -337,7 +337,7 @@ export default function FriendForm() {
                                 <button
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-[2px] text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5' : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5' : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
@@ -352,7 +352,7 @@ export default function FriendForm() {
                     {isEdit && !isGuest && (
                         <div className="pt-4 mt-4 border-t border-gray-100">
                             <button
-                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-[2px] w-full transition-colors lowercase hover:bg-red-50"
+                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-[8px] w-full transition-colors lowercase hover:bg-red-50"
                                 onClick={() => {
                                     navigate('/dashboard');
                                 }}
@@ -371,7 +371,7 @@ export default function FriendForm() {
                         <div className="absolute top-6 right-6 z-50">
                             <button
                                 onClick={() => navigate('/dashboard')}
-                                className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[2px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
+                                className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[8px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
                             >
                                 <span className="lowercase">close</span>
                             </button>
@@ -401,15 +401,15 @@ export default function FriendForm() {
                     {/* Footer Actions */}
                     {currentStepIndex > 0 && (
                         <div className="p-8 flex justify-between items-center sticky bottom-0 z-20 bg-white/80 backdrop-blur-sm">
-                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-sm hover:text-red-400 lowercase hover:bg-red-50 rounded-[2px] px-4">
+                            <Button variant="ghost" onClick={clearStep} className="text-text-secondary text-sm hover:text-red-400 lowercase hover:bg-red-50 rounded-[8px] px-4">
                                 clear
                             </Button>
 
                             <div className="flex gap-4">
-                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-[2px] hover:bg-gray-50 text-sm">
+                                <Button variant="ghost" onClick={() => setCurrentStepIndex(c => c - 1)} className="lowercase rounded-[8px] hover:bg-gray-50 text-sm">
                                     back
                                 </Button>
-                                <Button onClick={next} className="min-w-[120px] lowercase rounded-[2px] shadow-lg shadow-brand/20 text-sm">
+                                <Button onClick={next} className="min-w-[120px] lowercase rounded-[8px] shadow-lg shadow-brand/20 text-sm">
                                     {currentStepIndex === STEPS.length - 1 ? 'finish' : 'next'}
                                 </Button>
                             </div>

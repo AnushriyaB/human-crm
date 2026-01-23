@@ -10,14 +10,25 @@ export default {
                 sans: ['Satoshi', 'sans-serif'],
             },
             colors: {
-                brand: '#3B82F6',
+                brand: 'var(--color-brand)',
                 text: {
-                    primary: '#1A1A1A',
-                    secondary: '#4D4D4D',
+                    primary: 'var(--color-text-primary)',
+                    secondary: 'var(--color-text-secondary)',
                 },
                 border: {
-                    DEFAULT: '#E5E5E5',
-                }
+                    DEFAULT: 'var(--color-border)',
+                },
+                'card-bg': 'var(--color-card-bg)',
+                'button-bg': 'var(--color-button-bg)',
+                highlight: 'var(--color-highlight)',
+            },
+            borderRadius: {
+                'tactical': 'var(--radius-button)',
+                'card': 'var(--radius-card)',
+            },
+            boxShadow: {
+                'active': 'var(--shadow-active)',
+                'card': 'var(--shadow-card)',
             }
         },
     },

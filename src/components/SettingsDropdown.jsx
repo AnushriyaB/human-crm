@@ -17,13 +17,20 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                         animate={{ opacity: 1, y: 0, height: 'auto' }}
                         exit={{ opacity: 0, y: -10, height: 0 }}
                         transition={{ duration: 0.2, ease: "linear" }} // Linear animation
-                        className="absolute top-full left-0 mt-2 bg-white rounded-[2px] shadow-xl border border-gray-100 overflow-hidden z-50 w-48 pointer-events-auto"
+                        className="absolute top-full right-0 mt-2 rounded-[2px] shadow-xl overflow-hidden z-50 w-48 pointer-events-auto"
+                        style={{
+                            backgroundColor: 'var(--color-card-bg)',
+                            borderColor: 'var(--color-border)',
+                            borderWidth: '1px',
+                            borderStyle: 'solid'
+                        }}
                     >
                         <div className="p-2">
                             {/* Visual Toggle */}
-                            <div className="flex bg-gray-50 rounded-[2px] p-1 relative">
+                            <div className="flex rounded-[2px] p-1 relative" style={{ backgroundColor: 'var(--color-button-bg)' }}>
                                 <motion.div
-                                    className="absolute top-1 bottom-1 bg-white rounded-[2px] shadow-sm"
+                                    className="absolute top-1 bottom-1 rounded-[2px] shadow-sm"
+                                    style={{ backgroundColor: 'var(--color-highlight)' }}
                                     initial={false}
                                     animate={{
                                         left: frequency === 'weekly' ? '4px' : '50%',
@@ -34,14 +41,20 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                                 <button
                                     type="button"
                                     onClick={() => setFrequency('weekly')}
-                                    className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer ${frequency === 'weekly' ? 'text-text-primary' : 'text-text-secondary'}`}
+                                    className="flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer"
+                                    style={{
+                                        color: frequency === 'weekly' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                                    }}
                                 >
                                     weekly
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setFrequency('daily')}
-                                    className={`flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer ${frequency === 'daily' ? 'text-text-primary' : 'text-text-secondary'}`}
+                                    className="flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer"
+                                    style={{
+                                        color: frequency === 'daily' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                                    }}
                                 >
                                     daily
                                 </button>
@@ -49,7 +62,8 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                         </div>
                     </motion.div>
                 </>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     );
 }

@@ -8,41 +8,85 @@ export function useFriends() {
 }
 
 export function FriendProvider({ children }) {
-    const [friends, setFriends] = useState([]);
+    const [friends, setFriends] = useState([
+        {
+            id: 'me',
+            name: 'me',
+            lat: null,
+            lon: null,
+            location: '',
+            isMe: true,
+            photo: null,
+            passphrase: 'demo',
+            birthday: '',
+            // Demo modules already added for "me"
+            modules: [
+                {
+                    type: 'family',
+                    data: {
+                        partner: { name: '', anniversary: '' },
+                        children: [],
+                        pets: []
+                    }
+                },
+                {
+                    type: 'dates',
+                    data: {
+                        dates: []
+                    }
+                },
+                {
+                    type: 'preferences',
+                    data: {
+                        favorites: {
+                            food: '',
+                            color: '',
+                            music: '',
+                            hobbies: '',
+                            giftIdeas: ''
+                        }
+                    }
+                },
+                {
+                    type: 'memories',
+                    data: {
+                        howWeMet: '',
+                        favoriteMemory: '',
+                        firstMeeting: '',
+                        notes: ''
+                    }
+                }
+            ]
+        }
+    ]);
 
     const addFriend = async (friend) => {
         const locationQuery = friend.address || friend.city;
-        let coords = { x: null, y: null };
+        let coords = { lat: null, lon: null };
 
         if (locationQuery) {
             const preciseCoords = await geocodeLocation(locationQuery);
             if (preciseCoords) {
                 coords = preciseCoords;
-            } else {
-                // Fallback random if geocoding fails but location exists? 
-                // Better to leave as null (shelf) or fallback? 
-                // User asked for "precise", so let's try to stick to real coords
-                // But if API fails, maybe fallback to random to allow "Map Mode"?
-                // Let's rely on valid geocoding for now.
-                // Actually, for better UX, fallback to random proximity if geocode fails but user provided input.
-                coords = { x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 };
             }
         }
 
         const newFriend = {
             ...friend,
             id: Date.now().toString(),
-            x: coords.x,
-            y: coords.y
+            lat: coords.lat,
+            lon: coords.lon,
+            // New friends get starter modules
+            modules: [
+                { type: 'family', data: { partner: { name: '', anniversary: '' }, children: [], pets: [] } },
+                { type: 'dates', data: { dates: [] } },
+                { type: 'preferences', data: { favorites: {} } }
+            ]
         };
         setFriends(prev => [...prev, newFriend]);
     };
 
     const updateFriend = async (id, updates) => {
-        // Determine if we need to re-geocode
-        // We can't access 'f' easily inside dirty check without mapping.
-        // Let's simpler logic: find friend first.
-
         const currentFriend = friends.find(f => f.id === id);
         if (!currentFriend) return;
 
@@ -52,16 +96,14 @@ export function FriendProvider({ children }) {
         const locationChanged = (updates.address && updates.address !== currentFriend.address) ||
             (updates.city && updates.city !== currentFriend.city);
 
-        const needsCoords = (locationQuery && currentFriend.x === null) || locationChanged;
+        const needsCoords = (locationQuery && (currentFriend.lat === null || currentFriend.lon === null)) || locationChanged;
 
-        let newCoords = { x: currentFriend.x, y: currentFriend.y };
+        let newCoords = {};
 
         if (needsCoords && locationQuery) {
             const preciseCoords = await geocodeLocation(locationQuery);
             if (preciseCoords) {
                 newCoords = preciseCoords;
-            } else if (currentFriend.x === null) {
-                newCoords = { x: 20 + Math.random() * 60, y: 20 + Math.random() * 60 };
             }
         }
 

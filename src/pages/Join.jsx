@@ -21,8 +21,8 @@ export default function Join() {
         if (friend) {
             navigate('/friend-form', { state: { ...friend, isGuest: true, isEdit: true } });
         } else {
-            setError('invalid passkey. maybe a typo?');
-            // Shake animation can be added here
+            // Demo Mode: Allow any key to "join" as a new user
+            navigate('/friend-form', { state: { passphrase: cleanKey, isGuest: true, isEdit: false, name: '' } });
         }
     };
 
@@ -70,7 +70,7 @@ export default function Join() {
                         <Button
                             type="submit"
                             disabled={!passkey}
-                            className="rounded-[2px] px-10 py-3 bg-brand text-white shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all lowercase disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                            className="rounded-[8px] px-10 py-3 bg-brand text-white shadow-lg shadow-brand/20 hover:shadow-brand/30 transition-all lowercase disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                         >
                             enter
                         </Button>
