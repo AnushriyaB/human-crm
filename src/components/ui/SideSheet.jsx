@@ -6,25 +6,49 @@ import { Icons } from './Icons';
 import { useFriends } from '../../context/FriendContext';
 import BentoGrid from '../bento/Grid';
 import CoreIdentityCard from '../bento/modules/CoreIdentityCard';
-import FinancialCard from '../bento/modules/FinancialCard';
-import DateCard from '../bento/modules/DateCard';
-import SocialCard from '../bento/modules/SocialCard';
+import MyIdentityCard from '../bento/modules/MyIdentityCard';
 import FamilyCard from '../bento/modules/FamilyCard';
+import TimelineCard from '../bento/modules/TimelineCard';
+import FavoritesCard from '../bento/modules/FavoritesCard';
 import WorkCard from '../bento/modules/WorkCard';
-import PreferencesCard from '../bento/modules/PreferencesCard';
-import MemoriesCard from '../bento/modules/MemoriesCard';
+import CommunicationCard from '../bento/modules/CommunicationCard';
+import StoryCard from '../bento/modules/StoryCard';
+import NotesCard from '../bento/modules/NotesCard';
 import BentoCard from '../bento/Card';
 import ModuleLibrary from '../bento/ModuleLibrary';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool } from 'lucide-react';
+
+// Tab configuration for friends
+const FRIEND_TABS = [
+    { id: 'about', label: 'About', icon: User, modules: ['family', 'timeline'] },
+    { id: 'lifestyle', label: 'Lifestyle', icon: Heart, modules: ['favorites', 'story'] },
+    { id: 'work', label: 'Work', icon: Briefcase, modules: ['work'] },
+    { id: 'connect', label: 'Connect', icon: MessageCircle, modules: ['communication'] },
+    { id: 'notes', label: 'Notes', icon: PenTool, modules: ['notes'] },
+];
+
+// Tab configuration for "me" (personal profile)
+const ME_TABS = [
+    { id: 'about', label: 'About Me', icon: User, modules: ['timeline'] },
+    { id: 'lifestyle', label: 'My Lifestyle', icon: Heart, modules: ['favorites'] },
+    { id: 'work', label: 'My Work', icon: Briefcase, modules: ['work'] },
+    { id: 'notes', label: 'Notes', icon: PenTool, modules: ['notes'] },
+];
 
 export default function SideSheet({ isOpen, onClose, friend }) {
     const navigate = useNavigate();
     const { updateFriend } = useFriends();
 
-    // Edit mode state
     const [isEditing, setIsEditing] = useState(false);
+    const [view, setView] = useState('details');
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('about');
+    const [recentlyAdded, setRecentlyAdded] = useState(new Set());
 
-    // Prevent body scroll when open
+    // Determine if this is the "me" profile
+    const isMe = friend?.name?.toLowerCase() === 'me' || friend?.isMe;
+    const TABS = isMe ? ME_TABS : FRIEND_TABS;
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -33,19 +57,15 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         }
     }, [isOpen]);
 
-    const [view, setView] = useState('details'); // details | audit
-    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-
-    // Reset edit mode when sheet closes or friend changes
     useEffect(() => {
         setIsEditing(false);
+        setActiveTab('about');
+        setRecentlyAdded(new Set());
     }, [isOpen, friend?.id]);
 
     if (!isOpen || !friend) return null;
 
-    // Helper to find specific module type
     const getModule = (type) => friend.modules?.find(m => m.type === type) || { type, data: {} };
-    // Helper to check existence for conditional rendering
     const hasModule = (type) => friend.modules?.some(m => m.type === type);
 
     const handleAddModule = (type) => {
@@ -53,6 +73,25 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         const updatedModules = [...(friend.modules || []), newModule];
         updateFriend(friend.id, { modules: updatedModules });
         setIsLibraryOpen(false);
+
+        // Track recently added module for blue highlight
+        setRecentlyAdded(prev => new Set([...prev, type]));
+
+        // Find which tab this module belongs to and switch to it
+        const tab = TABS.find(t => t.modules.includes(type));
+        if (tab) {
+            setActiveTab(tab.id);
+        }
+    };
+
+    const handleRemoveModule = (type) => {
+        const updatedModules = (friend.modules || []).filter(m => m.type !== type);
+        updateFriend(friend.id, { modules: updatedModules });
+        setRecentlyAdded(prev => {
+            const next = new Set(prev);
+            next.delete(type);
+            return next;
+        });
     };
 
     const handleModuleUpdate = (type, newData) => {
@@ -65,20 +104,46 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         updateFriend(friend.id, { modules: updatedModules });
     };
 
-    const handleToggleEdit = () => {
-        setIsEditing(!isEditing);
+    const handleToggleEdit = () => setIsEditing(!isEditing);
+    const handleSaveEdit = () => setIsEditing(false);
+
+    const renderModule = (type) => {
+        const module = getModule(type);
+        const isNew = recentlyAdded.has(type);
+        const props = {
+            module,
+            isEditing,
+            isNew,
+            onUpdate: (data) => handleModuleUpdate(type, data),
+            onRemove: () => handleRemoveModule(type)
+        };
+
+        switch (type) {
+            case 'family': return <FamilyCard key={type} {...props} />;
+            case 'timeline': return <TimelineCard key={type} {...props} />;
+            case 'favorites': return <FavoritesCard key={type} {...props} />;
+            case 'work': return <WorkCard key={type} {...props} />;
+            case 'communication': return <CommunicationCard key={type} {...props} />;
+            case 'story': return <StoryCard key={type} {...props} />;
+            case 'notes': return <NotesCard key={type} {...props} />;
+            default: return null;
+        }
     };
 
-    const handleSaveEdit = () => {
-        setIsEditing(false);
-        // Data is already saved via handleModuleUpdate
+    // Get modules for current tab
+    const currentTabModules = TABS.find(t => t.id === activeTab)?.modules || [];
+    const activeModulesInTab = currentTabModules.filter(type => hasModule(type));
+
+    // Count modules per tab for badge
+    const getTabModuleCount = (tabId) => {
+        const tab = TABS.find(t => t.id === tabId);
+        return tab?.modules.filter(type => hasModule(type)).length || 0;
     };
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.3 }}
@@ -87,22 +152,23 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                         className="fixed inset-0 bg-black z-40 backdrop-blur-sm"
                     />
 
-                    {/* Sheet */}
                     <motion.div
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-2xl shadow-2xl z-50 overflow-y-auto border-l"
+                        className="fixed right-0 top-0 bottom-0 w-full max-w-2xl shadow-2xl z-50 overflow-hidden border-l flex flex-col"
                         style={{
                             backgroundColor: 'var(--color-card-bg)',
                             borderColor: 'var(--color-border)'
                         }}
                     >
-                        <div className="p-6 md:p-8 space-y-8">
-                            {/* Header Actions */}
+                        {/* Fixed Header */}
+                        <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
                             <div className="flex justify-between items-center">
-                                <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">Profile</h4>
+                                <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
+                                    {isMe ? 'My Profile' : 'Profile'}
+                                </h4>
                                 <div className="flex items-center p-1 rounded-full border shadow-sm gap-1"
                                     style={{
                                         backgroundColor: 'var(--color-button-bg)',
@@ -112,34 +178,12 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => setView(view === 'details' ? 'audit' : 'details')}
-                                        className="rounded-full w-9 h-9 hover:bg-black/5"
-                                        title="Audit Trail"
-                                        style={{ color: 'var(--color-text-secondary)' }}
-                                    >
-                                        {view === 'details' ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M8 12h4" /><path d="M16 8h4" /><path d="M12 16h4" /></svg>
-                                        ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                                        )}
-                                    </Button>
-
-                                    <div className="w-px h-4 bg-gray-200" />
-
-                                    {/* Edit/Save Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
                                         onClick={isEditing ? handleSaveEdit : handleToggleEdit}
                                         className={`rounded-full w-9 h-9 ${isEditing ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'hover:bg-black/5'}`}
                                         title={isEditing ? "Save" : "Edit"}
                                         style={{ color: isEditing ? undefined : 'var(--color-text-secondary)' }}
                                     >
-                                        {isEditing ? (
-                                            <Check className="w-4 h-4" />
-                                        ) : (
-                                            <Icons.Pencil className="w-4 h-4" />
-                                        )}
+                                        {isEditing ? <Check className="w-4 h-4" /> : <Icons.Pencil className="w-4 h-4" />}
                                     </Button>
 
                                     <div className="w-px h-4 bg-gray-200" />
@@ -157,138 +201,123 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             </div>
 
                             {/* Edit Mode Banner */}
-                            {isEditing && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800 flex items-center justify-between"
-                                >
-                                    <span>✏️ Editing mode — click tiles to add data</span>
-                                    <button
-                                        onClick={handleSaveEdit}
-                                        className="font-medium hover:underline"
+                            <AnimatePresence>
+                                {isEditing && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-sm text-amber-800 flex items-center justify-between"
                                     >
-                                        Done
-                                    </button>
-                                </motion.div>
-                            )}
-
-                            {view === 'details' ? (
-                                <>
-                                    <BentoGrid>
-                                        {/* 1. Core Identity (Always First) */}
-                                        <CoreIdentityCard
-                                            friend={friend}
-                                            isEditing={isEditing}
-                                            onUpdate={(data) => updateFriend(friend.id, data)}
-                                        />
-
-                                        {/* 2. Dynamic Modules */}
-                                        {hasModule('family') && (
-                                            <FamilyCard
-                                                module={getModule('family')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('family', data)}
-                                            />
-                                        )}
-                                        {hasModule('dates') && (
-                                            <DateCard
-                                                module={getModule('dates')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('dates', data)}
-                                            />
-                                        )}
-                                        {hasModule('work') && (
-                                            <WorkCard
-                                                module={getModule('work')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('work', data)}
-                                            />
-                                        )}
-                                        {hasModule('preferences') && (
-                                            <PreferencesCard
-                                                module={getModule('preferences')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('preferences', data)}
-                                            />
-                                        )}
-                                        {hasModule('memories') && (
-                                            <MemoriesCard
-                                                module={getModule('memories')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('memories', data)}
-                                            />
-                                        )}
-                                        {hasModule('social') && (
-                                            <SocialCard
-                                                module={getModule('social')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('social', data)}
-                                            />
-                                        )}
-                                        {hasModule('financial') && (
-                                            <FinancialCard
-                                                module={getModule('financial')}
-                                                isEditing={isEditing}
-                                                onUpdate={(data) => handleModuleUpdate('financial', data)}
-                                            />
-                                        )}
-
-                                        {/* 3. Add Module Placeholder */}
-                                        <BentoCard
-                                            className="flex items-center justify-center min-h-[160px] border-dashed border-2 bg-transparent hover:bg-[var(--color-bg-secondary)] cursor-pointer group"
-                                            onClick={() => setIsLibraryOpen(true)}
-                                        >
-                                            <div className="text-center space-y-2 group-hover:scale-105 transition-transform">
-                                                <div className="mx-auto w-10 h-10 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center group-hover:bg-[var(--color-highlight)] group-hover:text-white transition-colors">
-                                                    <Plus size={20} />
-                                                </div>
-                                                <p className="text-xs font-semibold uppercase tracking-wider opacity-50">Add Tile</p>
-                                            </div>
-                                        </BentoCard>
-                                    </BentoGrid>
-
-                                    <ModuleLibrary
-                                        isOpen={isLibraryOpen}
-                                        onClose={() => setIsLibraryOpen(false)}
-                                        onSelect={handleAddModule}
-                                        existingModules={friend.modules || []}
-                                    />
-                                </>
-                            ) : (
-                                // Audit Trail / Gantt View
-                                <div className="space-y-6">
-                                    <h3 className="text-sm font-medium text-text-secondary lowercase tracking-wider mb-4">interaction history</h3>
-                                    <div className="space-y-0">
-                                        {[
-                                            { date: 'Today', event: 'Viewed profile', Icon: Icons.Eye },
-                                            { date: '2 weeks ago', event: 'Sent a gift', Icon: Icons.Gift },
-                                            { date: '1 month ago', event: 'Met for coffee', Icon: Icons.Coffee },
-                                            { date: '3 months ago', event: 'Added to Human.', Icon: Icons.Sparkles },
-                                        ].map((item, i, arr) => (
-                                            <div key={i} className="flex gap-4">
-                                                {/* Stepper Column */}
-                                                <div className="flex flex-col items-center">
-                                                    <div className="relative z-10 bg-white p-1">
-                                                        <item.Icon className="w-5 h-5 text-brand" />
-                                                    </div>
-                                                    {/* Line connects to next item */}
-                                                    {i !== arr.length - 1 && (
-                                                        <div className="w-px flex-1 bg-gray-200 my-1" />
-                                                    )}
-                                                </div>
-                                                {/* Content Column */}
-                                                <div className="pb-8 pt-1.5">
-                                                    <p className="text-xs text-text-secondary mb-1 lowercase tracking-wide">{item.date}</p>
-                                                    <p className="font-medium text-text-primary leading-tight lowercase">{item.event}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                                        <span>✏️ Editing mode — click 🗑️ on tiles to remove them</span>
+                                        <button onClick={handleSaveEdit} className="font-semibold hover:underline">Done</button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
+
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="p-6 space-y-6">
+                                {/* Identity Card - Different for "me" vs friends */}
+                                {isMe ? (
+                                    <MyIdentityCard
+                                        friend={friend}
+                                        isEditing={isEditing}
+                                        onUpdate={(data) => updateFriend(friend.id, data)}
+                                    />
+                                ) : (
+                                    <CoreIdentityCard
+                                        friend={friend}
+                                        isEditing={isEditing}
+                                        onUpdate={(data) => updateFriend(friend.id, data)}
+                                    />
+                                )}
+
+                                {/* Tab Navigation - Figma-inspired pill style */}
+                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                    {TABS.map(tab => {
+                                        const count = getTabModuleCount(tab.id);
+                                        const TabIcon = tab.icon;
+                                        const isActive = activeTab === tab.id;
+
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`
+                                                    flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap
+                                                    rounded transition-all duration-200
+                                                    ${isActive
+                                                        ? 'bg-[#e8edfb] text-[#323232]'
+                                                        : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-gray-100'
+                                                    }
+                                                `}
+                                            >
+                                                <TabIcon size={16} />
+                                                {tab.label}
+                                                {count > 0 && (
+                                                    <span className={`
+                                                        text-xs px-2 py-0.5 rounded
+                                                        ${isActive
+                                                            ? 'bg-[#575758] text-white'
+                                                            : 'bg-gray-200 text-gray-600'
+                                                        }
+                                                    `}>
+                                                        {count}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Tab Content */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeTab}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <BentoGrid>
+                                            {activeModulesInTab.map(type => renderModule(type))}
+
+                                            {/* Add Tile Button for current tab */}
+                                            {currentTabModules.some(type => !hasModule(type)) && (
+                                                <BentoCard
+                                                    className="flex items-center justify-center min-h-[140px] border-dashed border-2 bg-transparent hover:bg-[var(--color-bg-secondary)] cursor-pointer group"
+                                                    onClick={() => setIsLibraryOpen(true)}
+                                                >
+                                                    <div className="text-center space-y-3 group-hover:scale-105 transition-transform">
+                                                        <div className="mx-auto w-12 h-12 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center group-hover:bg-[var(--color-highlight)] group-hover:text-white transition-colors">
+                                                            <Plus size={24} />
+                                                        </div>
+                                                        <p className="text-xs font-semibold uppercase tracking-wider opacity-50">Add Tile</p>
+                                                    </div>
+                                                </BentoCard>
+                                            )}
+
+                                            {/* Empty state for tab */}
+                                            {activeModulesInTab.length === 0 && !currentTabModules.some(type => !hasModule(type)) && (
+                                                <div className="col-span-full py-12 text-center text-[var(--color-text-secondary)]">
+                                                    <p className="text-sm">No modules in this section yet</p>
+                                                </div>
+                                            )}
+                                        </BentoGrid>
+                                    </motion.div>
+                                </AnimatePresence>
+                            </div>
+                        </div>
+
+                        <ModuleLibrary
+                            isOpen={isLibraryOpen}
+                            onClose={() => setIsLibraryOpen(false)}
+                            onSelect={handleAddModule}
+                            existingModules={friend.modules || []}
+                            isMe={isMe}
+                        />
                     </motion.div>
                 </>
             )}

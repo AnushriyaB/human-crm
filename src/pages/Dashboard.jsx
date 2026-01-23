@@ -17,8 +17,11 @@ export default function Dashboard() {
 
     const [isAdding, setIsAdding] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [selectedFriend, setSelectedFriend] = useState(null);
+    const [selectedFriendId, setSelectedFriendId] = useState(null);
     const navigate = useNavigate();
+
+    // Derive selectedFriend from live friends array to avoid stale references
+    const selectedFriend = selectedFriendId ? friends.find(f => f.id === selectedFriendId) : null;
 
     const handleFriendAdded = (friendData) => {
         // If it's a full add (clicked "fill it out myself"), navigate to form
@@ -148,7 +151,7 @@ export default function Dashboard() {
             <div className="flex-1 relative w-full overflow-hidden">
                 <WorldMap
                     friends={friends}
-                    onFriendClick={setSelectedFriend}
+                    onFriendClick={(f) => setSelectedFriendId(f.id)}
                 />
 
                 {/* Left: Friend Shelf (Only unmapped friends) */}
@@ -165,7 +168,7 @@ export default function Dashboard() {
                                 layoutId={`card-${f.id}`}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                onClick={() => setSelectedFriend(f)}
+                                onClick={() => setSelectedFriendId(f.id)}
                                 className="relative group cursor-pointer"
                             >
                                 <div
@@ -199,7 +202,7 @@ export default function Dashboard() {
 
             <SideSheet
                 isOpen={!!selectedFriend}
-                onClose={() => setSelectedFriend(null)}
+                onClose={() => setSelectedFriendId(null)}
                 friend={selectedFriend}
             />
 

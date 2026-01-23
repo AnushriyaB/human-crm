@@ -1,230 +1,255 @@
-import React, { useState } from 'react';
+import React from 'react';
 import BentoCard from '../Card';
-import { Heart, Baby, PawPrint, Plus, X, Calendar } from 'lucide-react';
+import { Heart, Baby, PawPrint, Users, Plus, X } from 'lucide-react';
 
-export default function FamilyCard({ module, isEditing, onUpdate }) {
+const PET_TYPES = ['dog', 'cat', 'bird', 'fish', 'rabbit', 'hamster', 'other'];
+
+export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNew }) {
     const data = module.data || {};
-    const partner = data.partner || { name: '', anniversary: '' };
-    const children = data.children || [];
+
+    const hasPartner = data.hasPartner || false;
+    const partnerName = data.partnerName || '';
+    const isMarried = data.isMarried || false;
+    const kids = data.kids || [];
     const pets = data.pets || [];
+    const keyPeople = data.keyPeople || [];
 
-    const handlePartnerChange = (field, value) => {
-        onUpdate?.({
-            ...data,
-            partner: { ...partner, [field]: value }
-        });
+    const updateData = (updates) => {
+        onUpdate?.({ ...data, ...updates });
     };
 
-    const handleAddChild = () => {
-        onUpdate?.({
-            ...data,
-            children: [...children, { name: '', birthday: '' }]
-        });
+    const addKid = () => updateData({ kids: [...kids, { name: '', age: '' }] });
+    const updateKid = (i, field, value) => {
+        const updated = [...kids];
+        updated[i] = { ...updated[i], [field]: value };
+        updateData({ kids: updated });
     };
+    const removeKid = (i) => updateData({ kids: kids.filter((_, idx) => idx !== i) });
 
-    const handleChildChange = (index, field, value) => {
-        const updated = [...children];
-        updated[index] = { ...updated[index], [field]: value };
-        onUpdate?.({ ...data, children: updated });
-    };
-
-    const handleRemoveChild = (index) => {
-        const updated = children.filter((_, i) => i !== index);
-        onUpdate?.({ ...data, children: updated });
-    };
-
-    const handleAddPet = () => {
-        onUpdate?.({
-            ...data,
-            pets: [...pets, { name: '', type: 'dog' }]
-        });
-    };
-
-    const handlePetChange = (index, field, value) => {
+    const addPet = () => updateData({ pets: [...pets, { name: '', type: 'dog' }] });
+    const updatePet = (i, field, value) => {
         const updated = [...pets];
-        updated[index] = { ...updated[index], [field]: value };
-        onUpdate?.({ ...data, pets: updated });
+        updated[i] = { ...updated[i], [field]: value };
+        updateData({ pets: updated });
     };
+    const removePet = (i) => updateData({ pets: pets.filter((_, idx) => idx !== i) });
 
-    const handleRemovePet = (index) => {
-        const updated = pets.filter((_, i) => i !== index);
-        onUpdate?.({ ...data, pets: updated });
+    const addKeyPerson = () => updateData({ keyPeople: [...keyPeople, { name: '', relationship: '' }] });
+    const updateKeyPerson = (i, field, value) => {
+        const updated = [...keyPeople];
+        updated[i] = { ...updated[i], [field]: value };
+        updateData({ keyPeople: updated });
     };
+    const removeKeyPerson = (i) => updateData({ keyPeople: keyPeople.filter((_, idx) => idx !== i) });
 
-    const inputClass = "w-full px-2 py-1 text-sm rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] focus:outline-none focus:border-[var(--color-brand)]";
+    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)]";
+    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+
+    const Toggle = ({ checked, onChange, label }) => (
+        <div className="flex items-center justify-between py-2">
+            <span className="text-sm font-medium">{label}</span>
+            {isEditing ? (
+                <button
+                    type="button"
+                    onClick={() => onChange(!checked)}
+                    className={`w-11 h-6 rounded-full relative transition-colors ${checked ? 'bg-[var(--color-brand)]' : 'bg-gray-300'}`}
+                >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+            ) : (
+                <span className={`text-sm font-medium ${checked ? 'text-green-600' : 'text-gray-400'}`}>
+                    {checked ? 'Yes' : 'No'}
+                </span>
+            )}
+        </div>
+    );
+
+    const Section = ({ icon: Icon, label, children, onAdd }) => (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Icon size={14} className="text-[var(--color-text-secondary)]" />
+                    <span className={labelClass.replace(' mb-2 block', '')}>{label}</span>
+                </div>
+                {isEditing && onAdd && (
+                    <button onClick={onAdd} className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] text-[var(--color-brand)]">
+                        <Plus size={16} />
+                    </button>
+                )}
+            </div>
+            {children}
+        </div>
+    );
 
     return (
-        <BentoCard title="Family" icon={Heart} className="col-span-2">
-            <div className="space-y-4">
+        <BentoCard
+            title="Family"
+            icon={Heart}
+            className="col-span-2"
+            isEditing={isEditing}
+            onRemove={onRemove}
+            isNew={isNew}
+        >
+            <div className="space-y-6">
                 {/* Partner Section */}
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                        <Heart size={14} />
-                        <span className="text-xs font-medium uppercase tracking-wide">Partner</span>
-                    </div>
-                    {isEditing ? (
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Partner's name"
-                                value={partner.name}
-                                onChange={(e) => handlePartnerChange('name', e.target.value)}
-                                className={inputClass}
+                <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)]/50 space-y-3">
+                    <Toggle
+                        checked={hasPartner}
+                        onChange={(v) => updateData({ hasPartner: v, isMarried: v ? isMarried : false })}
+                        label="Has a partner?"
+                    />
+
+                    {hasPartner && (
+                        <div className="pl-4 border-l-2 border-[var(--color-brand)]/30 space-y-4 mt-3">
+                            <div>
+                                <label className={labelClass}>Partner's Name</label>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        placeholder="Enter name"
+                                        value={partnerName}
+                                        onChange={(e) => updateData({ partnerName: e.target.value })}
+                                        className={`${inputClass} w-full`}
+                                    />
+                                ) : (
+                                    <p className="text-sm font-medium">{partnerName || <span className="opacity-40 italic">Not set</span>}</p>
+                                )}
+                            </div>
+
+                            <Toggle
+                                checked={isMarried}
+                                onChange={(v) => updateData({ isMarried: v })}
+                                label="Married?"
                             />
-                            <input
-                                type="date"
-                                placeholder="Anniversary"
-                                value={partner.anniversary}
-                                onChange={(e) => handlePartnerChange('anniversary', e.target.value)}
-                                className={`${inputClass} w-40`}
-                            />
-                        </div>
-                    ) : (
-                        <div className="text-sm">
-                            {partner.name ? (
-                                <span className="font-medium">{partner.name}</span>
-                            ) : (
-                                <span className="text-[var(--color-text-secondary)] italic">Not set</span>
-                            )}
-                            {partner.anniversary && (
-                                <span className="ml-2 text-xs text-[var(--color-text-secondary)]">
-                                    · Anniversary: {new Date(partner.anniversary).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                </span>
-                            )}
                         </div>
                     )}
                 </div>
 
-                {/* Children Section */}
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                            <Baby size={14} />
-                            <span className="text-xs font-medium uppercase tracking-wide">Children</span>
-                        </div>
-                        {isEditing && (
-                            <button
-                                onClick={handleAddChild}
-                                className="p-1 rounded hover:bg-[var(--color-bg-secondary)] text-[var(--color-brand)]"
-                            >
-                                <Plus size={14} />
-                            </button>
-                        )}
-                    </div>
-                    {children.length > 0 ? (
-                        <div className="space-y-2">
-                            {children.map((child, i) => (
-                                <div key={i} className="flex items-center gap-2">
+                {/* Kids Section */}
+                <Section icon={Baby} label="Kids" onAdd={addKid}>
+                    {kids.length > 0 ? (
+                        <div className="space-y-3">
+                            {kids.map((kid, i) => (
+                                <div key={i} className="flex items-center gap-3">
                                     {isEditing ? (
                                         <>
                                             <input
                                                 type="text"
                                                 placeholder="Name"
-                                                value={child.name}
-                                                onChange={(e) => handleChildChange(i, 'name', e.target.value)}
-                                                className={inputClass}
+                                                value={kid.name}
+                                                onChange={(e) => updateKid(i, 'name', e.target.value)}
+                                                className={`${inputClass} flex-1`}
                                             />
                                             <input
-                                                type="date"
-                                                value={child.birthday}
-                                                onChange={(e) => handleChildChange(i, 'birthday', e.target.value)}
-                                                className={`${inputClass} w-40`}
+                                                type="text"
+                                                placeholder="Age"
+                                                value={kid.age}
+                                                onChange={(e) => updateKid(i, 'age', e.target.value)}
+                                                className={`${inputClass} w-20`}
                                             />
-                                            <button
-                                                onClick={() => handleRemoveChild(i)}
-                                                className="p-1 rounded hover:bg-red-50 text-red-400"
-                                            >
-                                                <X size={14} />
+                                            <button onClick={() => removeKid(i)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg">
+                                                <X size={16} />
                                             </button>
                                         </>
                                     ) : (
-                                        <div className="text-sm">
-                                            <span className="font-medium">{child.name || 'Unnamed'}</span>
-                                            {child.birthday && (
-                                                <span className="ml-2 text-xs text-[var(--color-text-secondary)]">
-                                                    · {new Date(child.birthday).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                                </span>
-                                            )}
-                                        </div>
+                                        <p className="text-sm">
+                                            <span className="font-medium">{kid.name || 'Unnamed'}</span>
+                                            {kid.age && <span className="text-[var(--color-text-secondary)]"> · Age {kid.age}</span>}
+                                        </p>
                                     )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-sm text-[var(--color-text-secondary)] italic">
-                            {isEditing ? 'Click + to add' : 'No children added'}
-                        </div>
+                        <p className="text-sm text-[var(--color-text-secondary)] italic">
+                            {isEditing ? 'Click + to add a child' : 'None added'}
+                        </p>
                     )}
-                </div>
+                </Section>
 
                 {/* Pets Section */}
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                            <PawPrint size={14} />
-                            <span className="text-xs font-medium uppercase tracking-wide">Pets</span>
-                        </div>
-                        {isEditing && (
-                            <button
-                                onClick={handleAddPet}
-                                className="p-1 rounded hover:bg-[var(--color-bg-secondary)] text-[var(--color-brand)]"
-                            >
-                                <Plus size={14} />
-                            </button>
-                        )}
-                    </div>
+                <Section icon={PawPrint} label="Pets" onAdd={addPet}>
                     {pets.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {pets.map((pet, i) => (
-                                <div key={i} className="flex items-center gap-2">
+                                <div key={i} className="flex items-center gap-3">
                                     {isEditing ? (
                                         <>
                                             <input
                                                 type="text"
                                                 placeholder="Pet name"
                                                 value={pet.name}
-                                                onChange={(e) => handlePetChange(i, 'name', e.target.value)}
-                                                className={inputClass}
+                                                onChange={(e) => updatePet(i, 'name', e.target.value)}
+                                                className={`${inputClass} flex-1`}
                                             />
                                             <select
                                                 value={pet.type}
-                                                onChange={(e) => handlePetChange(i, 'type', e.target.value)}
-                                                className={`${inputClass} w-24`}
+                                                onChange={(e) => updatePet(i, 'type', e.target.value)}
+                                                className={`${inputClass} w-28`}
                                             >
-                                                <option value="dog">🐕 Dog</option>
-                                                <option value="cat">🐈 Cat</option>
-                                                <option value="bird">🐦 Bird</option>
-                                                <option value="fish">🐠 Fish</option>
-                                                <option value="other">🐾 Other</option>
+                                                {PET_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                             </select>
-                                            <button
-                                                onClick={() => handleRemovePet(i)}
-                                                className="p-1 rounded hover:bg-red-50 text-red-400"
-                                            >
-                                                <X size={14} />
+                                            <button onClick={() => removePet(i)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg">
+                                                <X size={16} />
                                             </button>
                                         </>
                                     ) : (
-                                        <div className="text-sm">
+                                        <p className="text-sm">
                                             <span className="font-medium">{pet.name || 'Unnamed'}</span>
-                                            <span className="ml-1 text-xs">
-                                                {pet.type === 'dog' && '🐕'}
-                                                {pet.type === 'cat' && '🐈'}
-                                                {pet.type === 'bird' && '🐦'}
-                                                {pet.type === 'fish' && '🐠'}
-                                                {pet.type === 'other' && '🐾'}
-                                            </span>
-                                        </div>
+                                            <span className="text-[var(--color-text-secondary)]"> · {pet.type}</span>
+                                        </p>
                                     )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-sm text-[var(--color-text-secondary)] italic">
-                            {isEditing ? 'Click + to add' : 'No pets added'}
-                        </div>
+                        <p className="text-sm text-[var(--color-text-secondary)] italic">
+                            {isEditing ? 'Click + to add a pet' : 'None added'}
+                        </p>
                     )}
-                </div>
+                </Section>
+
+                {/* Key People Section */}
+                <Section icon={Users} label="Key People in Their Life" onAdd={addKeyPerson}>
+                    {keyPeople.length > 0 ? (
+                        <div className="space-y-3">
+                            {keyPeople.map((person, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    {isEditing ? (
+                                        <>
+                                            <input
+                                                type="text"
+                                                placeholder="Name"
+                                                value={person.name}
+                                                onChange={(e) => updateKeyPerson(i, 'name', e.target.value)}
+                                                className={`${inputClass} flex-1`}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Relationship"
+                                                value={person.relationship}
+                                                onChange={(e) => updateKeyPerson(i, 'relationship', e.target.value)}
+                                                className={`${inputClass} w-32`}
+                                            />
+                                            <button onClick={() => removeKeyPerson(i)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg">
+                                                <X size={16} />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm">
+                                            <span className="font-medium">{person.name || 'Unnamed'}</span>
+                                            {person.relationship && <span className="text-[var(--color-text-secondary)]"> · {person.relationship}</span>}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-[var(--color-text-secondary)] italic">
+                            {isEditing ? 'Click + to add someone' : 'None added'}
+                        </p>
+                    )}
+                </Section>
             </div>
         </BentoCard>
     );

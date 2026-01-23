@@ -1,8 +1,8 @@
 import React from 'react';
 import BentoCard from '../Card';
-import { Briefcase, Building, Wrench, Target, Lightbulb } from 'lucide-react';
+import { Sparkles, Utensils, Wine, Music, Gamepad2, Gift, Ban } from 'lucide-react';
 
-export default function WorkCard({ module, isEditing, onUpdate, onRemove, isNew }) {
+export default function FavoritesCard({ module, isEditing, onUpdate, onRemove, isNew }) {
     const data = module.data || {};
 
     const updateData = (updates) => {
@@ -45,43 +45,50 @@ export default function WorkCard({ module, isEditing, onUpdate, onRemove, isNew 
 
     return (
         <BentoCard
-            title="Work"
-            icon={Briefcase}
+            title="Favorites"
+            icon={Sparkles}
+            className="col-span-2"
             isEditing={isEditing}
             onRemove={onRemove}
             isNew={isNew}
         >
             <div className="space-y-5">
-                {/* Title & Company */}
+                {/* Food Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Briefcase} label="Job Title" field="jobTitle" placeholder="Software Engineer" />
-                    <Field icon={Building} label="Company" field="company" placeholder="Acme Inc." />
+                    <Field icon={Utensils} label="Loves to Eat" field="foodLikes" placeholder="Pizza, sushi, Thai..." />
+                    <Field icon={Ban} label="Avoids / Allergies" field="foodAvoids" placeholder="Shellfish, gluten..." />
                 </div>
 
-                {/* What they work on */}
+                {/* Drinks */}
                 <Field
-                    icon={Wrench}
-                    label="Works On"
-                    field="whatTheyWorkOn"
-                    placeholder="Building mobile apps, managing teams..."
+                    icon={Wine}
+                    label="Drinks"
+                    field="drinks"
+                    placeholder="Oat milk latte, green tea, red wine, 'doesn't drink'..."
                 />
 
-                {/* Skills */}
+                {/* Media */}
                 <Field
-                    icon={Lightbulb}
-                    label="Skills"
-                    field="skills"
-                    placeholder="Design, Python, leadership..."
-                />
-
-                {/* Aspirations */}
-                <Field
-                    icon={Target}
-                    label="Wants Next"
-                    field="nextInLife"
-                    placeholder="Start a company, get promoted..."
+                    icon={Music}
+                    label="Music, Shows, Books, Games"
+                    field="media"
+                    placeholder="Jazz, Breaking Bad, sci-fi novels, chess..."
                     multiline
                 />
+
+                {/* Hobbies */}
+                <Field
+                    icon={Gamepad2}
+                    label="Hobbies"
+                    field="hobbies"
+                    placeholder="Hiking, photography, cooking..."
+                />
+
+                {/* Gifts Row */}
+                <div className="grid grid-cols-2 gap-4">
+                    <Field icon={Gift} label="Gift Ideas" field="giftIdeas" placeholder="Wishlist items..." />
+                    <Field icon={Ban} label="Never Gift" field="neverGift" placeholder="Candles, socks..." />
+                </div>
             </div>
         </BentoCard>
     );

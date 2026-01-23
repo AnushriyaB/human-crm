@@ -1,68 +1,77 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Calendar, Share2, FileText, Check, Heart, Briefcase, Sparkles, BookOpen } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+    Heart, Calendar, Sparkles, Briefcase, MessageCircle,
+    BookOpen, PenTool, Check
+} from 'lucide-react';
 
 const MODULES = [
     {
         type: 'family',
-        title: 'Family Circle',
-        description: 'Partner, children, and pets.',
+        title: 'Family',
+        description: 'Partner, kids, pets, key people in their life.',
         icon: Heart,
         color: 'text-pink-500',
         bg: 'bg-pink-500/10'
     },
     {
-        type: 'dates',
-        title: 'Important Dates',
-        description: 'Birthdays, anniversaries, and countdowns.',
+        type: 'timeline',
+        title: 'Timeline',
+        description: 'Birthday, anniversary, important dates, last contact.',
         icon: Calendar,
         color: 'text-rose-500',
         bg: 'bg-rose-500/10'
     },
     {
-        type: 'work',
-        title: 'Professional',
-        description: 'Company, role, work contacts.',
-        icon: Briefcase,
-        color: 'text-indigo-500',
-        bg: 'bg-indigo-500/10'
-    },
-    {
-        type: 'preferences',
+        type: 'favorites',
         title: 'Favorites',
-        description: 'Food, colors, music, hobbies, gift ideas.',
+        description: 'Food, drinks, music, hobbies, gift ideas.',
         icon: Sparkles,
         color: 'text-amber-500',
         bg: 'bg-amber-500/10'
     },
     {
-        type: 'memories',
-        title: 'Our Story',
-        description: 'How you met, favorite memories, notes.',
+        type: 'work',
+        title: 'Work',
+        description: 'Job, company, skills, aspirations.',
+        icon: Briefcase,
+        color: 'text-indigo-500',
+        bg: 'bg-indigo-500/10'
+    },
+    {
+        type: 'communication',
+        title: 'Communication',
+        description: 'Contact info, preferred channels, check-in cadence.',
+        icon: MessageCircle,
+        color: 'text-blue-500',
+        bg: 'bg-blue-500/10'
+    },
+    {
+        type: 'story',
+        title: 'Story',
+        description: 'Background, values, goals, current challenges.',
         icon: BookOpen,
         color: 'text-purple-500',
         bg: 'bg-purple-500/10'
     },
     {
-        type: 'social',
-        title: 'The Web',
-        description: 'Social media links and websites.',
-        icon: Share2,
-        color: 'text-blue-500',
-        bg: 'bg-blue-500/10'
-    },
-    {
-        type: 'financial',
-        title: 'Financial Vault',
-        description: 'Bank details, payment handles, secure notes.',
-        icon: DollarSign,
+        type: 'notes',
+        title: 'Notes',
+        description: 'Free-draw canvas for sketches and doodles.',
+        icon: PenTool,
         color: 'text-emerald-500',
         bg: 'bg-emerald-500/10'
     }
 ];
 
-export default function ModuleLibrary({ isOpen, onClose, onSelect, existingModules = [] }) {
+export default function ModuleLibrary({ isOpen, onClose, onSelect, existingModules = [], isMe = false }) {
     if (!isOpen) return null;
+
+    // Filter modules based on whether this is "me" or a friend
+    // For "me", we don't need family, communication, or story modules (those are for tracking others)
+    const availableModules = isMe
+        ? MODULES.filter(m => ['timeline', 'favorites', 'work', 'notes'].includes(m.type))
+        : MODULES;
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -85,7 +94,7 @@ export default function ModuleLibrary({ isOpen, onClose, onSelect, existingModul
                 </div>
 
                 <div className="p-4 grid gap-2 max-h-[60vh] overflow-y-auto">
-                    {MODULES.map((mod) => {
+                    {availableModules.map((mod) => {
                         const isAdded = existingModules.some(m => m.type === mod.type);
                         return (
                             <button

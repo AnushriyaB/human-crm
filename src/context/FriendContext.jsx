@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { geocodeLocation } from '../lib/geocode';
 
 const FriendContext = createContext();
@@ -6,6 +6,13 @@ const FriendContext = createContext();
 export function useFriends() {
     return useContext(FriendContext);
 }
+
+// Default modules for new friends
+const DEFAULT_MODULES = [
+    { type: 'family', data: {} },
+    { type: 'timeline', data: {} },
+    { type: 'favorites', data: {} }
+];
 
 export function FriendProvider({ children }) {
     const [friends, setFriends] = useState([
@@ -15,47 +22,21 @@ export function FriendProvider({ children }) {
             lat: null,
             lon: null,
             location: '',
+            country: '',
+            state: '',
             isMe: true,
             photo: null,
             passphrase: 'demo',
-            birthday: '',
-            // Demo modules already added for "me"
+            nickname: '',
+            pronouns: '',
+            timezone: '',
+            relationshipType: '',
+            howMet: '',
             modules: [
-                {
-                    type: 'family',
-                    data: {
-                        partner: { name: '', anniversary: '' },
-                        children: [],
-                        pets: []
-                    }
-                },
-                {
-                    type: 'dates',
-                    data: {
-                        dates: []
-                    }
-                },
-                {
-                    type: 'preferences',
-                    data: {
-                        favorites: {
-                            food: '',
-                            color: '',
-                            music: '',
-                            hobbies: '',
-                            giftIdeas: ''
-                        }
-                    }
-                },
-                {
-                    type: 'memories',
-                    data: {
-                        howWeMet: '',
-                        favoriteMemory: '',
-                        firstMeeting: '',
-                        notes: ''
-                    }
-                }
+                { type: 'family', data: {} },
+                { type: 'timeline', data: {} },
+                { type: 'favorites', data: {} },
+                { type: 'story', data: {} }
             ]
         }
     ]);
@@ -76,45 +57,47 @@ export function FriendProvider({ children }) {
             id: Date.now().toString(),
             lat: coords.lat,
             lon: coords.lon,
-            // New friends get starter modules
-            modules: [
-                { type: 'family', data: { partner: { name: '', anniversary: '' }, children: [], pets: [] } },
-                { type: 'dates', data: { dates: [] } },
-                { type: 'preferences', data: { favorites: {} } }
-            ]
+            modules: DEFAULT_MODULES
         };
         setFriends(prev => [...prev, newFriend]);
     };
 
-    const updateFriend = async (id, updates) => {
-        const currentFriend = friends.find(f => f.id === id);
-        if (!currentFriend) return;
-
-        const locationQuery = updates.address || updates.city || currentFriend.address || currentFriend.city;
-
-        // Only geocode if location changed OR if it was missing coords before
-        const locationChanged = (updates.address && updates.address !== currentFriend.address) ||
-            (updates.city && updates.city !== currentFriend.city);
-
-        const needsCoords = (locationQuery && (currentFriend.lat === null || currentFriend.lon === null)) || locationChanged;
-
-        let newCoords = {};
-
-        if (needsCoords && locationQuery) {
-            const preciseCoords = await geocodeLocation(locationQuery);
-            if (preciseCoords) {
-                newCoords = preciseCoords;
-            }
-        }
-
+    // Synchronous update - no geocoding, instant update
+    const updateFriend = useCallback((id, updates) => {
         setFriends(prev => prev.map(f => {
             if (f.id !== id) return f;
-            return { ...f, ...updates, ...newCoords };
+            return { ...f, ...updates };
         }));
-    };
+    }, []);
+
+    // Call this to geocode a specific location string for a friend
+    const geocodeFriendLocation = useCallback(async (id, locationOverride) => {
+        // Get current friend state
+        const currentFriends = await new Promise(resolve => {
+            setFriends(prev => {
+                resolve(prev);
+                return prev;
+            });
+        });
+
+        const friend = currentFriends.find(f => f.id === id);
+        if (!friend) return;
+
+        // Use the override location if provided, otherwise use friend.location
+        const locationToGeocode = locationOverride || friend.location;
+        if (!locationToGeocode) return;
+
+        const coords = await geocodeLocation(locationToGeocode);
+        if (coords) {
+            setFriends(prev => prev.map(f => {
+                if (f.id !== id) return f;
+                return { ...f, lat: coords.lat, lon: coords.lon };
+            }));
+        }
+    }, []);
 
     return (
-        <FriendContext.Provider value={{ friends, addFriend, updateFriend }}>
+        <FriendContext.Provider value={{ friends, addFriend, updateFriend, geocodeFriendLocation }}>
             {children}
         </FriendContext.Provider>
     );

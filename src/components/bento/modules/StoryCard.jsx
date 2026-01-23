@@ -1,8 +1,8 @@
 import React from 'react';
 import BentoCard from '../Card';
-import { Briefcase, Building, Wrench, Target, Lightbulb } from 'lucide-react';
+import { BookOpen, MapPin, Heart, Target, CloudRain } from 'lucide-react';
 
-export default function WorkCard({ module, isEditing, onUpdate, onRemove, isNew }) {
+export default function StoryCard({ module, isEditing, onUpdate, onRemove, isNew }) {
     const data = module.data || {};
 
     const updateData = (updates) => {
@@ -45,41 +45,42 @@ export default function WorkCard({ module, isEditing, onUpdate, onRemove, isNew 
 
     return (
         <BentoCard
-            title="Work"
-            icon={Briefcase}
+            title="Story"
+            icon={BookOpen}
+            className="col-span-2"
             isEditing={isEditing}
             onRemove={onRemove}
             isNew={isNew}
         >
             <div className="space-y-5">
-                {/* Title & Company */}
-                <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Briefcase} label="Job Title" field="jobTitle" placeholder="Software Engineer" />
-                    <Field icon={Building} label="Company" field="company" placeholder="Acme Inc." />
-                </div>
-
-                {/* What they work on */}
                 <Field
-                    icon={Wrench}
-                    label="Works On"
-                    field="whatTheyWorkOn"
-                    placeholder="Building mobile apps, managing teams..."
+                    icon={MapPin}
+                    label="Grew Up"
+                    field="grewUp"
+                    placeholder="Small town in Texas, moved to NYC..."
                 />
 
-                {/* Skills */}
                 <Field
-                    icon={Lightbulb}
-                    label="Skills"
-                    field="skills"
-                    placeholder="Design, Python, leadership..."
+                    icon={Heart}
+                    label="Values"
+                    field="whatMatters"
+                    placeholder="Family, career, creativity, social justice..."
+                    multiline
                 />
 
-                {/* Aspirations */}
                 <Field
                     icon={Target}
-                    label="Wants Next"
-                    field="nextInLife"
-                    placeholder="Start a company, get promoted..."
+                    label="Big Goals or Dreams"
+                    field="goalsAndDreams"
+                    placeholder="Write a book, travel the world..."
+                    multiline
+                />
+
+                <Field
+                    icon={CloudRain}
+                    label="Current Stresses"
+                    field="currentStresses"
+                    placeholder="Job search, health issues..."
                     multiline
                 />
             </div>
