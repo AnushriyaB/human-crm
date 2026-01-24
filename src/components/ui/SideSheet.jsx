@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './Button';
@@ -44,6 +44,8 @@ export default function SideSheet({ isOpen, onClose, friend }) {
     const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('about');
     const [recentlyAdded, setRecentlyAdded] = useState(new Set());
+    const [enabledTabs, setEnabledTabs] = useState(['about']); // Only 'about' enabled by default
+    const scrollContainerRef = useRef(null);
 
     // Determine if this is the "me" profile
     const isMe = friend?.name?.toLowerCase() === 'me' || friend?.isMe;
@@ -61,7 +63,16 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         setIsEditing(false);
         setActiveTab('about');
         setRecentlyAdded(new Set());
+        // Load enabled tabs from friend data or default to just 'about'
+        setEnabledTabs(friend?.enabledTabs || ['about']);
     }, [isOpen, friend?.id]);
+
+    const handleAddTab = (tabId) => {
+        const newEnabledTabs = [...enabledTabs, tabId];
+        setEnabledTabs(newEnabledTabs);
+        updateFriend(friend.id, { enabledTabs: newEnabledTabs });
+        setActiveTab(tabId);
+    };
 
     if (!isOpen || !friend) return null;
 
@@ -157,7 +168,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-2xl shadow-2xl z-50 overflow-hidden border-l flex flex-col"
+                        className="fixed right-0 top-0 bottom-0 w-full max-w-4xl shadow-2xl z-50 overflow-hidden border-l flex flex-col"
                         style={{
                             backgroundColor: 'var(--color-card-bg)',
                             borderColor: 'var(--color-border)'
@@ -216,63 +227,52 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             </AnimatePresence>
                         </div>
 
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto">
-                            <div className="p-6 space-y-6">
-                                {/* Identity Card - Different for "me" vs friends */}
-                                {isMe ? (
-                                    <MyIdentityCard
-                                        friend={friend}
-                                        isEditing={isEditing}
-                                        onUpdate={(data) => updateFriend(friend.id, data)}
-                                    />
-                                ) : (
-                                    <CoreIdentityCard
-                                        friend={friend}
-                                        isEditing={isEditing}
-                                        onUpdate={(data) => updateFriend(friend.id, data)}
-                                    />
+                        {/* Tab Navigation - Fixed, not scrollable */}
+                        <div className="px-6 border-b relative z-20" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
+                            <div className="flex gap-6">
+                                {TABS.filter(tab => enabledTabs.includes(tab.id)).map(tab => {
+                                    const isActive = activeTab === tab.id;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className="relative pb-3 pt-3 text-sm font-medium whitespace-nowrap transition-colors duration-200"
+                                            style={{ color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}
+                                        >
+                                            {isActive && <span className="absolute inset-x-0 top-1 bottom-3 rounded-lg -z-10" style={{ backgroundColor: 'var(--color-button-bg)' }} />}
+                                            <span className="relative px-3 py-1">{tab.label}</span>
+                                            {isActive && (
+                                                <motion.span
+                                                    layoutId="activeTabIndicator"
+                                                    className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full"
+                                                    style={{ backgroundColor: 'var(--color-brand)' }}
+                                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                                />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                                {TABS.filter(tab => !enabledTabs.includes(tab.id)).length > 0 && (
+                                    <div className="relative group pb-3 pt-3">
+                                        <button className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors">
+                                            <Plus size={14} />
+                                            <span>Add</span>
+                                        </button>
+                                        <div className="absolute top-full left-0 mt-1 py-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px]">
+                                            {TABS.filter(tab => !enabledTabs.includes(tab.id)).map(tab => (
+                                                <button key={tab.id} onClick={() => handleAddTab(tab.id)} className="w-full px-4 py-2 text-sm text-left hover:bg-[var(--color-bg-secondary)] transition-colors">
+                                                    {tab.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 )}
+                            </div>
+                        </div>
 
-                                {/* Tab Navigation - Figma-inspired pill style */}
-                                <div className="flex gap-2 overflow-x-auto pb-2">
-                                    {TABS.map(tab => {
-                                        const count = getTabModuleCount(tab.id);
-                                        const TabIcon = tab.icon;
-                                        const isActive = activeTab === tab.id;
-
-                                        return (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setActiveTab(tab.id)}
-                                                className={`
-                                                    flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap
-                                                    rounded transition-all duration-200
-                                                    ${isActive
-                                                        ? 'bg-[#e8edfb] text-[#323232]'
-                                                        : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-gray-100'
-                                                    }
-                                                `}
-                                            >
-                                                <TabIcon size={16} />
-                                                {tab.label}
-                                                {count > 0 && (
-                                                    <span className={`
-                                                        text-xs px-2 py-0.5 rounded
-                                                        ${isActive
-                                                            ? 'bg-[#575758] text-white'
-                                                            : 'bg-gray-200 text-gray-600'
-                                                        }
-                                                    `}>
-                                                        {count}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Tab Content */}
+                        {/* Scrollable Content */}
+                        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
+                            <div className="p-6 space-y-6">
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={activeTab}
@@ -281,31 +281,34 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.2 }}
                                     >
-                                        <BentoGrid>
-                                            {activeModulesInTab.map(type => renderModule(type))}
+                                        {/* Show Identity Card only on 'about' tab */}
+                                        {activeTab === 'about' ? (
+                                            isMe ? (
+                                                <MyIdentityCard
+                                                    friend={friend}
+                                                    isEditing={isEditing}
+                                                    onUpdate={(data) => updateFriend(friend.id, data)}
+                                                    scrollContainerRef={scrollContainerRef}
+                                                />
+                                            ) : (
+                                                <CoreIdentityCard
+                                                    friend={friend}
+                                                    isEditing={isEditing}
+                                                    onUpdate={(data) => updateFriend(friend.id, data)}
+                                                />
+                                            )
+                                        ) : (
+                                            /* Other tabs show their module content directly */
+                                            <div className="space-y-6">
+                                                {activeModulesInTab.map(type => renderModule(type))}
 
-                                            {/* Add Tile Button for current tab */}
-                                            {currentTabModules.some(type => !hasModule(type)) && (
-                                                <BentoCard
-                                                    className="flex items-center justify-center min-h-[140px] border-dashed border-2 bg-transparent hover:bg-[var(--color-bg-secondary)] cursor-pointer group"
-                                                    onClick={() => setIsLibraryOpen(true)}
-                                                >
-                                                    <div className="text-center space-y-3 group-hover:scale-105 transition-transform">
-                                                        <div className="mx-auto w-12 h-12 rounded-full bg-[var(--color-bg-secondary)] flex items-center justify-center group-hover:bg-[var(--color-highlight)] group-hover:text-white transition-colors">
-                                                            <Plus size={24} />
-                                                        </div>
-                                                        <p className="text-xs font-semibold uppercase tracking-wider opacity-50">Add Tile</p>
+                                                {activeModulesInTab.length === 0 && (
+                                                    <div className="py-12 text-center text-[var(--color-text-secondary)]">
+                                                        <p className="text-sm">No content in this section yet</p>
                                                     </div>
-                                                </BentoCard>
-                                            )}
-
-                                            {/* Empty state for tab */}
-                                            {activeModulesInTab.length === 0 && !currentTabModules.some(type => !hasModule(type)) && (
-                                                <div className="col-span-full py-12 text-center text-[var(--color-text-secondary)]">
-                                                    <p className="text-sm">No modules in this section yet</p>
-                                                </div>
-                                            )}
-                                        </BentoGrid>
+                                                )}
+                                            </div>
+                                        )}
                                     </motion.div>
                                 </AnimatePresence>
                             </div>

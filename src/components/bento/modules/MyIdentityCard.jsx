@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
-import BentoCard from '../Card';
-import { User, MapPin, Globe, Briefcase, Heart, Camera, Copy, Check, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { User, MapPin, Globe, Briefcase, Heart, Camera, Copy, Check, Eye, EyeOff, ChevronDown, Search, ImagePlus } from 'lucide-react';
 import { useFriends } from '../../../context/FriendContext';
 
 const PRONOUNS = [
@@ -10,14 +10,194 @@ const PRONOUNS = [
     { label: 'other', value: 'other' }
 ];
 
-export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
+const COUNTRIES = [
+    { name: 'United States', code: 'US', tz: 'Multiple' },
+    { name: 'United Kingdom', code: 'GB', tz: 'GMT (UTC+0)' },
+    { name: 'Canada', code: 'CA', tz: 'Multiple' },
+    { name: 'Australia', code: 'AU', tz: 'Multiple' },
+    { name: 'Germany', code: 'DE', tz: 'CET (UTC+1)' },
+    { name: 'France', code: 'FR', tz: 'CET (UTC+1)' },
+    { name: 'Japan', code: 'JP', tz: 'JST (UTC+9)' },
+    { name: 'India', code: 'IN', tz: 'IST (UTC+5:30)' },
+    { name: 'Brazil', code: 'BR', tz: 'BRT (UTC-3)' },
+    { name: 'Singapore', code: 'SG', tz: 'SGT (UTC+8)' },
+    { name: 'South Korea', code: 'KR', tz: 'KST (UTC+9)' },
+    { name: 'New Zealand', code: 'NZ', tz: 'NZST (UTC+12)' },
+    { name: 'Ireland', code: 'IE', tz: 'GMT (UTC+0)' },
+    { name: 'Sweden', code: 'SE', tz: 'CET (UTC+1)' },
+    { name: 'Switzerland', code: 'CH', tz: 'CET (UTC+1)' },
+];
+
+const US_STATES = [
+    { name: 'California', code: 'CA', tz: 'PST (UTC-8)' },
+    { name: 'New York', code: 'NY', tz: 'EST (UTC-5)' },
+    { name: 'Texas', code: 'TX', tz: 'CST (UTC-6)' },
+    { name: 'Florida', code: 'FL', tz: 'EST (UTC-5)' },
+    { name: 'Illinois', code: 'IL', tz: 'CST (UTC-6)' },
+    { name: 'Washington', code: 'WA', tz: 'PST (UTC-8)' },
+    { name: 'Massachusetts', code: 'MA', tz: 'EST (UTC-5)' },
+    { name: 'Colorado', code: 'CO', tz: 'MST (UTC-7)' },
+];
+
+const CA_PROVINCES = [
+    { name: 'Ontario', code: 'ON', tz: 'EST (UTC-5)' },
+    { name: 'Quebec', code: 'QC', tz: 'EST (UTC-5)' },
+    { name: 'British Columbia', code: 'BC', tz: 'PST (UTC-8)' },
+    { name: 'Alberta', code: 'AB', tz: 'MST (UTC-7)' },
+];
+
+const AU_STATES = [
+    { name: 'New South Wales', code: 'NSW', tz: 'AEST (UTC+10)' },
+    { name: 'Victoria', code: 'VIC', tz: 'AEST (UTC+10)' },
+    { name: 'Queensland', code: 'QLD', tz: 'AEST (UTC+10)' },
+];
+
+// Tactile input styling
+const tactileInputClass = `
+    w-full px-4 py-3 text-sm rounded-xl
+    bg-[var(--color-bg-secondary)]
+    border border-[var(--color-border)]
+    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
+    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
+    focus:border-[var(--color-brand)]
+    transition-all duration-200
+    placeholder:text-gray-400
+`;
+
+const tactileSelectClass = `
+    w-full px-4 py-3 text-sm rounded-xl
+    bg-[var(--color-bg-secondary)]
+    border border-[var(--color-border)]
+    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
+    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
+    focus:border-[var(--color-brand)]
+    transition-all duration-200
+    cursor-pointer
+`;
+
+// Searchable dropdown with tactile styling
+function TactileSelect({ value, onChange, options, placeholder }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState('');
+
+    const filteredOptions = useMemo(() => {
+        if (!search) return options;
+        return options.filter(opt =>
+            opt.name.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [options, search]);
+
+    const selectedOption = options.find(opt => opt.name === value || opt.code === value);
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`${tactileSelectClass} text-left flex items-center justify-between`}
+            >
+                <span className={selectedOption ? '' : 'text-gray-400'}>
+                    {selectedOption?.name || placeholder}
+                </span>
+                <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-50 mt-2 w-full bg-white border border-[var(--color-border)] rounded-xl shadow-lg overflow-hidden">
+                    <div className="p-2 border-b border-[var(--color-border)]">
+                        <div className="relative">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className={`${tactileInputClass} pl-9`}
+                                autoFocus
+                            />
+                        </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                        {filteredOptions.length > 0 ? (
+                            filteredOptions.map((opt) => (
+                                <button
+                                    key={opt.code}
+                                    type="button"
+                                    onClick={() => {
+                                        onChange(opt);
+                                        setIsOpen(false);
+                                        setSearch('');
+                                    }}
+                                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-[var(--color-bg-secondary)] transition-colors ${selectedOption?.code === opt.code ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)]' : ''}`}
+                                >
+                                    {opt.name}
+                                </button>
+                            ))
+                        ) : (
+                            <div className="px-4 py-3 text-sm text-gray-400">No results</div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollContainerRef }) {
     const { geocodeFriendLocation } = useFriends();
-    const fileInputRef = useRef(null);
+    const photoInputRef = useRef(null);
+    const coverInputRef = useRef(null);
     const [copied, setCopied] = useState(false);
     const [showPasskey, setShowPasskey] = useState(false);
+    const [scrollProgress, setScrollProgress] = useState(0);
+
+    // Track scroll for cover image animation
+    useEffect(() => {
+        const container = scrollContainerRef?.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const scrollTop = container.scrollTop;
+            const progress = Math.min(1, Math.max(0, scrollTop / 200));
+            setScrollProgress(progress);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [scrollContainerRef]);
 
     const handleChange = (field, value) => {
         onUpdate?.({ [field]: value });
+    };
+
+    const handleCountryChange = (country) => {
+        const updates = {
+            country: country.name,
+            state: '',
+            location: country.name,
+        };
+        if (country.tz !== 'Multiple') {
+            updates.timezone = country.tz;
+            setTimeout(() => geocodeFriendLocation?.(friend.id, country.name), 100);
+        }
+        onUpdate?.(updates);
+    };
+
+    const handleStateChange = (state) => {
+        const newLocation = `${state.name}, ${friend.country}`;
+        onUpdate?.({
+            state: state.name,
+            timezone: state.tz,
+            location: newLocation
+        });
+        setTimeout(() => geocodeFriendLocation?.(friend.id, newLocation), 100);
+    };
+
+    const getStatesForCountry = (countryName) => {
+        if (countryName === 'United States') return US_STATES;
+        if (countryName === 'Canada') return CA_PROVINCES;
+        if (countryName === 'Australia') return AU_STATES;
+        return null;
     };
 
     const handlePhotoUpload = (e) => {
@@ -26,6 +206,17 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 onUpdate?.({ photo: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleCoverUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                onUpdate?.({ coverPhoto: reader.result });
             };
             reader.readAsDataURL(file);
         }
@@ -48,169 +239,235 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
         return '•'.repeat(passkey.length);
     };
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] w-full";
-    const selectClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)]";
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const states = getStatesForCountry(friend.country);
+
+    const getGradient = () => {
+        const colors = [
+            'from-violet-400 to-purple-500',
+            'from-blue-400 to-indigo-500',
+            'from-emerald-400 to-teal-500',
+            'from-orange-400 to-rose-500',
+            'from-pink-400 to-fuchsia-500',
+        ];
+        const hash = (friend.name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return colors[hash % colors.length];
+    };
+
+    const locationString = [friend.state, friend.country].filter(Boolean).join(', ');
+
+    // Cover image height animates on scroll (shrinks as you scroll)
+    const coverHeight = 180 - (scrollProgress * 100); // 180px -> 80px
 
     return (
-        <BentoCard
-            title="My Identity"
-            icon={User}
-            className="row-span-1 md:col-span-2"
-        >
-            <div className="space-y-6">
-                {/* Top Row: Avatar + Name + Bio */}
-                <div className="flex items-start gap-5">
-                    {/* Avatar with upload overlay in edit mode */}
+        <div className="space-y-6">
+            {/* Cover Image - animates height on scroll */}
+            <div
+                className="relative w-full overflow-hidden rounded-2xl transition-all duration-150 ease-out"
+                style={{ height: `${coverHeight}px` }}
+            >
+                {/* Background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getGradient()}`} />
+
+                {/* Cover photo */}
+                {friend.coverPhoto && (
+                    <img
+                        src={friend.coverPhoto}
+                        alt="Cover"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                )}
+
+                {/* Cover upload button (edit mode) */}
+                {isEditing && (
+                    <>
+                        <input
+                            ref={coverInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCoverUpload}
+                            className="hidden"
+                        />
+                        <button
+                            onClick={() => coverInputRef.current?.click()}
+                            className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                        >
+                            <ImagePlus size={18} />
+                        </button>
+                    </>
+                )}
+
+                {/* Avatar - positioned at bottom left */}
+                <div className="absolute -bottom-10 left-6">
                     <div className="relative group">
-                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden shrink-0 border-2 border-white shadow-lg">
+                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden">
                             {friend.photo ? (
                                 <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-3xl font-bold text-white">{(friend.name || '?').charAt(0).toUpperCase()}</span>
+                                <div className={`w-full h-full bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
+                                    <span className="text-2xl font-bold text-white">{(friend.name || '?').charAt(0).toUpperCase()}</span>
+                                </div>
                             )}
                         </div>
-
-                        {/* Photo upload overlay - only in edit mode */}
                         {isEditing && (
                             <>
                                 <input
-                                    ref={fileInputRef}
+                                    ref={photoInputRef}
                                     type="file"
                                     accept="image/*"
                                     onChange={handlePhotoUpload}
                                     className="hidden"
                                 />
                                 <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    onClick={() => photoInputRef.current?.click()}
+                                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                    <Camera size={24} className="text-white" />
+                                    <Camera size={20} className="text-white" />
                                 </button>
                             </>
                         )}
                     </div>
-
-                    <div className="flex-1 space-y-4">
-                        {/* Name - editable */}
-                        <div>
-                            <label className={labelClass}>Display Name</label>
-                            {isEditing ? (
-                                <input
-                                    type="text"
-                                    placeholder="Your name"
-                                    value={friend.name || ''}
-                                    onChange={(e) => handleChange('name', e.target.value)}
-                                    className={`${inputClass} text-xl font-bold`}
-                                />
-                            ) : (
-                                <h2 className="text-2xl font-bold tracking-tight">{friend.name || 'Unnamed'}</h2>
-                            )}
-                        </div>
-
-                        {/* Pronouns */}
-                        <div>
-                            <label className={labelClass}>Pronouns</label>
-                            {isEditing ? (
-                                <select
-                                    value={friend.pronouns || ''}
-                                    onChange={(e) => handleChange('pronouns', e.target.value)}
-                                    className={`${selectClass} w-full`}
-                                >
-                                    <option value="">Select pronouns...</option>
-                                    {PRONOUNS.map(p => (
-                                        <option key={p.value} value={p.value}>{p.label}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <p className="text-sm font-medium">{friend.pronouns || <span className="text-[var(--color-text-secondary)] italic">Not set</span>}</p>
-                            )}
-                        </div>
-                    </div>
                 </div>
+            </div>
 
-                {/* Bio/About Me */}
+            {/* Spacer for avatar overlap */}
+            <div className="h-6" />
+
+            {/* Form Fields - no card wrapper, clean form layout */}
+            <div className="space-y-5">
+                {/* Name */}
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Heart size={14} className="text-[var(--color-text-secondary)]" />
-                        <label className={labelClass.replace(' mb-2 block', '')}>About Me</label>
-                    </div>
-                    {isEditing ? (
-                        <textarea
-                            placeholder="A short bio about yourself..."
-                            value={friend.bio || ''}
-                            onChange={(e) => handleChange('bio', e.target.value)}
-                            className={`${inputClass} resize-none`}
-                            rows={3}
-                        />
-                    ) : (
-                        <p className="text-sm">{friend.bio || <span className="text-[var(--color-text-secondary)] italic">Tell others about yourself...</span>}</p>
-                    )}
-                </div>
-
-                {/* Location & Timezone */}
-                <div className="grid grid-cols-2 gap-5">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <MapPin size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Location</label>
-                        </div>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                placeholder="City, Country"
-                                value={friend.location || ''}
-                                onChange={(e) => handleChange('location', e.target.value)}
-                                className={inputClass}
-                            />
-                        ) : (
-                            <p className="text-sm font-medium">{friend.location || <span className="text-[var(--color-text-secondary)] italic">Not set</span>}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Globe size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Timezone</label>
-                        </div>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                placeholder="PST, EST, etc."
-                                value={friend.timezone || ''}
-                                onChange={(e) => handleChange('timezone', e.target.value)}
-                                className={inputClass}
-                            />
-                        ) : (
-                            <p className="text-sm font-medium">{friend.timezone || <span className="text-[var(--color-text-secondary)] italic">Not set</span>}</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Current Role/What I Do */}
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Briefcase size={14} className="text-[var(--color-text-secondary)]" />
-                        <label className={labelClass.replace(' mb-2 block', '')}>What I Do</label>
-                    </div>
                     {isEditing ? (
                         <input
                             type="text"
-                            placeholder="Designer at Acme, Student, Entrepreneur..."
-                            value={friend.currentRole || ''}
-                            onChange={(e) => handleChange('currentRole', e.target.value)}
-                            className={inputClass}
+                            value={friend.name || ''}
+                            onChange={(e) => handleChange('name', e.target.value)}
+                            placeholder="Your name"
+                            className={`${tactileInputClass} text-xl font-bold`}
                         />
                     ) : (
-                        <p className="text-sm font-medium">{friend.currentRole || <span className="text-[var(--color-text-secondary)] italic">Not set</span>}</p>
+                        <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
+                            {friend.name || 'Unnamed'}
+                        </h2>
                     )}
                 </div>
 
-                {/* Passkey - Secret with click to copy */}
+                {/* Metadata row - view mode */}
+                {!isEditing && (friend.pronouns || friend.timezone || locationString) && (
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                        {friend.pronouns && (
+                            <span className="px-2.5 py-1 rounded-full bg-[var(--color-bg-secondary)]">{friend.pronouns}</span>
+                        )}
+                        {locationString && (
+                            <span className="flex items-center gap-1.5">
+                                <MapPin size={14} />
+                                {locationString}
+                            </span>
+                        )}
+                        {friend.timezone && (
+                            <span className="flex items-center gap-1.5">
+                                <Globe size={14} />
+                                {friend.timezone.split(' ')[0]}
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* Current Role - view mode */}
+                {!isEditing && friend.currentRole && (
+                    <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                        <Briefcase size={14} />
+                        <span>{friend.currentRole}</span>
+                    </div>
+                )}
+
+                {/* Bio - view mode */}
+                {!isEditing && friend.bio && (
+                    <p className="text-[var(--color-text-secondary)] leading-relaxed">{friend.bio}</p>
+                )}
+
+                {/* Edit Mode Fields */}
+                {isEditing && (
+                    <div className="space-y-4">
+                        {/* Pronouns */}
+                        <div>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Pronouns</label>
+                            <select
+                                value={friend.pronouns || ''}
+                                onChange={(e) => handleChange('pronouns', e.target.value)}
+                                className={tactileSelectClass}
+                            >
+                                <option value="">Select...</option>
+                                {PRONOUNS.map(p => (
+                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Bio */}
+                        <div>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">About Me</label>
+                            <textarea
+                                placeholder="A short bio about yourself..."
+                                value={friend.bio || ''}
+                                onChange={(e) => handleChange('bio', e.target.value)}
+                                className={`${tactileInputClass} resize-none`}
+                                rows={3}
+                            />
+                        </div>
+
+                        {/* Location */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Country</label>
+                                <TactileSelect
+                                    value={friend.country}
+                                    onChange={handleCountryChange}
+                                    options={COUNTRIES}
+                                    placeholder="Select..."
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">
+                                    {friend.country === 'Canada' ? 'Province' : 'State/Region'}
+                                </label>
+                                {states ? (
+                                    <TactileSelect
+                                        value={friend.state}
+                                        onChange={handleStateChange}
+                                        options={states}
+                                        placeholder="Select..."
+                                    />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        placeholder="City or region"
+                                        value={friend.state || ''}
+                                        onChange={(e) => handleChange('state', e.target.value)}
+                                        className={tactileInputClass}
+                                    />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* What I Do */}
+                        <div>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">What I Do</label>
+                            <input
+                                type="text"
+                                placeholder="Designer at Acme, Student..."
+                                value={friend.currentRole || ''}
+                                onChange={(e) => handleChange('currentRole', e.target.value)}
+                                className={tactileInputClass}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Passkey Section */}
                 {friend.passphrase && (
-                    <div className="pt-4 border-t border-[var(--color-border)]">
-                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">Share this passkey with friends so they can find you:</p>
-                        <div className="flex items-center justify-between bg-[var(--color-bg-secondary)] rounded-lg px-4 py-3">
+                    <div className="pt-4 mt-4 border-t border-[var(--color-border)]">
+                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">Share this passkey with friends:</p>
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-bg-secondary)]">
                             <div className="flex items-center gap-2">
                                 <span className="font-mono text-sm text-[var(--color-brand)]">
                                     {showPasskey ? friend.passphrase : maskPasskey(friend.passphrase)}
@@ -218,7 +475,6 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
                                 <button
                                     onClick={() => setShowPasskey(!showPasskey)}
                                     className="p-1 hover:bg-white rounded transition-colors"
-                                    title={showPasskey ? "Hide passkey" : "Show passkey"}
                                 >
                                     {showPasskey ? (
                                         <EyeOff size={14} className="text-[var(--color-text-secondary)]" />
@@ -229,14 +485,10 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
                             </div>
                             <button
                                 onClick={handleCopyPasskey}
-                                className={`
-                                    flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
-                                    transition-all duration-200
-                                    ${copied
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${copied
                                         ? 'bg-green-100 text-green-600'
                                         : 'bg-white hover:bg-[var(--color-brand)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] border border-[var(--color-border)]'
-                                    }
-                                `}
+                                    }`}
                             >
                                 {copied ? (
                                     <>
@@ -254,6 +506,6 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate }) {
                     </div>
                 )}
             </div>
-        </BentoCard>
+        </div>
     );
 }

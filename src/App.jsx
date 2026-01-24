@@ -13,7 +13,7 @@ function App() {
         <ThemeProvider>
             <FriendProvider>
                 <Router>
-                    <div className="min-h-screen bg-white text-text-primary font-sans antialiased">
+                    <div className="min-h-screen font-sans antialiased" style={{ backgroundColor: 'var(--color-background)', color: 'var(--color-text-primary)' }}>
                         <Routes>
                             <Route path="/login" element={<Login />} />
                             <Route path="/" element={<Navigate to="/login" replace />} />
