@@ -11,13 +11,9 @@ export default {
             },
             colors: {
                 brand: 'var(--color-brand)',
-                text: {
-                    primary: 'var(--color-text-primary)',
-                    secondary: 'var(--color-text-secondary)',
-                },
-                border: {
-                    DEFAULT: 'var(--color-border)',
-                },
+                'text-primary': 'var(--color-text-primary)',
+                'text-secondary': 'var(--color-text-secondary)',
+                border: 'var(--color-border)',
                 'card-bg': 'var(--color-card-bg)',
                 'button-bg': 'var(--color-button-bg)',
                 highlight: 'var(--color-highlight)',
