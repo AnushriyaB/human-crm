@@ -234,38 +234,36 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     />
                                 )}
 
-                                {/* Tab Navigation - Figma-inspired pill style */}
-                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                {/* Tab Navigation - Clean underline style */}
+                                <div className="flex gap-8 overflow-x-auto border-b" style={{ borderColor: 'var(--color-border)' }}>
                                     {TABS.map(tab => {
-                                        const count = getTabModuleCount(tab.id);
-                                        const TabIcon = tab.icon;
                                         const isActive = activeTab === tab.id;
 
                                         return (
                                             <button
                                                 key={tab.id}
                                                 onClick={() => setActiveTab(tab.id)}
-                                                className={`
-                                                    flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap
-                                                    rounded transition-all duration-200
-                                                    ${isActive
-                                                        ? 'bg-[#e8edfb] text-[#323232]'
-                                                        : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-gray-100'
-                                                    }
-                                                `}
+                                                className="relative pb-3 pt-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
+                                                style={{
+                                                    color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                                                }}
                                             >
-                                                <TabIcon size={16} />
-                                                {tab.label}
-                                                {count > 0 && (
-                                                    <span className={`
-                                                        text-xs px-2 py-0.5 rounded
-                                                        ${isActive
-                                                            ? 'bg-[#575758] text-white'
-                                                            : 'bg-gray-200 text-gray-600'
-                                                        }
-                                                    `}>
-                                                        {count}
-                                                    </span>
+                                                {/* Active background pill */}
+                                                {isActive && (
+                                                    <span
+                                                        className="absolute inset-x-0 top-0 bottom-3 rounded-lg -z-10"
+                                                        style={{ backgroundColor: 'var(--color-button-bg)' }}
+                                                    />
+                                                )}
+                                                <span className="relative px-3 py-1">{tab.label}</span>
+                                                {/* Purple underline indicator */}
+                                                {isActive && (
+                                                    <motion.span
+                                                        layoutId="activeTabIndicator"
+                                                        className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full"
+                                                        style={{ backgroundColor: 'var(--color-brand)' }}
+                                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                                    />
                                                 )}
                                             </button>
                                         );
