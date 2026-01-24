@@ -25,7 +25,9 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                             borderStyle: 'solid'
                         }}
                     >
-                        <div className="p-2">
+                        <div className="p-3 space-y-2">
+                            {/* Label */}
+                            <p className="text-xs text-[var(--color-text-secondary)] font-medium px-1">Digest Frequency</p>
                             {/* Visual Toggle */}
                             <div className="flex rounded-[2px] p-1 relative" style={{ backgroundColor: 'var(--color-button-bg)' }}>
                                 <motion.div
