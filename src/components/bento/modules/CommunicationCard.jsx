@@ -36,13 +36,19 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
         socialLinks: socialLinks.filter((_, idx) => idx !== i)
     });
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)]";
+    const inputClass = `w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400`;
     const selectClass = inputClass;
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const labelClass = "text-xs font-semibold lowercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
 
     return (
         <BentoCard
-            title="Communication"
+            title="communication"
             icon={MessageCircle}
             className="col-span-2"
             isEditing={isEditing}
@@ -55,7 +61,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <Phone size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Phone</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>phone</label>
                         </div>
                         {isEditing ? (
                             <input
@@ -73,7 +79,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <Mail size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Email</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>email</label>
                         </div>
                         {isEditing ? (
                             <input
@@ -94,7 +100,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <AtSign size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Social Links</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>social links</label>
                         </div>
                         {isEditing && (
                             <button onClick={addSocialLink} className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] text-[var(--color-brand)]">
@@ -146,7 +152,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <MessageCircle size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Preferred</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>preferred</label>
                         </div>
                         {isEditing ? (
                             <select
@@ -165,7 +171,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <Clock size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Best Time</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>best time</label>
                         </div>
                         {isEditing ? (
                             <input
@@ -183,7 +189,7 @@ export default function CommunicationCard({ module, isEditing, onUpdate, onRemov
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <Bell size={14} className="text-[var(--color-text-secondary)]" />
-                            <label className={labelClass.replace(' mb-2 block', '')}>Check-in</label>
+                            <label className={labelClass.replace(' mb-2 block', '')}>check-in</label>
                         </div>
                         {isEditing ? (
                             <select

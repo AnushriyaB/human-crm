@@ -3,10 +3,10 @@ import { User, MapPin, Globe, Users, Handshake, ChevronDown, Search, Camera, Cop
 import { useFriends } from '../../../context/FriendContext';
 
 const PRONOUNS = [
-    { label: 'he/him', value: 'he/him' },
-    { label: 'she/her', value: 'she/her' },
-    { label: 'they/them', value: 'they/them' },
-    { label: 'other', value: 'other' }
+    { name: 'he/him', code: 'he/him' },
+    { name: 'she/her', code: 'she/her' },
+    { name: 'they/them', code: 'they/them' },
+    { name: 'other', code: 'other' }
 ];
 
 const RELATIONSHIP_TYPES = [
@@ -66,25 +66,25 @@ const AU_STATES = [
 ];
 
 // Tactile input styling
+// Tactile input styling matching global Input
 const tactileInputClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
+    w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
     placeholder:text-gray-400
 `;
 
 const tactileSelectClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
+    w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400
     cursor-pointer
 `;
 
@@ -265,46 +265,51 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
     return (
         <div className="space-y-6">
-            {/* Cover Image */}
-            <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden">
-                {friend.coverPhoto ? (
-                    <img
-                        src={friend.coverPhoto}
-                        alt="Cover"
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${getGradient()}`} />
-                )}
-
-                {/* Cover upload button (edit mode) */}
-                {isEditing && (
-                    <>
-                        <input
-                            ref={coverInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleCoverUpload}
-                            className="hidden"
+            {/* Cover Image & Avatar container */}
+            <div className="relative mb-20">
+                {/* Cover Image */}
+                <div className="relative aspect-[4/3] w-full rounded-[4px] overflow-hidden">
+                    {friend.coverPhoto ? (
+                        <img
+                            src={friend.coverPhoto}
+                            alt="Cover"
+                            className="w-full h-full object-cover"
                         />
-                        <button
-                            onClick={() => coverInputRef.current?.click()}
-                            className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
-                        >
-                            <ImagePlus size={18} />
-                        </button>
-                    </>
-                )}
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 border border-black/5 shadow-inner" />
+                    )}
 
-                {/* Avatar - overlapping the cover */}
-                <div className="absolute -bottom-10 left-5">
+                    {/* Cover upload button (edit mode) */}
+                    {isEditing && (
+                        <>
+                            <input
+                                ref={coverInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleCoverUpload}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => coverInputRef.current?.click()}
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                            >
+                                <ImagePlus size={18} />
+                            </button>
+                        </>
+                    )}
+
+
+                </div>
+
+                {/* Avatar - overlapping the cover (now outside overflow-hidden) */}
+                <div className="absolute -bottom-10 left-5 z-10">
                     <div className="relative group">
-                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden">
+                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden relative">
                             {friend.photo ? (
                                 <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className={`w-full h-full bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
-                                    <span className="text-2xl font-bold text-white">{(friend.name || '?').charAt(0).toUpperCase()}</span>
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-gray-400">{(friend.name || '?').charAt(0).toUpperCase()}</span>
                                 </div>
                             )}
                         </div>
@@ -331,8 +336,7 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                 </div>
             </div>
 
-            {/* Spacer for avatar overlap */}
-            <div className="h-6" />
+            {/* Spacer no longer needed */}
 
             {/* Form Fields */}
             <div className="space-y-4">
@@ -389,10 +393,10 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                     <div className="space-y-4 pt-2">
                         {/* Nickname */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Nickname</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">nickname</label>
                             <input
                                 type="text"
-                                placeholder="What do you call them?"
+                                placeholder="what do you call them?"
                                 value={friend.nickname || ''}
                                 onChange={(e) => handleChange('nickname', e.target.value)}
                                 className={tactileInputClass}
@@ -402,26 +406,22 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                         {/* Pronouns + Connection Type Row */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Pronouns</label>
-                                <select
-                                    value={friend.pronouns || ''}
-                                    onChange={(e) => handleChange('pronouns', e.target.value)}
-                                    className={tactileSelectClass}
-                                >
-                                    <option value="">Select...</option>
-                                    {PRONOUNS.map(p => (
-                                        <option key={p.value} value={p.value}>{p.label}</option>
-                                    ))}
-                                </select>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">pronouns</label>
+                                <TactileSelect
+                                    value={friend.pronouns}
+                                    onChange={(opt) => handleChange('pronouns', opt.code)}
+                                    options={PRONOUNS}
+                                    placeholder="select..."
+                                />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Connection</label>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">connection</label>
                                 <select
                                     value={friend.relationshipType || ''}
                                     onChange={(e) => handleChange('relationshipType', e.target.value)}
                                     className={tactileSelectClass}
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">select...</option>
                                     {RELATIONSHIP_TYPES.map(t => (
                                         <option key={t} value={t}>{t}</option>
                                     ))}
@@ -432,29 +432,29 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                         {/* Location Row */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Country</label>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">country</label>
                                 <TactileSelect
                                     value={friend.country}
                                     onChange={handleCountryChange}
                                     options={COUNTRIES}
-                                    placeholder="Select..."
+                                    placeholder="select..."
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">
-                                    {friend.country === 'Canada' ? 'Province' : 'State/Region'}
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">
+                                    {friend.country === 'Canada' ? 'province' : 'state/region'}
                                 </label>
                                 {states ? (
                                     <TactileSelect
                                         value={friend.state}
                                         onChange={handleStateChange}
                                         options={states}
-                                        placeholder="Select..."
+                                        placeholder="select..."
                                     />
                                 ) : (
                                     <input
                                         type="text"
-                                        placeholder="City or region"
+                                        placeholder="city or region"
                                         value={friend.state || ''}
                                         onChange={(e) => handleChange('state', e.target.value)}
                                         className={tactileInputClass}
@@ -465,10 +465,10 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
                         {/* Role */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">What they do</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">what they do</label>
                             <input
                                 type="text"
-                                placeholder="Designer at Acme, Student..."
+                                placeholder="designer at acme, student..."
                                 value={friend.role || ''}
                                 onChange={(e) => handleChange('role', e.target.value)}
                                 className={tactileInputClass}
@@ -477,10 +477,10 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
                         {/* How you met */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">How you met</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">how you met</label>
                             <input
                                 type="text"
-                                placeholder="At a coffee shop, through a friend..."
+                                placeholder="at a coffee shop, through a friend..."
                                 value={friend.howMet || ''}
                                 onChange={(e) => handleChange('howMet', e.target.value)}
                                 className={tactileInputClass}
@@ -532,6 +532,6 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

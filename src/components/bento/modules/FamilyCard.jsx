@@ -42,8 +42,14 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
     };
     const removeKeyPerson = (i) => updateData({ keyPeople: keyPeople.filter((_, idx) => idx !== i) });
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)]";
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const inputClass = `w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400`;
+    const labelClass = "text-xs font-semibold lowercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
 
     const Toggle = ({ checked, onChange, label }) => (
         <div className="flex items-center justify-between py-2">
@@ -83,7 +89,7 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
 
     return (
         <BentoCard
-            title="Family"
+            title="family"
             icon={Heart}
             className="col-span-2"
             isEditing={isEditing}
@@ -102,11 +108,11 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                     {hasPartner && (
                         <div className="pl-4 border-l-2 border-[var(--color-brand)]/30 space-y-4 mt-3">
                             <div>
-                                <label className={labelClass}>Partner's Name</label>
+                                <label className={labelClass}>partner's name</label>
                                 {isEditing ? (
                                     <input
                                         type="text"
-                                        placeholder="Enter name"
+                                        placeholder="enter name"
                                         value={partnerName}
                                         onChange={(e) => updateData({ partnerName: e.target.value })}
                                         className={`${inputClass} w-full`}
@@ -126,7 +132,7 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                 </div>
 
                 {/* Kids Section */}
-                <Section icon={Baby} label="Kids" onAdd={addKid}>
+                <Section icon={Baby} label="kids" onAdd={addKid}>
                     {kids.length > 0 ? (
                         <div className="space-y-3">
                             {kids.map((kid, i) => (
@@ -135,14 +141,14 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                                         <>
                                             <input
                                                 type="text"
-                                                placeholder="Name"
+                                                placeholder="name"
                                                 value={kid.name}
                                                 onChange={(e) => updateKid(i, 'name', e.target.value)}
                                                 className={`${inputClass} flex-1`}
                                             />
                                             <input
                                                 type="text"
-                                                placeholder="Age"
+                                                placeholder="age"
                                                 value={kid.age}
                                                 onChange={(e) => updateKid(i, 'age', e.target.value)}
                                                 className={`${inputClass} w-20`}
@@ -162,13 +168,13 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                         </div>
                     ) : (
                         <p className="text-sm text-[var(--color-text-secondary)] italic">
-                            {isEditing ? 'Click + to add a child' : 'None added'}
+                            {isEditing ? 'Click + to add a child' : 'no kids added'}
                         </p>
                     )}
                 </Section>
 
                 {/* Pets Section */}
-                <Section icon={PawPrint} label="Pets" onAdd={addPet}>
+                <Section icon={PawPrint} label="pets" onAdd={addPet}>
                     {pets.length > 0 ? (
                         <div className="space-y-3">
                             {pets.map((pet, i) => (
@@ -177,7 +183,7 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                                         <>
                                             <input
                                                 type="text"
-                                                placeholder="Pet name"
+                                                placeholder="pet name"
                                                 value={pet.name}
                                                 onChange={(e) => updatePet(i, 'name', e.target.value)}
                                                 className={`${inputClass} flex-1`}
@@ -204,13 +210,13 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                         </div>
                     ) : (
                         <p className="text-sm text-[var(--color-text-secondary)] italic">
-                            {isEditing ? 'Click + to add a pet' : 'None added'}
+                            {isEditing ? 'Click + to add a pet' : 'no pets added'}
                         </p>
                     )}
                 </Section>
 
                 {/* Key People Section */}
-                <Section icon={Users} label="Key People in Their Life" onAdd={addKeyPerson}>
+                <Section icon={Users} label="key people in their life" onAdd={addKeyPerson}>
                     {keyPeople.length > 0 ? (
                         <div className="space-y-3">
                             {keyPeople.map((person, i) => (
@@ -219,14 +225,14 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                                         <>
                                             <input
                                                 type="text"
-                                                placeholder="Name"
+                                                placeholder="name"
                                                 value={person.name}
                                                 onChange={(e) => updateKeyPerson(i, 'name', e.target.value)}
                                                 className={`${inputClass} flex-1`}
                                             />
                                             <input
                                                 type="text"
-                                                placeholder="Relationship"
+                                                placeholder="relationship"
                                                 value={person.relationship}
                                                 onChange={(e) => updateKeyPerson(i, 'relationship', e.target.value)}
                                                 className={`${inputClass} w-32`}
@@ -246,7 +252,7 @@ export default function FamilyCard({ module, isEditing, onUpdate, onRemove, isNe
                         </div>
                     ) : (
                         <p className="text-sm text-[var(--color-text-secondary)] italic">
-                            {isEditing ? 'Click + to add someone' : 'None added'}
+                            {isEditing ? 'Click + to add someone' : 'no key people added'}
                         </p>
                     )}
                 </Section>

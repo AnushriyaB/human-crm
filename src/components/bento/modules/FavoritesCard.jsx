@@ -1,6 +1,6 @@
 import React from 'react';
 import BentoCard from '../Card';
-import { Sparkles, Utensils, Wine, Music, Gamepad2, Gift, Ban } from 'lucide-react';
+import { Trash2, Sparkles, Utensils, Wine, Music, Gamepad2, Gift, Ban, Coffee, Plane, Heart, Sun } from 'lucide-react';
 
 export default function FavoritesCard({ module, isEditing, onUpdate, onRemove, isNew }) {
     const data = module.data || {};
@@ -9,9 +9,15 @@ export default function FavoritesCard({ module, isEditing, onUpdate, onRemove, i
         onUpdate?.({ ...data, ...updates });
     };
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] w-full";
+    const inputClass = `w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400`;
     const textareaClass = `${inputClass} resize-none`;
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const labelClass = "text-xs font-semibold lowercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
 
     const Field = ({ icon: Icon, label, field, placeholder, multiline }) => (
         <div className="space-y-2">
@@ -44,52 +50,91 @@ export default function FavoritesCard({ module, isEditing, onUpdate, onRemove, i
     );
 
     return (
-        <BentoCard
-            title="Favorites"
-            icon={Sparkles}
-            className="col-span-2"
-            isEditing={isEditing}
-            onRemove={onRemove}
-            isNew={isNew}
-        >
+        <div className="col-span-2">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+                    <Sparkles size={16} />
+                    <h3 className="text-xs font-bold lowercase tracking-wider">favorites</h3>
+                </div>
+                {isEditing && onRemove && (
+                    <button
+                        onClick={onRemove}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors"
+                        title="Remove tile"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                )}
+            </div>
             <div className="space-y-5">
+                {/* Coffee/Drink Order - High Priority */}
+                <Field
+                    icon={Coffee}
+                    label="coffee / drink order"
+                    field="coffeeOrder"
+                    placeholder="oat flat white, extra hot..."
+                />
+
                 {/* Food Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Utensils} label="Loves to Eat" field="foodLikes" placeholder="Pizza, sushi, Thai..." />
-                    <Field icon={Ban} label="Avoids / Allergies" field="foodAvoids" placeholder="Shellfish, gluten..." />
+                    <Field icon={Utensils} label="loves to eat" field="foodLikes" placeholder="pizza, sushi..." />
+                    <Field icon={Ban} label="avoids / allergies" field="foodAvoids" placeholder="gluten, peanuts..." />
                 </div>
 
-                {/* Drinks */}
+                {/* Alcohol / Drinks */}
                 <Field
                     icon={Wine}
-                    label="Drinks"
+                    label="alcohol / bar order"
                     field="drinks"
-                    placeholder="Oat milk latte, green tea, red wine, 'doesn't drink'..."
+                    placeholder="tequila soda, red wine, doesn't drink..."
+                />
+
+                {/* Love Language & Weekends */}
+                <div className="grid grid-cols-2 gap-4">
+                    <Field icon={Heart} label="love language" field="loveLanguage" placeholder="words of affirmation..." />
+                    <Field icon={Sun} label="weekend vibe" field="weekendVibe" placeholder="hiking vs sleeping in..." />
+                </div>
+
+                {/* Travel */}
+                <Field
+                    icon={Plane}
+                    label="travel style"
+                    field="travelStyle"
+                    placeholder="resorts, backpacking, city breaks..."
                 />
 
                 {/* Media */}
                 <Field
                     icon={Music}
-                    label="Music, Shows, Books, Games"
+                    label="music, shows, books"
                     field="media"
-                    placeholder="Jazz, Breaking Bad, sci-fi novels, chess..."
+                    placeholder="jazz, sci-fi novels, breaking bad..."
                     multiline
                 />
 
                 {/* Hobbies */}
                 <Field
                     icon={Gamepad2}
-                    label="Hobbies"
+                    label="hobbies & interests"
                     field="hobbies"
-                    placeholder="Hiking, photography, cooking..."
+                    placeholder="photography, cooking, climbing..."
+                    multiline
                 />
 
                 {/* Gifts Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Gift} label="Gift Ideas" field="giftIdeas" placeholder="Wishlist items..." />
-                    <Field icon={Ban} label="Never Gift" field="neverGift" placeholder="Candles, socks..." />
+                    <Field icon={Gift} label="gift ideas" field="giftIdeas" placeholder="wishlist items..." />
+                    <Field icon={Ban} label="never gift" field="neverGift" placeholder="candles, socks..." />
+                </div>
+
+                {/* Clothing Sizes */}
+                <div className="grid grid-cols-3 gap-3">
+                    <Field icon={Gift} label="shirt size" field="sizeShirt" placeholder="M, L..." />
+                    <Field icon={Gift} label="shoe size" field="sizeShoe" placeholder="10..." />
+                    <Field icon={Gift} label="ring size" field="sizeRing" placeholder="7..." />
                 </div>
             </div>
-        </BentoCard>
+        </div>
+
     );
 }

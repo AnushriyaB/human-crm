@@ -73,7 +73,7 @@ export default function NotesCard({ module, isEditing, onUpdate, onRemove, isNew
 
     return (
         <BentoCard
-            title="Notes"
+            title="notes"
             icon={PenTool}
             className="col-span-2"
             isEditing={isEditing}
@@ -112,7 +112,7 @@ export default function NotesCard({ module, isEditing, onUpdate, onRemove, isNew
                     {!isEditing && !data.drawing && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <span className="text-sm text-[var(--color-text-secondary)] italic">
-                                Click edit to draw
+                                click edit to draw
                             </span>
                         </div>
                     )}
