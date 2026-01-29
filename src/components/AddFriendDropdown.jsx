@@ -28,7 +28,7 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
             setPassphrase(code);
             setStep('share');
             // Quick Add: Add friend immediately to shelf
-            onComplete({ name, passphrase: code, navigate: false });
+            onComplete({ name, passphrase: code, navigate: false, shouldClose: false });
         }
     };
 

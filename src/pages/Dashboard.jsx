@@ -77,7 +77,9 @@ export default function Dashboard() {
                         onClose={() => setIsAdding(false)}
                         onComplete={(data) => {
                             handleFriendAdded(data);
-                            setIsAdding(false);
+                            if (data.shouldClose !== false) {
+                                setIsAdding(false);
+                            }
                         }}
                     />
                 </div>

@@ -295,9 +295,13 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                 <button className="flex items-center justify-center w-8 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors rounded-[2px] hover:bg-white/50">
                                     <Plus size={16} />
                                 </button>
-                                <div className="absolute top-full right-0 mt-2 py-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px]">
+                                <div className="absolute top-full right-0 mt-2 py-1 bg-white border border-[var(--color-border)] rounded-[2px] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px] overflow-hidden">
                                     {TABS.filter(tab => !enabledTabs.includes(tab.id)).map(tab => (
-                                        <button key={tab.id} onClick={() => handleAddTab(tab.id)} className="w-full px-4 py-2 text-sm text-left hover:bg-[var(--color-bg-secondary)] transition-colors lowercase">
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => handleAddTab(tab.id)}
+                                            className="w-full px-4 py-2.5 text-sm text-left hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] text-[var(--color-text-primary)] transition-colors lowercase"
+                                        >
                                             {tab.label}
                                         </button>
                                     ))}
@@ -318,39 +322,46 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {/* Show Identity Card only on 'about' tab */}
-                                {activeTab === 'about' ? (
-                                    isMe ? (
-                                        <MyIdentityCard
-                                            friend={friend}
-                                            isEditing={isEditing}
-                                            onUpdate={(data) => updateFriend(friend.id, data)}
-                                            scrollContainerRef={scrollContainerRef}
-                                        />
-                                    ) : (
-                                        <CoreIdentityCard
-                                            friend={friend}
-                                            isEditing={isEditing}
-                                            onUpdate={(data) => updateFriend(friend.id, data)}
-                                        />
-                                    )
-                                ) : (
-                                    /* Other tabs show their module content directly */
-                                    <div className="space-y-6">
-                                        {activeModulesInTab.map(type => renderModule(type))}
+                                {/* Identity Card always shown on 'about' tab as header */}
+                                {activeTab === 'about' && (
+                                    <div className="mb-6 break-inside-avoid">
+                                        {isMe ? (
+                                            <MyIdentityCard
+                                                friend={friend}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => updateFriend(friend.id, data)}
+                                                scrollContainerRef={scrollContainerRef}
+                                            />
+                                        ) : (
+                                            <CoreIdentityCard
+                                                friend={friend}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => updateFriend(friend.id, data)}
+                                            />
+                                        )}
+                                    </div>
+                                )}
 
-                                        {activeModulesInTab.length === 0 && (
-                                            <div className="py-12 text-center text-[var(--color-text-secondary)] flex flex-col items-center gap-4">
-                                                <p className="text-sm">No content in this section yet</p>
-                                                {currentTabModules.length > 0 && (
-                                                    <Button
-                                                        onClick={() => handleAddModule(currentTabModules[0])}
-                                                        className="capitalize"
-                                                    >
-                                                        Start {TABS.find(t => t.id === activeTab)?.label || 'Section'}
-                                                    </Button>
-                                                )}
-                                            </div>
+                                {/* Module Grid - Full width for collage/editor, Masonry for others */}
+                                <div className={activeTab === 'collage' ? "flex flex-col gap-6" : "columns-1 md:columns-2 gap-6"}>
+                                    {activeModulesInTab.map(type => (
+                                        <div key={type} className="break-inside-avoid mb-6">
+                                            {renderModule(type)}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Empty State / Call to Action */}
+                                {activeModulesInTab.length === 0 && activeTab !== 'about' && (
+                                    <div className="py-12 text-center text-[var(--color-text-secondary)] flex flex-col items-center gap-4">
+                                        <p className="text-sm">No content in this section yet</p>
+                                        {currentTabModules.length > 0 && (
+                                            <Button
+                                                onClick={() => handleAddModule(currentTabModules[0])}
+                                                className="capitalize"
+                                            >
+                                                Start {TABS.find(t => t.id === activeTab)?.label || 'Section'}
+                                            </Button>
                                         )}
                                     </div>
                                 )}
