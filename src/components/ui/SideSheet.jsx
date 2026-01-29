@@ -14,25 +14,25 @@ import WorkCard from '../bento/modules/WorkCard';
 import CommunicationCard from '../bento/modules/CommunicationCard';
 import StoryCard from '../bento/modules/StoryCard';
 import NotesCard from '../bento/modules/NotesCard';
+import CollageCard from '../bento/modules/CollageCard';
 import BentoCard from '../bento/Card';
 import ModuleLibrary from '../bento/ModuleLibrary';
 import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool } from 'lucide-react';
 
-// Tab configuration for friends
+// Tab configuration with pastel colors
 const FRIEND_TABS = [
-    { id: 'about', label: 'About', icon: User, modules: ['family', 'timeline'] },
-    { id: 'lifestyle', label: 'Lifestyle', icon: Heart, modules: ['favorites', 'story'] },
-    { id: 'work', label: 'Work', icon: Briefcase, modules: ['work'] },
-    { id: 'connect', label: 'Connect', icon: MessageCircle, modules: ['communication'] },
-    { id: 'notes', label: 'Notes', icon: PenTool, modules: ['notes'] },
+    { id: 'about', label: 'about', icon: User, modules: ['family', 'timeline'], color: '#fee2e2' }, // rose-100
+    { id: 'favorites', label: 'favorites', icon: Heart, modules: ['favorites', 'story'], color: '#dbeafe' }, // blue-100
+    { id: 'work', label: 'work', icon: Briefcase, modules: ['work'], color: '#dcfce7' }, // green-100
+    { id: 'connect', label: 'connect', icon: MessageCircle, modules: ['communication'], color: '#fef3c7' }, // amber-100
+    { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' }, // purple-100
 ];
 
-// Tab configuration for "me" (personal profile)
 const ME_TABS = [
-    { id: 'about', label: 'About Me', icon: User, modules: ['timeline'] },
-    { id: 'lifestyle', label: 'My Lifestyle', icon: Heart, modules: ['favorites'] },
-    { id: 'work', label: 'My Work', icon: Briefcase, modules: ['work'] },
-    { id: 'notes', label: 'Notes', icon: PenTool, modules: ['notes'] },
+    { id: 'about', label: 'about me', icon: User, modules: ['timeline'], color: '#fee2e2' },
+    { id: 'favorites', label: 'my favorites', icon: Heart, modules: ['favorites'], color: '#dbeafe' },
+    { id: 'work', label: 'my work', icon: Briefcase, modules: ['work'], color: '#dcfce7' },
+    { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' },
 ];
 
 export default function SideSheet({ isOpen, onClose, friend }) {
@@ -57,6 +57,10 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         } else {
             document.body.style.overflow = 'unset';
         }
+        // Cleanup on unmount to prevent stuck scrolling
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
     }, [isOpen]);
 
     useEffect(() => {
@@ -69,15 +73,38 @@ export default function SideSheet({ isOpen, onClose, friend }) {
 
     const handleAddTab = (tabId) => {
         const newEnabledTabs = [...enabledTabs, tabId];
+
+        // Auto-add primary module if missing
+        const tabDef = TABS.find(t => t.id === tabId);
+        let updatedModules = friend.modules || [];
+
+        if (tabDef && tabDef.modules.length > 0) {
+            // Check if any of the tab's modules exist
+            const hasExistingModule = tabDef.modules.some(type =>
+                updatedModules.some(m => m.type === type)
+            );
+
+            if (!hasExistingModule) {
+                // Add the first module type defined for this tab
+                const primaryType = tabDef.modules[0];
+                updatedModules = [...updatedModules, { type: primaryType, data: {} }];
+                setRecentlyAdded(prev => new Set([...prev, primaryType]));
+            }
+        }
+
         setEnabledTabs(newEnabledTabs);
-        updateFriend(friend.id, { enabledTabs: newEnabledTabs });
+        updateFriend(friend.id, {
+            enabledTabs: newEnabledTabs,
+            modules: updatedModules
+        });
         setActiveTab(tabId);
     };
 
-    if (!isOpen || !friend) return null;
+    // Early return removed to allow AnimatePresence to work
+    // if (!isOpen || !friend) return null;
 
-    const getModule = (type) => friend.modules?.find(m => m.type === type) || { type, data: {} };
-    const hasModule = (type) => friend.modules?.some(m => m.type === type);
+    const getModule = (type) => friend?.modules?.find(m => m.type === type) || { type, data: {} };
+    const hasModule = (type) => friend?.modules?.some(m => m.type === type);
 
     const handleAddModule = (type) => {
         const newModule = { type, data: {} };
@@ -103,6 +130,25 @@ export default function SideSheet({ isOpen, onClose, friend }) {
             next.delete(type);
             return next;
         });
+
+        // Check if the tab is now empty (excluding the just-removed module)
+        const tab = TABS.find(t => t.modules.includes(type));
+        if (tab) {
+            const remainingModules = updatedModules.filter(m => tab.modules.includes(m.type));
+            if (remainingModules.length === 0 && tab.id !== 'about') {
+                // Remove tab from enabledTabs
+                setEnabledTabs(prev => prev.filter(id => id !== tab.id));
+                updateFriend(friend.id, {
+                    modules: updatedModules,
+                    enabledTabs: enabledTabs.filter(id => id !== tab.id)
+                });
+
+                // If we were on this tab, switch to about
+                if (activeTab === tab.id) {
+                    setActiveTab('about');
+                }
+            }
+        }
     };
 
     const handleModuleUpdate = (type, newData) => {
@@ -119,6 +165,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
     const handleSaveEdit = () => setIsEditing(false);
 
     const renderModule = (type) => {
+        if (!friend) return null; // Safety check
         const module = getModule(type);
         const isNew = recentlyAdded.has(type);
         const props = {
@@ -136,7 +183,8 @@ export default function SideSheet({ isOpen, onClose, friend }) {
             case 'work': return <WorkCard key={type} {...props} />;
             case 'communication': return <CommunicationCard key={type} {...props} />;
             case 'story': return <StoryCard key={type} {...props} />;
-            case 'notes': return <NotesCard key={type} {...props} />;
+            case 'collage': return <CollageCard key={type} {...props} />;
+            case 'notes': return <CollageCard key={type} {...props} />;
             default: return null;
         }
     };
@@ -151,179 +199,185 @@ export default function SideSheet({ isOpen, onClose, friend }) {
         return tab?.modules.filter(type => hasModule(type)).length || 0;
     };
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.3 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black z-40 backdrop-blur-sm"
-                    />
+    // Don't render anything if not open
+    if (!isOpen) return null;
 
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-4xl shadow-2xl z-50 overflow-hidden border-l flex flex-col"
-                        style={{
-                            backgroundColor: 'var(--color-card-bg)',
-                            borderColor: 'var(--color-border)'
-                        }}
-                    >
-                        {/* Fixed Header */}
-                        <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                            <div className="flex justify-between items-center">
-                                <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
-                                    {isMe ? 'My Profile' : 'Profile'}
-                                </h4>
-                                <div className="flex items-center p-1 rounded-full border shadow-sm gap-1"
+    return (
+        <>
+            {/* Backdrop - simple conditional render, no AnimatePresence needed */}
+            <div
+                onClick={onClose}
+                className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px] transition-opacity duration-200"
+            />
+
+            {/* Panel */}
+            <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{
+                    type: "spring",
+                    damping: 30,
+                    stiffness: 300,
+                    mass: 0.8
+                }}
+                className="fixed right-0 top-0 bottom-0 w-full max-w-4xl z-50 overflow-hidden border-l flex flex-col"
+                style={{
+                    backgroundColor: 'var(--color-card-bg)',
+                    borderColor: 'var(--color-border)',
+                    boxShadow: '-20px 0 50px -12px rgba(0, 0, 0, 0.2)'
+                }}
+            >
+                {/* Fixed Header */}
+                <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="flex justify-between items-center">
+                        {/* Header Text / Legend */}
+                        {isEditing ? (
+                            <div className="text-xs text-amber-600 font-medium lowercase flex flex-col gap-0.5">
+                                <span>• editing mode</span>
+                                <span>• click 🗑️ to remove</span>
+                            </div>
+                        ) : (
+                            <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
+                                {isMe ? 'my profile' : 'profile'}
+                            </h4>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={isEditing ? handleSaveEdit : handleToggleEdit}
+                                className={`w-10 h-10 rounded-full transition-all flex items-center justify-center shadow-inner hover:shadow-sm border border-[var(--color-border)] bg-[var(--color-button-bg)]`}
+                                title={isEditing ? "Save" : "Edit"}
+                                style={{ color: isEditing ? 'var(--color-brand)' : 'var(--color-text-secondary)' }}
+                            >
+                                {isEditing ? <Check className="w-4 h-4" /> : <Icons.Pencil className="w-4 h-4" />}
+                            </button>
+
+                            <button
+                                onClick={onClose}
+                                className="w-10 h-10 rounded-full transition-all flex items-center justify-center shadow-inner hover:shadow-sm border border-[var(--color-border)] bg-[var(--color-button-bg)] text-[var(--color-text-secondary)] hover:text-red-500 hover:bg-red-50"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tab Navigation - Tactical Design */}
+                <div className="px-6 py-4 border-b relative z-20" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
+                    <div className="flex p-1 gap-1 bg-[var(--color-button-bg)] rounded-[4px] shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]">
+                        {TABS.filter(tab => enabledTabs.includes(tab.id)).map(tab => {
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className="relative flex-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-[2px] focus:outline-none"
                                     style={{
-                                        backgroundColor: 'var(--color-button-bg)',
-                                        borderColor: 'var(--color-border)'
+                                        color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                                     }}
                                 >
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={isEditing ? handleSaveEdit : handleToggleEdit}
-                                        className={`rounded-full w-9 h-9 ${isEditing ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'hover:bg-black/5'}`}
-                                        title={isEditing ? "Save" : "Edit"}
-                                        style={{ color: isEditing ? undefined : 'var(--color-text-secondary)' }}
-                                    >
-                                        {isEditing ? <Check className="w-4 h-4" /> : <Icons.Pencil className="w-4 h-4" />}
-                                    </Button>
-
-                                    <div className="w-px h-4 bg-gray-200" />
-
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={onClose}
-                                        className="rounded-full w-9 h-9 hover:bg-red-50 hover:text-red-500"
-                                        style={{ color: 'var(--color-text-secondary)' }}
-                                    >
-                                        ✕
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Edit Mode Banner */}
-                            <AnimatePresence>
-                                {isEditing && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                        animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                                        className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-sm text-amber-800 flex items-center justify-between"
-                                    >
-                                        <span>✏️ Editing mode — click 🗑️ on tiles to remove them</span>
-                                        <button onClick={handleSaveEdit} className="font-semibold hover:underline">Done</button>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Tab Navigation - Fixed, not scrollable */}
-                        <div className="px-6 border-b relative z-20" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
-                            <div className="flex gap-6">
-                                {TABS.filter(tab => enabledTabs.includes(tab.id)).map(tab => {
-                                    const isActive = activeTab === tab.id;
-                                    return (
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTab"
+                                            className="absolute inset-0 rounded-[2px] shadow-sm"
+                                            initial={false}
+                                            animate={{ backgroundColor: tab.color }}
+                                            transition={{ type: "spring", stiffness: 250, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10 lowercase">{tab.label}</span>
+                                </button>
+                            );
+                        })}
+                        {TABS.filter(tab => !enabledTabs.includes(tab.id)).length > 0 && (
+                            <div className="relative group flex items-center">
+                                <button className="flex items-center justify-center w-8 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors rounded-[2px] hover:bg-white/50">
+                                    <Plus size={16} />
+                                </button>
+                                <div className="absolute top-full right-0 mt-2 py-1 bg-white border border-[var(--color-border)] rounded-[2px] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px] overflow-hidden">
+                                    {TABS.filter(tab => !enabledTabs.includes(tab.id)).map(tab => (
                                         <button
                                             key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className="relative pb-3 pt-3 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                                            style={{ color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}
+                                            onClick={() => handleAddTab(tab.id)}
+                                            className="w-full px-4 py-2.5 text-sm text-left hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] text-[var(--color-text-primary)] transition-colors lowercase"
                                         >
-                                            {isActive && <span className="absolute inset-x-0 top-1 bottom-3 rounded-lg -z-10" style={{ backgroundColor: 'var(--color-button-bg)' }} />}
-                                            <span className="relative px-3 py-1">{tab.label}</span>
-                                            {isActive && (
-                                                <motion.span
-                                                    layoutId="activeTabIndicator"
-                                                    className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full"
-                                                    style={{ backgroundColor: 'var(--color-brand)' }}
-                                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                                />
-                                            )}
+                                            {tab.label}
                                         </button>
-                                    );
-                                })}
-                                {TABS.filter(tab => !enabledTabs.includes(tab.id)).length > 0 && (
-                                    <div className="relative group pb-3 pt-3">
-                                        <button className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors">
-                                            <Plus size={14} />
-                                            <span>Add</span>
-                                        </button>
-                                        <div className="absolute top-full left-0 mt-1 py-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px]">
-                                            {TABS.filter(tab => !enabledTabs.includes(tab.id)).map(tab => (
-                                                <button key={tab.id} onClick={() => handleAddTab(tab.id)} className="w-full px-4 py-2 text-sm text-left hover:bg-[var(--color-bg-secondary)] transition-colors">
-                                                    {tab.label}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Scrollable Content */}
+                <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
+                    <div className="p-6 space-y-6">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {/* Identity Card always shown on 'about' tab as header */}
+                                {activeTab === 'about' && (
+                                    <div className="mb-6 break-inside-avoid">
+                                        {isMe ? (
+                                            <MyIdentityCard
+                                                friend={friend}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => updateFriend(friend.id, data)}
+                                                scrollContainerRef={scrollContainerRef}
+                                            />
+                                        ) : (
+                                            <CoreIdentityCard
+                                                friend={friend}
+                                                isEditing={isEditing}
+                                                onUpdate={(data) => updateFriend(friend.id, data)}
+                                            />
+                                        )}
                                     </div>
                                 )}
-                            </div>
-                        </div>
 
-                        {/* Scrollable Content */}
-                        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-                            <div className="p-6 space-y-6">
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={activeTab}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        {/* Show Identity Card only on 'about' tab */}
-                                        {activeTab === 'about' ? (
-                                            isMe ? (
-                                                <MyIdentityCard
-                                                    friend={friend}
-                                                    isEditing={isEditing}
-                                                    onUpdate={(data) => updateFriend(friend.id, data)}
-                                                    scrollContainerRef={scrollContainerRef}
-                                                />
-                                            ) : (
-                                                <CoreIdentityCard
-                                                    friend={friend}
-                                                    isEditing={isEditing}
-                                                    onUpdate={(data) => updateFriend(friend.id, data)}
-                                                />
-                                            )
-                                        ) : (
-                                            /* Other tabs show their module content directly */
-                                            <div className="space-y-6">
-                                                {activeModulesInTab.map(type => renderModule(type))}
+                                {/* Module Grid - Full width for collage/editor, Masonry for others */}
+                                <div className={activeTab === 'collage' ? "flex flex-col gap-6" : "columns-1 md:columns-2 gap-6"}>
+                                    {activeModulesInTab.map(type => (
+                                        <div key={type} className="break-inside-avoid mb-6">
+                                            {renderModule(type)}
+                                        </div>
+                                    ))}
+                                </div>
 
-                                                {activeModulesInTab.length === 0 && (
-                                                    <div className="py-12 text-center text-[var(--color-text-secondary)]">
-                                                        <p className="text-sm">No content in this section yet</p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                {/* Empty State / Call to Action */}
+                                {activeModulesInTab.length === 0 && activeTab !== 'about' && (
+                                    <div className="py-12 text-center text-[var(--color-text-secondary)] flex flex-col items-center gap-4">
+                                        <p className="text-sm">No content in this section yet</p>
+                                        {currentTabModules.length > 0 && (
+                                            <Button
+                                                onClick={() => handleAddModule(currentTabModules[0])}
+                                                className="capitalize"
+                                            >
+                                                Start {TABS.find(t => t.id === activeTab)?.label || 'Section'}
+                                            </Button>
                                         )}
-                                    </motion.div>
-                                </AnimatePresence>
-                            </div>
-                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
 
-                        <ModuleLibrary
-                            isOpen={isLibraryOpen}
-                            onClose={() => setIsLibraryOpen(false)}
-                            onSelect={handleAddModule}
-                            existingModules={friend.modules || []}
-                            isMe={isMe}
-                        />
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                <ModuleLibrary
+                    isOpen={isLibraryOpen}
+                    onClose={() => setIsLibraryOpen(false)}
+                    onSelect={handleAddModule}
+                    existingModules={friend?.modules || []}
+                    isMe={isMe}
+                />
+            </motion.div>
+        </>
     );
 }

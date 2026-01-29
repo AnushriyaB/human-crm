@@ -1,6 +1,6 @@
 import React from 'react';
 import BentoCard from '../Card';
-import { BookOpen, MapPin, Heart, Target, CloudRain } from 'lucide-react';
+import { Trash2, BookOpen, MapPin, Heart, Target, CloudRain } from 'lucide-react';
 
 export default function StoryCard({ module, isEditing, onUpdate, onRemove, isNew }) {
     const data = module.data || {};
@@ -9,9 +9,15 @@ export default function StoryCard({ module, isEditing, onUpdate, onRemove, isNew
         onUpdate?.({ ...data, ...updates });
     };
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] w-full";
+    const inputClass = `w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400`;
     const textareaClass = `${inputClass} resize-none`;
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const labelClass = "text-xs font-semibold lowercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
 
     const Field = ({ icon: Icon, label, field, placeholder, multiline }) => (
         <div className="space-y-2">
@@ -44,46 +50,55 @@ export default function StoryCard({ module, isEditing, onUpdate, onRemove, isNew
     );
 
     return (
-        <BentoCard
-            title="Story"
-            icon={BookOpen}
-            className="col-span-2"
-            isEditing={isEditing}
-            onRemove={onRemove}
-            isNew={isNew}
-        >
+        <div className="col-span-2">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+                    <BookOpen size={16} />
+                    <h3 className="text-xs font-bold lowercase tracking-wider">story</h3>
+                </div>
+                {isEditing && onRemove && (
+                    <button
+                        onClick={onRemove}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-500 transition-colors"
+                        title="Remove tile"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                )}
+            </div>
             <div className="space-y-5">
                 <Field
                     icon={MapPin}
-                    label="Grew Up"
+                    label="grew up"
                     field="grewUp"
-                    placeholder="Small town in Texas, moved to NYC..."
+                    placeholder="small town in texas, moved to nyc..."
                 />
 
                 <Field
                     icon={Heart}
-                    label="Values"
+                    label="values"
                     field="whatMatters"
-                    placeholder="Family, career, creativity, social justice..."
+                    placeholder="family, career, creativity, social justice..."
                     multiline
                 />
 
                 <Field
                     icon={Target}
-                    label="Big Goals or Dreams"
+                    label="big goals or dreams"
                     field="goalsAndDreams"
-                    placeholder="Write a book, travel the world..."
+                    placeholder="write a book, travel the world..."
                     multiline
                 />
 
                 <Field
                     icon={CloudRain}
-                    label="Current Stresses"
+                    label="current stresses"
                     field="currentStresses"
-                    placeholder="Job search, health issues..."
+                    placeholder="job search, health issues..."
                     multiline
                 />
             </div>
-        </BentoCard>
+        </div>
+
     );
 }

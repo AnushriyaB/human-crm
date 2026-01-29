@@ -1,13 +1,14 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, MapPin, Globe, Briefcase, Heart, Camera, Copy, Check, Eye, EyeOff, ChevronDown, Search, ImagePlus } from 'lucide-react';
+import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
 
 const PRONOUNS = [
-    { label: 'he/him', value: 'he/him' },
-    { label: 'she/her', value: 'she/her' },
-    { label: 'they/them', value: 'they/them' },
-    { label: 'other', value: 'other' }
+    { name: 'he/him', code: 'he/him' },
+    { name: 'she/her', code: 'she/her' },
+    { name: 'they/them', code: 'they/them' },
+    { name: 'other', code: 'other' }
 ];
 
 const COUNTRIES = [
@@ -53,95 +54,18 @@ const AU_STATES = [
 ];
 
 // Tactile input styling
+// Tactile input styling matching global Input
 const tactileInputClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
+    w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
     placeholder:text-gray-400
 `;
 
-const tactileSelectClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
-    cursor-pointer
-`;
-
-// Searchable dropdown with tactile styling
-function TactileSelect({ value, onChange, options, placeholder }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState('');
-
-    const filteredOptions = useMemo(() => {
-        if (!search) return options;
-        return options.filter(opt =>
-            opt.name.toLowerCase().includes(search.toLowerCase())
-        );
-    }, [options, search]);
-
-    const selectedOption = options.find(opt => opt.name === value || opt.code === value);
-
-    return (
-        <div className="relative">
-            <button
-                type="button"
-                onClick={() => setIsOpen(!isOpen)}
-                className={`${tactileSelectClass} text-left flex items-center justify-between`}
-            >
-                <span className={selectedOption ? '' : 'text-gray-400'}>
-                    {selectedOption?.name || placeholder}
-                </span>
-                <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isOpen && (
-                <div className="absolute z-50 mt-2 w-full bg-white border border-[var(--color-border)] rounded-xl shadow-lg overflow-hidden">
-                    <div className="p-2 border-b border-[var(--color-border)]">
-                        <div className="relative">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className={`${tactileInputClass} pl-9`}
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                        {filteredOptions.length > 0 ? (
-                            filteredOptions.map((opt) => (
-                                <button
-                                    key={opt.code}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(opt);
-                                        setIsOpen(false);
-                                        setSearch('');
-                                    }}
-                                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-[var(--color-bg-secondary)] transition-colors ${selectedOption?.code === opt.code ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)]' : ''}`}
-                                >
-                                    {opt.name}
-                                </button>
-                            ))
-                        ) : (
-                            <div className="px-4 py-3 text-sm text-gray-400">No results</div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
+// TactileSelect imported from UI components consistent with CoreIdentityCard/FriendForm
 
 export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollContainerRef }) {
     const { geocodeFriendLocation } = useFriends();
@@ -260,51 +184,56 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
 
     return (
         <div className="space-y-6">
-            {/* Cover Image - animates height on scroll */}
-            <div
-                className="relative w-full overflow-hidden rounded-2xl transition-all duration-150 ease-out"
-                style={{ height: `${coverHeight}px` }}
-            >
-                {/* Background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${getGradient()}`} />
+            {/* Cover Image & Avatar container */}
+            <div className="relative mb-20">
+                {/* Cover Image - animates height on scroll */}
+                <div
+                    className="relative w-full overflow-hidden rounded-[4px] transition-all duration-150 ease-out"
+                    style={{ height: `${coverHeight}px` }}
+                >
+                    {/* Background gradient */}
+                    {/* Glass Frame Background (subtle gradient + visible border) */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 border border-black/5 shadow-inner" />
 
-                {/* Cover photo */}
-                {friend.coverPhoto && (
-                    <img
-                        src={friend.coverPhoto}
-                        alt="Cover"
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
-                )}
-
-                {/* Cover upload button (edit mode) */}
-                {isEditing && (
-                    <>
-                        <input
-                            ref={coverInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleCoverUpload}
-                            className="hidden"
+                    {/* Cover photo */}
+                    {friend.coverPhoto && (
+                        <img
+                            src={friend.coverPhoto}
+                            alt="Cover"
+                            className="absolute inset-0 w-full h-full object-cover"
                         />
-                        <button
-                            onClick={() => coverInputRef.current?.click()}
-                            className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
-                        >
-                            <ImagePlus size={18} />
-                        </button>
-                    </>
-                )}
+                    )}
 
-                {/* Avatar - positioned at bottom left */}
-                <div className="absolute -bottom-10 left-6">
+                    {/* Cover upload button (edit mode) */}
+                    {isEditing && (
+                        <>
+                            <input
+                                ref={coverInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleCoverUpload}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => coverInputRef.current?.click()}
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                            >
+                                <ImagePlus size={18} />
+                            </button>
+                        </>
+                    )}
+
+                </div>
+
+                {/* Avatar - positioned absolutely relative to parent, sticking out of cover */}
+                <div className="absolute -bottom-10 left-6 z-10">
                     <div className="relative group">
-                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden">
+                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden relative">
                             {friend.photo ? (
                                 <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className={`w-full h-full bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
-                                    <span className="text-2xl font-bold text-white">{(friend.name || '?').charAt(0).toUpperCase()}</span>
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-gray-400">{(friend.name || '?').charAt(0).toUpperCase()}</span>
                                 </div>
                             )}
                         </div>
@@ -329,8 +258,7 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                 </div>
             </div>
 
-            {/* Spacer for avatar overlap */}
-            <div className="h-6" />
+            {/* Spacer no longer needed as margin handled by mb-12 on parent */}
 
             {/* Form Fields - no card wrapper, clean form layout */}
             <div className="space-y-5">
@@ -390,22 +318,18 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                     <div className="space-y-4">
                         {/* Pronouns */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Pronouns</label>
-                            <select
-                                value={friend.pronouns || ''}
-                                onChange={(e) => handleChange('pronouns', e.target.value)}
-                                className={tactileSelectClass}
-                            >
-                                <option value="">Select...</option>
-                                {PRONOUNS.map(p => (
-                                    <option key={p.value} value={p.value}>{p.label}</option>
-                                ))}
-                            </select>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">pronouns</label>
+                            <TactileSelect
+                                value={friend.pronouns}
+                                onChange={(opt) => handleChange('pronouns', opt.code)}
+                                options={PRONOUNS}
+                                placeholder="select..."
+                            />
                         </div>
 
                         {/* Bio */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">About Me</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">about me</label>
                             <textarea
                                 placeholder="A short bio about yourself..."
                                 value={friend.bio || ''}
@@ -418,17 +342,17 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                         {/* Location */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Country</label>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">country</label>
                                 <TactileSelect
                                     value={friend.country}
                                     onChange={handleCountryChange}
                                     options={COUNTRIES}
-                                    placeholder="Select..."
+                                    placeholder="select..."
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">
-                                    {friend.country === 'Canada' ? 'Province' : 'State/Region'}
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">
+                                    {friend.country === 'Canada' ? 'province' : 'state/region'}
                                 </label>
                                 {states ? (
                                     <TactileSelect
@@ -451,7 +375,7 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
 
                         {/* What I Do */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">What I Do</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">what i do</label>
                             <input
                                 type="text"
                                 placeholder="Designer at Acme, Student..."
@@ -486,8 +410,8 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                             <button
                                 onClick={handleCopyPasskey}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${copied
-                                        ? 'bg-green-100 text-green-600'
-                                        : 'bg-white hover:bg-[var(--color-brand)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] border border-[var(--color-border)]'
+                                    ? 'bg-green-100 text-green-600'
+                                    : 'bg-white hover:bg-[var(--color-brand)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] border border-[var(--color-border)]'
                                     }`}
                             >
                                 {copied ? (

@@ -58,8 +58,14 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
         return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const inputClass = "px-3 py-2 text-sm rounded-lg border border-[var(--color-border)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)]";
-    const labelClass = "text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
+    const inputClass = `w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400`;
+    const labelClass = "text-xs font-semibold lowercase tracking-wider text-[var(--color-text-secondary)] mb-2 block";
 
     const Field = ({ icon: Icon, label, children }) => (
         <div className="space-y-2">
@@ -73,7 +79,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
 
     return (
         <BentoCard
-            title="Timeline"
+            title="timeline"
             icon={CalendarDays}
             className="col-span-2"
             isEditing={isEditing}
@@ -83,7 +89,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
             <div className="space-y-6">
                 {/* Key Dates */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Gift} label="Birthday">
+                    <Field icon={Gift} label="birthday">
                         {isEditing ? (
                             <input
                                 type="date"
@@ -105,7 +111,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
                         )}
                     </Field>
 
-                    <Field icon={Heart} label="Anniversary">
+                    <Field icon={Heart} label="anniversary">
                         {isEditing ? (
                             <input
                                 type="date"
@@ -123,7 +129,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
 
                 {/* Last Contact */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field icon={Clock} label="Last Met">
+                    <Field icon={Clock} label="last met">
                         {isEditing ? (
                             <input
                                 type="date"
@@ -141,7 +147,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
                         )}
                     </Field>
 
-                    <Field icon={Phone} label="Last Called/Texted">
+                    <Field icon={Phone} label="last called/texted">
                         {isEditing ? (
                             <input
                                 type="date"
@@ -163,7 +169,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
                 {/* Important Events */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <label className={labelClass.replace(' mb-2 block', '')}>Important Events</label>
+                        <label className={labelClass.replace(' mb-2 block', '')}>important events</label>
                         {isEditing && (
                             <button onClick={addDate} className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] text-[var(--color-brand)]">
                                 <Plus size={16} />
@@ -188,7 +194,7 @@ export default function TimelineCard({ module, isEditing, onUpdate, onRemove, is
                                             </select>
                                             <input
                                                 type="text"
-                                                placeholder="Description"
+                                                placeholder="description"
                                                 value={item.label}
                                                 onChange={(e) => updateDate(i, 'label', e.target.value)}
                                                 className={`${inputClass} flex-1`}

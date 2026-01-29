@@ -11,6 +11,18 @@ import { DateSelector } from '../components/ui/DateSelector';
 import { PhoneInput } from '../components/ui/PhoneInput';
 import { EmailInput } from '../components/ui/EmailInput';
 import { countries } from 'countries-list';
+import { Check, Copy } from 'lucide-react';
+import TactileSelect from '../components/ui/TactileSelect';
+
+const tactileInputClass = `
+    w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
+    placeholder:text-gray-400
+`;
 
 const STEPS = [
     { id: 'welcome', title: 'welcome', icon: null },
@@ -28,6 +40,13 @@ const contentVariants = {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.1 } }
 };
+
+const PRONOUNS = [
+    { name: 'he/him', code: 'he/him' },
+    { name: 'she/her', code: 'she/her' },
+    { name: 'they/them', code: 'they/them' },
+    { name: 'other', code: 'other' }
+];
 
 const itemVariants = {
     hidden: { opacity: 0, x: -10 },
@@ -57,24 +76,32 @@ export default function FriendForm() {
     const isEdit = state?.isEdit || false;
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [copied, setCopied] = useState(false);
 
     const [formData, setFormData] = useState({
         name: initialName,
         photos: state?.photos || (state?.photo ? [state.photo] : []),
         birthday: state?.birthday || '',
         anniversary: state?.anniversary || '',
-        partner: state?.partner || '',
+        pronouns: state?.pronouns || '',
+        role: state?.role || '',
         phone: state?.phone || '',
         email: state?.email || '',
         socials: state?.socials || { instagram: '', twitter: '', linkedin: '' },
         address: state?.address || '',
-        city: state?.city || '',
-        zip: state?.zip || '',
+        country: state?.country || state?.city || '', // Map city to country
+        state: state?.state || '',
+        howMet: state?.howMet || state?.how_we_met || '', // Map how_we_met to howMet
         memory: state?.memory || '',
-        how_we_met: state?.how_we_met || '',
         notes: state?.notes || '',
         gift_ideas: state?.gift_ideas || ''
     });
+
+    const handleCopyPasskey = async () => {
+        await navigator.clipboard.writeText(passphrase);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleChange = (e) => {
         let value = e.target.value;
@@ -112,10 +139,62 @@ export default function FriendForm() {
     };
 
     const handleSubmit = async () => {
+        // Construct modules
+        const modules = [];
+
+        // Communication Module
+        if (formData.phone || formData.email || Object.values(formData.socials).some(v => v)) {
+            const socialLinks = Object.entries(formData.socials)
+                .filter(([_, handle]) => handle)
+                .map(([platform, handle]) => ({ platform, handle }));
+
+            modules.push({
+                type: 'communication',
+                data: {
+                    phone: formData.phone,
+                    email: formData.email,
+                    socialLinks
+                }
+            });
+        }
+
+        // Timeline Module
+        if (formData.birthday || formData.anniversary) {
+            modules.push({
+                type: 'timeline',
+                data: {
+                    birthday: formData.birthday,
+                    anniversary: formData.anniversary
+                }
+            });
+        }
+
+        // Favorites Module
+        if (formData.gift_ideas) {
+            modules.push({
+                type: 'favorites',
+                data: {
+                    giftIdeas: formData.gift_ideas
+                }
+            });
+        }
+
+        // Determine enabled tabs
+        const enabledTabs = ['about']; // Always enable about
+        if (modules.some(m => m.type === 'favorites')) enabledTabs.push('favorites');
+        if (modules.some(m => m.type === 'communication')) enabledTabs.push('connect');
+
+        const submissionData = {
+            ...formData,
+            passphrase,
+            modules,
+            enabledTabs
+        };
+
         if (isEdit && state?.id) {
-            await updateFriend(state.id, { ...formData });
+            await updateFriend(state.id, submissionData);
         } else {
-            await addFriend({ ...formData, passphrase });
+            await addFriend(submissionData);
         }
 
         if (isGuest) {
@@ -129,12 +208,12 @@ export default function FriendForm() {
         const step = STEPS[currentStepIndex];
         let updates = {};
         switch (step.id) {
-            case 'basics': updates = { birthday: '', anniversary: '' }; break;
+            case 'basics': updates = { birthday: '', anniversary: '', pronouns: '', role: '' }; break;
             case 'photo': updates = { photos: [] }; break;
             case 'contact': updates = { phone: '', email: '' }; break;
             case 'socials': updates = { socials: { instagram: '', twitter: '', linkedin: '' } }; break;
-            case 'location': updates = { address: '', city: '', zip: '' }; break;
-            case 'vibe': updates = { how_we_met: '', memory: '' }; break;
+            case 'location': updates = { address: '', country: '', state: '' }; break;
+            case 'vibe': updates = { howMet: '', memory: '' }; break;
             case 'extra': updates = { gift_ideas: '', notes: '' }; break;
         }
         setFormData(prev => ({ ...prev, ...updates }));
@@ -156,14 +235,33 @@ export default function FriendForm() {
             case 'basics':
                 return (
                     <Wrapper>
-                        <div className="space-y-10">
-                            <motion.div variants={itemVariants} className="flex flex-col gap-3 items-center">
+                        <div className="space-y-6">
+                            <motion.div variants={itemVariants} className="flex flex-col gap-2">
                                 <label className="text-sm font-medium text-text-secondary lowercase">birthday</label>
                                 <DateSelector value={formData.birthday} onChange={(val) => setFormData({ ...formData, birthday: val })} />
                             </motion.div>
-                            <motion.div variants={itemVariants} className="flex flex-col gap-3 items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col gap-2">
                                 <label className="text-sm font-medium text-text-secondary lowercase">anniversary</label>
                                 <DateSelector value={formData.anniversary} onChange={(val) => setFormData({ ...formData, anniversary: val })} />
+                            </motion.div>
+                            <motion.div variants={itemVariants} className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-text-secondary lowercase">pronouns</label>
+                                <TactileSelect
+                                    value={formData.pronouns}
+                                    onChange={(opt) => setFormData({ ...formData, pronouns: opt.code })}
+                                    options={PRONOUNS}
+                                    placeholder="select..."
+                                />
+                            </motion.div>
+                            <motion.div variants={itemVariants} className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-text-secondary lowercase">what do you do?</label>
+                                <input
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleChange}
+                                    placeholder="job title, student..."
+                                    className={tactileInputClass}
+                                />
                             </motion.div>
                         </div>
                     </Wrapper>
@@ -232,13 +330,13 @@ export default function FriendForm() {
                 return (
                     <Wrapper>
                         <div className="space-y-6 text-center">
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">instagram</label>
-                                <DynamicInput name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center items-center" inputClassName="text-center" />
+                                <input name="instagram" value={formData.socials.instagram} onChange={handleSocialChange} placeholder="@username" className={tactileInputClass} />
                             </motion.div>
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">twitter / x</label>
-                                <DynamicInput name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className="text-xl w-full text-center items-center" inputClassName="text-center" />
+                                <input name="twitter" value={formData.socials.twitter} onChange={handleSocialChange} placeholder="@username" className={tactileInputClass} />
                             </motion.div>
                         </div>
                     </Wrapper>
@@ -247,13 +345,14 @@ export default function FriendForm() {
                 return (
                     <Wrapper>
                         <div className="space-y-6 w-full max-w-sm mx-auto pt-10 text-center">
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-4 block">country</label>
                                 <CustomSelect
                                     options={Object.values(countries).map(c => ({ label: c.name.toLowerCase(), value: c.name }))}
-                                    value={formData.city}
-                                    onChange={(val) => setFormData({ ...formData, city: val })}
+                                    value={formData.country}
+                                    onChange={(val) => setFormData({ ...formData, country: val })}
                                     placeholder="select country..."
+                                    className="w-full"
                                 />
                             </motion.div>
                         </div>
@@ -263,19 +362,19 @@ export default function FriendForm() {
                 return (
                     <Wrapper>
                         <div className="space-y-8 text-center">
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">how did we meet?</label>
-                                <DynamicInput name="how_we_met" value={formData.how_we_met} onChange={handleChange} placeholder="origin story" className="text-xl w-full text-center items-center" inputClassName="text-center" />
+                                <input name="howMet" value={formData.howMet} onChange={handleChange} placeholder="origin story" className={tactileInputClass} />
                             </motion.div>
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">favorite memory</label>
-                                <DynamicInput
+                                <textarea
                                     name="memory"
                                     value={formData.memory}
                                     onChange={handleChange}
                                     placeholder="..."
-                                    className="text-xl w-full text-center items-center"
-                                    inputClassName="text-center"
+                                    className={`${tactileInputClass} resize-none`}
+                                    rows={3}
                                 />
                             </motion.div>
                         </div>
@@ -285,19 +384,19 @@ export default function FriendForm() {
                 return (
                     <Wrapper>
                         <div className="space-y-8 text-center">
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">gift ideas</label>
-                                <DynamicInput name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className="text-xl w-full text-center items-center" inputClassName="text-center" />
+                                <input name="gift_ideas" value={formData.gift_ideas} onChange={handleChange} placeholder="wishlist" className={tactileInputClass} />
                             </motion.div>
-                            <motion.div variants={itemVariants} className="flex flex-col items-center">
+                            <motion.div variants={itemVariants} className="flex flex-col text-left">
                                 <label className="text-sm font-medium text-text-secondary lowercase mb-2 block">notes</label>
-                                <DynamicInput
+                                <textarea
                                     name="notes"
                                     value={formData.notes}
                                     onChange={handleChange}
                                     placeholder="..."
-                                    className="text-xl w-full text-center items-center"
-                                    inputClassName="text-center"
+                                    className={`${tactileInputClass} resize-none`}
+                                    rows={3}
                                 />
                             </motion.div>
                         </div>
@@ -317,11 +416,16 @@ export default function FriendForm() {
             >
                 {/* Sidebar Navigation */}
                 <div className="w-[300px] border-r border-gray-100 p-10 flex flex-col hidden md:flex bg-gray-50/30">
-                    <div className="mb-12 group cursor-copy" onClick={() => navigator.clipboard.writeText(passphrase)}>
+                    <div className="mb-12 group cursor-copy" onClick={handleCopyPasskey}>
                         {passphrase && (
                             <>
-                                <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 group-hover:text-brand transition-colors">Passkey</div>
-                                <div className="font-mono text-xl text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>{passphrase}</div>
+                                <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 flex items-center gap-2 group-hover:text-brand transition-colors">
+                                    Passkey
+                                    {copied && <Check size={12} style={{ color: '#047857' }} />}
+                                </div>
+                                <div className="font-mono text-xl text-brand truncate pr-2 group-hover:underline decoration-brand underline-offset-4 transition-all" title={passphrase}>
+                                    {copied ? <span style={{ color: '#047857' }}>Copied!</span> : passphrase}
+                                </div>
                             </>
                         )}
                     </div>

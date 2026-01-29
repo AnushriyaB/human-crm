@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Icons } from '../components/ui/Icons';
@@ -41,7 +41,17 @@ export default function Dashboard() {
         }
     };
 
-    const [showAbout, setShowAbout] = useState(false);
+    const [showAbout, setShowAbout] = useState(() => !sessionStorage.getItem('hasSeenWelcomeCard'));
+
+    useEffect(() => {
+        if (showAbout) {
+            const timer = setTimeout(() => {
+                setShowAbout(false);
+                sessionStorage.setItem('hasSeenWelcomeCard', 'true');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [showAbout]);
 
     return (
         <div className="flex flex-col w-full h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-background)' }}>
@@ -67,7 +77,9 @@ export default function Dashboard() {
                         onClose={() => setIsAdding(false)}
                         onComplete={(data) => {
                             handleFriendAdded(data);
-                            setIsAdding(false);
+                            if (data.shouldClose !== false) {
+                                setIsAdding(false);
+                            }
                         }}
                     />
                 </div>
@@ -75,7 +87,7 @@ export default function Dashboard() {
                 {/* Center: Title */}
                 {/* Center: Title */}
                 <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <h1 onClick={() => setShowAbout(!showAbout)} className="text-sm font-medium lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none text-center" style={{ color: 'var(--color-text-primary)' }}>
+                    <h1 onClick={() => setShowAbout(!showAbout)} className="text-sm font-medium lowercase tracking-wide cursor-pointer hover:text-brand transition-colors select-none text-center" style={{ color: showAbout ? 'var(--color-brand)' : 'var(--color-text-primary)' }}>
                         book of humans
                     </h1>
 
@@ -84,23 +96,22 @@ export default function Dashboard() {
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowAbout(false)} />
                                 <motion.div
-                                    initial={{ opacity: 0, y: -6, height: 0 }}
-                                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                                    exit={{ opacity: 0, y: -6, height: 0 }}
-                                    className="absolute top-full mt-4 shadow-xl rounded-[8px] p-5 w-72 z-50 overflow-hidden flex flex-col items-center"
+                                    initial={{ opacity: 0, y: -6, height: 0, x: "-50%" }}
+                                    animate={{ opacity: 1, y: 0, height: 'auto', x: "-50%" }}
+                                    exit={{ opacity: 0, y: -6, height: 0, x: "-50%" }}
+                                    className="absolute top-full mt-4 shadow-xl rounded-[8px] p-5 w-72 z-50 overflow-hidden flex flex-col items-start"
                                     style={{
                                         backgroundColor: 'var(--color-card-bg)',
                                         borderColor: 'var(--color-border)',
                                         borderWidth: '1px',
                                         borderStyle: 'solid',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)'
+                                        left: '50%'
                                     }}
                                 >
-                                    <p className="text-xs leading-relaxed mb-3 text-center" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <p className="text-xs leading-relaxed mb-3 text-left w-full" style={{ color: 'var(--color-text-secondary)' }}>
                                         a personal crm to help you stay close to the people who matter most.
                                     </p>
-                                    <div className="flex items-center justify-center gap-1 w-full">
+                                    <div className="flex items-center justify-start gap-1 w-full">
                                         <p className="text-xs leading-relaxed text-center" style={{ color: 'var(--color-text-secondary)' }}>
                                             made by
                                         </p>
@@ -155,7 +166,7 @@ export default function Dashboard() {
                 />
 
                 {/* Left: Friend Shelf (Only unmapped friends) */}
-                <div className="absolute left-8 top-8 bottom-8 w-64 pointer-events-none flex flex-col justify-center">
+                <div className="absolute left-8 top-0 bottom-8 w-64 pointer-events-none flex flex-col justify-start pt-24">
                     <div className="pointer-events-auto space-y-3">
                         {friends.filter(f => !f.lat || !f.lon).length > 0 && (
                             <div className="mb-2">

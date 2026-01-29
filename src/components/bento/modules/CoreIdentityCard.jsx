@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { User, MapPin, Globe, Users, Handshake, ChevronDown, Search, Camera, Copy, Check, Eye, EyeOff, Briefcase, ImagePlus } from 'lucide-react';
+import { Handshake, Sparkles, MapPin, Briefcase, Camera, Plus, X, ImagePlus, User, Hand, Heart } from 'lucide-react';
+import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
 
 const PRONOUNS = [
-    { label: 'he/him', value: 'he/him' },
-    { label: 'she/her', value: 'she/her' },
-    { label: 'they/them', value: 'they/them' },
-    { label: 'other', value: 'other' }
+    { name: 'he/him', code: 'he/him' },
+    { name: 'she/her', code: 'she/her' },
+    { name: 'they/them', code: 'they/them' },
+    { name: 'other', code: 'other' }
 ];
 
 const RELATIONSHIP_TYPES = [
@@ -66,27 +67,17 @@ const AU_STATES = [
 ];
 
 // Tactile input styling
+// Tactile input styling matching global Input
 const tactileInputClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
+    w-full px-4 py-3 text-sm rounded-[2px] transition-all
+    bg-[var(--color-button-bg)]
+    text-[var(--color-text-primary)]
+    border-transparent
+    shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
+    focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
     placeholder:text-gray-400
 `;
 
-const tactileSelectClass = `
-    w-full px-4 py-3 text-sm rounded-xl
-    bg-[var(--color-bg-secondary)]
-    border border-[var(--color-border)]
-    shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]
-    focus:outline-none focus:shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_0_0_3px_rgba(124,92,255,0.15)]
-    focus:border-[var(--color-brand)]
-    transition-all duration-200
-    cursor-pointer
-`;
 
 // Pill/chip component for metadata
 function Pill({ children, className = '' }) {
@@ -97,73 +88,7 @@ function Pill({ children, className = '' }) {
     );
 }
 
-// Searchable dropdown with tactile styling
-function TactileSelect({ value, onChange, options, placeholder }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setSearch] = useState('');
-
-    const filteredOptions = useMemo(() => {
-        if (!search) return options;
-        return options.filter(opt =>
-            opt.name.toLowerCase().includes(search.toLowerCase())
-        );
-    }, [options, search]);
-
-    const selectedOption = options.find(opt => opt.name === value || opt.code === value);
-
-    return (
-        <div className="relative">
-            <button
-                type="button"
-                onClick={() => setIsOpen(!isOpen)}
-                className={`${tactileSelectClass} text-left flex items-center justify-between`}
-            >
-                <span className={selectedOption ? '' : 'text-gray-400'}>
-                    {selectedOption?.name || placeholder}
-                </span>
-                <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isOpen && (
-                <div className="absolute z-50 mt-2 w-full bg-white border border-[var(--color-border)] rounded-xl shadow-lg overflow-hidden">
-                    <div className="p-2 border-b border-[var(--color-border)]">
-                        <div className="relative">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className={`${tactileInputClass} pl-9`}
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                        {filteredOptions.length > 0 ? (
-                            filteredOptions.map((opt) => (
-                                <button
-                                    key={opt.code}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(opt);
-                                        setIsOpen(false);
-                                        setSearch('');
-                                    }}
-                                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-[var(--color-bg-secondary)] transition-colors ${selectedOption?.code === opt.code ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)]' : ''}`}
-                                >
-                                    {opt.name}
-                                </button>
-                            ))
-                        ) : (
-                            <div className="px-4 py-3 text-sm text-gray-400">No results</div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
+// TactileSelect imported from UI components consistent with MyIdentityCard/FriendForm
 
 export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
     const { geocodeFriendLocation } = useFriends();
@@ -265,74 +190,69 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
     return (
         <div className="space-y-6">
-            {/* Cover Image */}
-            <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden">
-                {friend.coverPhoto ? (
-                    <img
-                        src={friend.coverPhoto}
-                        alt="Cover"
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${getGradient()}`} />
-                )}
-
-                {/* Cover upload button (edit mode) */}
-                {isEditing && (
-                    <>
-                        <input
-                            ref={coverInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleCoverUpload}
-                            className="hidden"
-                        />
-                        <button
-                            onClick={() => coverInputRef.current?.click()}
-                            className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
-                        >
-                            <ImagePlus size={18} />
-                        </button>
-                    </>
-                )}
-
-                {/* Avatar - overlapping the cover */}
-                <div className="absolute -bottom-10 left-5">
-                    <div className="relative group">
-                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden">
-                            {friend.photo ? (
-                                <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className={`w-full h-full bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
-                                    <span className="text-2xl font-bold text-white">{(friend.name || '?').charAt(0).toUpperCase()}</span>
-                                </div>
-                            )}
+            {/* Photo Gallery Header (Reduced Height, No Circles) */}
+            <div className="relative mb-6 -mx-6 px-6 pt-6 pb-2 bg-[var(--color-bg-secondary)]/10 border-b border-[var(--color-border)] overflow-hidden">
+                {/* Gallery Scroll */}
+                <div className="relative z-10 flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory items-center">
+                    {friend.photos && friend.photos.length > 0 ? (
+                        friend.photos.map((photo, i) => (
+                            <div key={i} className="flex-shrink-0 w-32 h-40 rounded-lg bg-white shadow-sm border border-[var(--color-border)] overflow-hidden snap-center relative group">
+                                <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                                {isEditing && (
+                                    <button
+                                        onClick={() => {
+                                            const newPhotos = friend.photos.filter((_, idx) => idx !== i);
+                                            handleChange('photos', newPhotos);
+                                        }}
+                                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                                    >
+                                        <X size={10} />
+                                    </button>
+                                )}
+                            </div>
+                        ))
+                    ) : (friend.photo) ? (
+                        // Fallback for legacy single photo
+                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-white shadow-sm border border-[var(--color-border)] overflow-hidden snap-center">
+                            <img src={friend.photo} alt="Profile" className="w-full h-full object-cover" />
                         </div>
+                    ) : (
+                        // Empty State
+                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-white/50 border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
+                            <Camera className="text-[var(--color-text-secondary)] opacity-50" size={24} />
+                        </div>
+                    )}
 
-                        {/* Avatar upload overlay */}
-                        {isEditing && (
-                            <>
-                                <input
-                                    ref={photoInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handlePhotoUpload}
-                                    className="hidden"
-                                />
-                                <button
-                                    onClick={() => photoInputRef.current?.click()}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <Camera size={20} className="text-white" />
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    {/* Add Photo Button (Edit Mode) */}
+                    {isEditing && (
+                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-[var(--color-button-bg)] border-2 border-dashed border-[var(--color-border)] flex flex-col items-center justify-center gap-2 hover:border-[var(--color-brand)] cursor-pointer transition-colors relative group">
+                            <Plus className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand)]" size={20} />
+                            <span className="text-[10px] text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand)] font-medium uppercase tracking-wider">add photo</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => {
+                                    if (e.target.files) {
+                                        const newPhotos = [...(friend.photos || [])];
+                                        Array.from(e.target.files).forEach(file => {
+                                            const reader = new FileReader();
+                                            reader.onload = () => {
+                                                newPhotos.push(reader.result);
+                                                handleChange('photos', newPhotos);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        });
+                                    }
+                                }}
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Spacer for avatar overlap */}
-            <div className="h-6" />
+            {/* Spacer no longer needed */}
 
             {/* Form Fields */}
             <div className="space-y-4">
@@ -384,15 +304,30 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                     </div>
                 )}
 
+                {/* Favorite Memory */}
+                {!isEditing && friend.memory && (
+                    <div className="flex gap-2 text-sm text-[var(--color-text-secondary)]">
+                        <Sparkles size={14} className="flex-shrink-0 mt-0.5" />
+                        <span className="italic">"{friend.memory}"</span>
+                    </div>
+                )}
+
+                {/* Notes */}
+                {!isEditing && friend.notes && (
+                    <div className="pt-2 border-t border-[var(--color-border)] mt-2">
+                        <p className="text-xs text-[var(--color-text-secondary)] whitespace-pre-wrap">{friend.notes}</p>
+                    </div>
+                )}
+
                 {/* Edit Mode Fields */}
                 {isEditing && (
                     <div className="space-y-4 pt-2">
                         {/* Nickname */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Nickname</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">nickname</label>
                             <input
                                 type="text"
-                                placeholder="What do you call them?"
+                                placeholder="what do you call them?"
                                 value={friend.nickname || ''}
                                 onChange={(e) => handleChange('nickname', e.target.value)}
                                 className={tactileInputClass}
@@ -402,26 +337,22 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                         {/* Pronouns + Connection Type Row */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Pronouns</label>
-                                <select
-                                    value={friend.pronouns || ''}
-                                    onChange={(e) => handleChange('pronouns', e.target.value)}
-                                    className={tactileSelectClass}
-                                >
-                                    <option value="">Select...</option>
-                                    {PRONOUNS.map(p => (
-                                        <option key={p.value} value={p.value}>{p.label}</option>
-                                    ))}
-                                </select>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">pronouns</label>
+                                <TactileSelect
+                                    value={friend.pronouns}
+                                    onChange={(opt) => handleChange('pronouns', opt.code)}
+                                    options={PRONOUNS}
+                                    placeholder="select..."
+                                />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Connection</label>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">connection</label>
                                 <select
                                     value={friend.relationshipType || ''}
                                     onChange={(e) => handleChange('relationshipType', e.target.value)}
                                     className={tactileSelectClass}
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">select...</option>
                                     {RELATIONSHIP_TYPES.map(t => (
                                         <option key={t} value={t}>{t}</option>
                                     ))}
@@ -432,29 +363,29 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                         {/* Location Row */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">Country</label>
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">country</label>
                                 <TactileSelect
                                     value={friend.country}
                                     onChange={handleCountryChange}
                                     options={COUNTRIES}
-                                    placeholder="Select..."
+                                    placeholder="select..."
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">
-                                    {friend.country === 'Canada' ? 'Province' : 'State/Region'}
+                                <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">
+                                    {friend.country === 'Canada' ? 'province' : 'state/region'}
                                 </label>
                                 {states ? (
                                     <TactileSelect
                                         value={friend.state}
                                         onChange={handleStateChange}
                                         options={states}
-                                        placeholder="Select..."
+                                        placeholder="select..."
                                     />
                                 ) : (
                                     <input
                                         type="text"
-                                        placeholder="City or region"
+                                        placeholder="city or region"
                                         value={friend.state || ''}
                                         onChange={(e) => handleChange('state', e.target.value)}
                                         className={tactileInputClass}
@@ -465,10 +396,10 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
                         {/* Role */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">What they do</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">what they do</label>
                             <input
                                 type="text"
-                                placeholder="Designer at Acme, Student..."
+                                placeholder="designer at acme, student..."
                                 value={friend.role || ''}
                                 onChange={(e) => handleChange('role', e.target.value)}
                                 className={tactileInputClass}
@@ -477,13 +408,37 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
 
                         {/* How you met */}
                         <div>
-                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block">How you met</label>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">how you met</label>
                             <input
                                 type="text"
-                                placeholder="At a coffee shop, through a friend..."
+                                placeholder="at a coffee shop, through a friend..."
                                 value={friend.howMet || ''}
                                 onChange={(e) => handleChange('howMet', e.target.value)}
                                 className={tactileInputClass}
+                            />
+                        </div>
+
+                        {/* Memory */}
+                        <div>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">favorite memory</label>
+                            <textarea
+                                placeholder="that time we..."
+                                value={friend.memory || ''}
+                                onChange={(e) => handleChange('memory', e.target.value)}
+                                className={`${tactileInputClass} resize-none`}
+                                rows={2}
+                            />
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">notes</label>
+                            <textarea
+                                placeholder="extra details..."
+                                value={friend.notes || ''}
+                                onChange={(e) => handleChange('notes', e.target.value)}
+                                className={`${tactileInputClass} resize-none`}
+                                rows={3}
                             />
                         </div>
                     </div>
@@ -532,6 +487,6 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
