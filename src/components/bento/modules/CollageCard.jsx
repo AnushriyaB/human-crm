@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, Reorder } from 'framer-motion';
-import { Search, Plus, Trash2, X, Move, ChevronRight, Image as ImageIcon, Sparkles, Layout, RotateCw, ZoomIn, ZoomOut, Check, Pencil } from 'lucide-react';
+import { Search, Plus, Trash2, X, Move, ChevronRight, Image as ImageIcon, Sparkles, Layout, RotateCw, RotateCcw, ZoomIn, ZoomOut, Check, Pencil } from 'lucide-react';
 
 // Unsplash API configuration
 const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
@@ -48,16 +48,21 @@ const getStockImages = (query = '') => {
     }));
 };
 
-// Fallback static images if source.unsplash is unreliable
+// Decorative and relationship-focused default images
 const STATIC_IMAGES = [
-    { id: 'static-1', url: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-2', url: "https://images.unsplash.com/photo-1550973886-ef5369682f19?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-3', url: "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-4', url: "https://images.unsplash.com/photo-1518005052357-e9847508d4e4?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-5', url: "https://images.unsplash.com/photo-1528698782015-ab19f9f59fbf?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-6', url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-7', url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80" },
-    { id: 'static-8', url: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=300&q=80" }
+    // Aesthetic decorative elements
+    { id: 'static-1', url: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=300&q=80" }, // Flowers
+    { id: 'static-2', url: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=300&q=80" }, // Hearts/Love
+    { id: 'static-3', url: "https://images.unsplash.com/photo-1509909756405-be0199881695?auto=format&fit=crop&w=300&q=80" }, // Coffee/moments
+    { id: 'static-4', url: "https://images.unsplash.com/photo-1495364141860-b0d03eccd065?auto=format&fit=crop&w=300&q=80" }, // Flowers aesthetic
+    { id: 'static-5', url: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=300&q=80" }, // Sunflowers/bright
+    { id: 'static-6', url: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=300&q=80" }, // Polaroids/memories
+    { id: 'static-7', url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=300&q=80" }, // Decorative hearts
+    { id: 'static-8', url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80" }, // Aesthetic vibes
+    { id: 'static-9', url: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=300&q=80" }, // Pastel aesthetic
+    { id: 'static-10', url: "https://images.unsplash.com/photo-1519750157634-b6d493a0f77c?auto=format&fit=crop&w=300&q=80" }, // Stickers/decorative
+    { id: 'static-11', url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=300&q=80" }, // Stars/decorative
+    { id: 'static-12', url: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&w=300&q=80" }  // Minimal aesthetic
 ];
 
 const COLORS = [
@@ -78,7 +83,12 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     const [bgOpen, setBgOpen] = useState(false);
     const [images, setImages] = useState(STATIC_IMAGES);
     const [isSearching, setIsSearching] = useState(false);
+    const [collageName, setCollageName] = useState('Untitled Collage');
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [history, setHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
     const canvasRef = useRef(null);
+    const nameInputRef = useRef(null);
 
     // Get current items/bg from module data or defaults
     const items = module.data?.currentItems || [];
@@ -108,8 +118,33 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
         onUpdate?.({ ...module.data, ...updates });
     };
 
+    const addToHistory = (newItems) => {
+        // Remove any future history if we're not at the end
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newItems);
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+    };
+
     const updateItems = (newItems) => {
+        addToHistory(newItems);
         updateEditorData({ currentItems: newItems });
+    };
+
+    const undo = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            updateEditorData({ currentItems: history[newIndex] });
+        }
+    };
+
+    const redo = () => {
+        if (historyIndex < history.length - 1) {
+            const newIndex = historyIndex + 1;
+            setHistoryIndex(newIndex);
+            updateEditorData({ currentItems: history[newIndex] });
+        }
     };
 
     const addItem = (imageData) => {
@@ -131,8 +166,40 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     };
 
     const updateItemPosition = (id, newX, newY) => {
+        // Free-flowing - no clamping, let users place images anywhere
         const updatedItems = items.map(item =>
             item.id === id ? { ...item, x: newX, y: newY } : item
+        );
+        updateItems(updatedItems);
+    };
+
+    const updateItemRotation = (id, rotation) => {
+        const updatedItems = items.map(item =>
+            item.id === id ? { ...item, rotation } : item
+        );
+        updateItems(updatedItems);
+    };
+
+    const updateItemScale = (id, scale) => {
+        const updatedItems = items.map(item =>
+            item.id === id ? { ...item, scale } : item
+        );
+        updateItems(updatedItems);
+    };
+
+    const bringToFront = (id) => {
+        const maxZ = Math.max(...items.map(i => i.zIndex), 0);
+        const updatedItems = items.map(item =>
+            item.id === id ? { ...item, zIndex: maxZ + 1 } : item
+        );
+        updateItems(updatedItems);
+    };
+
+    const sendToBack = (id) => {
+        const minZ = Math.min(...items.map(i => i.zIndex), 1);
+        // Keep z-index at minimum of 1 to stay above canvas
+        const updatedItems = items.map(item =>
+            item.id === id ? { ...item, zIndex: Math.max(1, minZ - 1) } : item
         );
         updateItems(updatedItems);
     };
@@ -145,6 +212,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
         // Save current state as a new collage
         const newCollage = {
             id: Date.now(),
+            name: collageName,
             items: [...items],
             backgroundColor,
             date: new Date().toISOString()
@@ -159,8 +227,30 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
             backgroundColor: '#FFFFFF'
         });
 
+        setCollageName('Untitled Collage');
         setMode('list');
     };
+
+    // Keyboard shortcuts
+    React.useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Undo: Cmd/Ctrl + Z
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+            }
+            // Redo: Cmd/Ctrl + Shift + Z
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+                e.preventDefault();
+                redo();
+            }
+        };
+
+        if (mode === 'editor') {
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [mode, historyIndex, history]);
 
     // LIST VIEW
     if (mode === 'list' && savedCollages.length > 0) {
@@ -181,63 +271,76 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     {savedCollages.map(collage => (
-                        <div key={collage.id} className="aspect-[3/4] rounded-[2px] border border-[var(--color-border)] overflow-hidden relative group bg-white shadow-sm" style={{ backgroundColor: collage.backgroundColor }}>
-                            {/* Mini preview of items */}
-                            {(collage.items || []).map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="absolute"
-                                    style={{
-                                        left: `${item.x}%`,
-                                        top: `${item.y}%`,
-                                        width: '40%',
-                                        transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scale(${item.scale * 0.5})`,
-                                        zIndex: item.zIndex
-                                    }}
-                                >
-                                    <img src={item.src} className="w-full rounded-sm shadow-sm" />
-                                </div>
-                            ))}
+                        <div key={collage.id} className="flex flex-col rounded-[2px] border border-[var(--color-border)] overflow-hidden bg-white shadow-sm group">
+                            {/* Collage preview */}
+                            <div className="aspect-[3/4] relative" style={{ backgroundColor: collage.backgroundColor }}>
+                                {/* Mini preview of items */}
+                                {(collage.items || []).map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="absolute"
+                                        style={{
+                                            left: `${item.x}%`,
+                                            top: `${item.y}%`,
+                                            width: '40%',
+                                            transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scale(${item.scale * 0.5})`,
+                                            zIndex: item.zIndex
+                                        }}
+                                    >
+                                        <img src={item.src} className="w-full rounded-sm shadow-sm" />
+                                    </div>
+                                ))}
 
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                            <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={() => {
-                                        // Load collage into editor
-                                        updateEditorData({
-                                            currentItems: [...collage.items],
-                                            backgroundColor: collage.backgroundColor
-                                        });
-                                        // Remove from saved list (editing = destructive to original)
-                                        const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                        onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
-                                        setMode('editor');
-                                    }}
-                                    className="p-2 rounded-[2px] transition-all
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                                <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => {
+                                            // Load collage into editor
+                                            updateEditorData({
+                                                currentItems: [...collage.items],
+                                                backgroundColor: collage.backgroundColor
+                                            });
+                                            // Remove from saved list (editing = destructive to original)
+                                            const newCollages = savedCollages.filter(c => c.id !== collage.id);
+                                            onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
+                                            setMode('editor');
+                                        }}
+                                        className="p-2 rounded-[2px] transition-all
                                         bg-[var(--color-button-bg)] text-[var(--color-text-secondary)]
                                         shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:text-[var(--color-text-primary)]"
-                                    title="Edit collage"
-                                >
-                                    <Pencil size={14} />
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                        onUpdate?.({ ...module.data, collages: newCollages });
-                                    }}
-                                    className="p-2 rounded-[2px] transition-all
+                                        title="Edit collage"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const newCollages = savedCollages.filter(c => c.id !== collage.id);
+                                            onUpdate?.({ ...module.data, collages: newCollages });
+                                        }}
+                                        className="p-2 rounded-[2px] transition-all
                                         bg-[var(--color-button-bg)] text-red-400
                                         shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:text-red-500"
-                                    title="Delete collage"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                                        title="Delete collage"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Collage name at bottom */}
+                            <div className="px-3 py-2 bg-gray-50 border-t border-[var(--color-border)]">
+                                <p className="text-sm font-medium text-[var(--color-text-primary)] lowercase truncate">
+                                    {collage.name || 'Untitled Collage'}
+                                </p>
+                                <p className="text-xs text-[var(--color-text-tertiary)] lowercase">
+                                    {new Date(collage.date).toLocaleDateString()}
+                                </p>
                             </div>
                         </div>
                     ))}
@@ -271,15 +374,19 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
 
     // EDITOR VIEW
     return (
-        <div className="flex h-[600px] w-full bg-white border border-[var(--color-border)] rounded-[2px] overflow-hidden shadow-sm relative">
+        <div className="flex h-[650px] w-full bg-white border border-[var(--color-border)] rounded-[2px] shadow-sm relative">
             {/* Main Canvas Area */}
-            <div className="flex-1 relative overflow-hidden" style={{ backgroundColor }}>
-                {/* Background Grid Pattern */}
-                <div className="absolute inset-0 pointer-events-none opacity-20"
-                    style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+            <div className="flex-1 relative" style={{ backgroundColor, overflow: 'visible' }}>
+
+                {/* Background Dotted Pattern - White background with light dots */}
+                <div className="absolute inset-0 pointer-events-none bg-white"
+                    style={{
+                        backgroundImage: 'radial-gradient(circle, #e5e7eb 1.5px, transparent 1.5px)',
+                        backgroundSize: '30px 30px'
+                    }}
                 />
 
-                {/* Header Overlay */}
+                {/* Header Overlay - Back button & Name only */}
                 <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-50 pointer-events-none">
                     <div className="flex items-center gap-2 pointer-events-auto">
                         {savedCollages.length > 0 && (
@@ -287,28 +394,32 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                 <ChevronRight className="rotate-180" size={18} />
                             </button>
                         )}
-                        <h2 className="text-lg font-bold lowercase">create collage</h2>
-                    </div>
-                    <div className="flex items-center gap-2 pointer-events-auto">
-                        <div className="relative">
-                            <button
-                                onClick={() => setBgOpen(!bgOpen)}
-                                className="w-8 h-8 rounded-full border border-gray-200 shadow-sm"
-                                style={{ backgroundColor }}
+                        {isEditingName ? (
+                            <input
+                                ref={nameInputRef}
+                                type="text"
+                                value={collageName}
+                                onChange={(e) => setCollageName(e.target.value)}
+                                onBlur={() => setIsEditingName(false)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') setIsEditingName(false);
+                                }}
+                                className="text-lg font-bold lowercase bg-white/90 backdrop-blur px-3 py-1 rounded-[2px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[200px]"
+                                autoFocus
                             />
-                            {bgOpen && (
-                                <div className="absolute top-full right-0 mt-2 p-3 bg-white rounded-[2px] shadow-xl border border-gray-100 grid grid-cols-7 gap-1.5 w-[280px]">
-                                    {COLORS.map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => { updateEditorData({ backgroundColor: c }); setBgOpen(false); }}
-                                            className="w-8 h-8 rounded-full border border-gray-100 hover:scale-110 transition-transform"
-                                            style={{ backgroundColor: c }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        ) : (
+                            <h2
+                                onClick={() => setIsEditingName(true)}
+                                className="text-lg font-bold lowercase bg-white/80 backdrop-blur px-3 py-1 rounded-full cursor-pointer hover:bg-white transition-colors truncate max-w-[200px]"
+                                title="Click to edit name"
+                            >
+                                {collageName}
+                            </h2>
+                        )}
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="pointer-events-auto">
                         <button
                             onClick={handleSaveCollage}
                             disabled={items.length === 0}
@@ -324,19 +435,16 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                 </div>
 
                 {/* Canvas Items */}
-                <div ref={canvasRef} className="absolute inset-0">
+                <div ref={canvasRef} className="absolute inset-0" style={{ overflow: 'visible' }}>
                     {items.map((item) => (
                         <motion.div
                             key={item.id}
                             drag
-                            dragMomentum={false}
-                            dragConstraints={canvasRef}
-                            dragElastic={0.1}
+                            dragConstraints={false} // Free flow
+                            dragMomentum={true}
                             onDragEnd={(e, info) => {
-                                // Calculate new percentage position based on drag offset
                                 if (canvasRef.current) {
                                     const rect = canvasRef.current.getBoundingClientRect();
-                                    // Current position + offset converted to percentage (no clamping for free flow)
                                     const newX = item.x + (info.offset.x / rect.width) * 100;
                                     const newY = item.y + (info.offset.y / rect.height) * 100;
                                     updateItemPosition(item.id, newX, newY);
@@ -351,17 +459,51 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                 scale: item.scale,
                                 zIndex: item.zIndex
                             }}
+                            onClick={() => bringToFront(item.id)}
                         >
-                            {/* ... Content ... */}
-                            <div className="relative shadow-lg group-hover:shadow-xl transition-shadow">
-                                <img src={item.src} className="w-40 h-auto rounded-[2px] pointer-events-none" />
-                                <div className="absolute -top-3 -right-3 hidden group-hover:flex gap-1">
+                            {/* Image with decorative border */}
+                            <div className="relative shadow-lg group-hover:shadow-2xl transition-all">
+                                <div className="absolute -inset-2 bg-white rounded-[4px] shadow-md" />
+                                <img src={item.src} className="relative w-40 h-auto rounded-[2px] pointer-events-none" />
+
+                                {/* Item Controls */}
+                                <div className="absolute -top-3 -right-3 hidden group-hover:flex gap-1 z-10">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); updateItemRotation(item.id, item.rotation - 15); }}
+                                        className="p-1.5 bg-white rounded-full text-gray-700 shadow-md hover:scale-110 hover:text-blue-500 transition-all"
+                                    >
+                                        <RotateCcw size={12} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); updateItemRotation(item.id, item.rotation + 15); }}
+                                        className="p-1.5 bg-white rounded-full text-gray-700 shadow-md hover:scale-110 hover:text-blue-500 transition-all"
+                                    >
+                                        <RotateCw size={12} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); updateItemScale(item.id, Math.min(item.scale + 0.1, 2)); }}
+                                        className="p-1.5 bg-white rounded-full text-gray-700 shadow-md hover:scale-110 hover:text-green-500 transition-all"
+                                    >
+                                        <ZoomIn size={12} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); updateItemScale(item.id, Math.max(item.scale - 0.1, 0.3)); }}
+                                        className="p-1.5 bg-white rounded-full text-gray-700 shadow-md hover:scale-110 hover:text-orange-500 transition-all"
+                                    >
+                                        <ZoomOut size={12} />
+                                    </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
-                                        className="p-1.5 bg-white rounded-full text-red-500 shadow-md hover:scale-110 transition-transform"
+                                        className="p-1.5 bg-white rounded-full text-red-500 shadow-md hover:scale-110 hover:bg-red-50 transition-all"
                                     >
                                         <Trash2 size={12} />
                                     </button>
+                                </div>
+
+                                {/* Layer Controls */}
+                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 hidden group-hover:flex gap-1 z-10">
+                                    <button onClick={(e) => { e.stopPropagation(); bringToFront(item.id); }} className="px-2 py-1 bg-white rounded-full text-gray-700 shadow-md hover:scale-105 text-[10px] lowercase">front</button>
+                                    <button onClick={(e) => { e.stopPropagation(); sendToBack(item.id); }} className="px-2 py-1 bg-white rounded-full text-gray-700 shadow-md hover:scale-105 text-[10px] lowercase">back</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -370,17 +512,30 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                     {items.length === 0 && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 pointer-events-none">
                             <Sparkles size={48} className="mb-4 opacity-50" />
-                            <p className="text-sm lowercase">drag images from the sidebar</p>
+                            <p className="text-sm lowercase">drag images from sidebar</p>
                         </div>
                     )}
                 </div>
 
-                {/* Footer Tools */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white p-1.5 rounded-full shadow-lg border border-gray-100 pointer-events-auto">
-                    <button className="p-2 hover:bg-gray-50 rounded-full text-gray-600"><Layout size={18} /></button>
-                    <button className="p-2 hover:bg-gray-50 rounded-full text-gray-600"><RotateCw size={18} /></button>
-                    <div className="w-px h-4 bg-gray-200 mx-1" />
-                    <button onClick={() => updateItems([])} className="p-2 hover:bg-gray-50 rounded-full text-gray-600 hover:text-red-500"><Trash2 size={18} /></button>
+                {/* Floating Bottom Menu */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2 py-1.5 bg-white/90 backdrop-blur rounded-full shadow-xl border border-white/20 z-50 pointer-events-auto">
+                    <div className="flex items-center gap-1 pr-2 border-r border-gray-200">
+                        <button onClick={undo} disabled={historyIndex <= 0} className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-700" title="Undo"><RotateCcw size={16} /></button>
+                        <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-700" title="Redo"><RotateCw size={16} /></button>
+                    </div>
+                    <div className="relative px-1">
+                        <button onClick={() => setBgOpen(!bgOpen)} className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform" style={{ backgroundColor }} title="Background color" />
+                        {bgOpen && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 p-3 bg-white rounded-[16px] shadow-xl border border-gray-100 grid grid-cols-7 gap-2 w-[280px]">
+                                {COLORS.map(c => (
+                                    <button key={c} onClick={() => { updateEditorData({ backgroundColor: c }); setBgOpen(false); }} className="w-8 h-8 rounded-full border border-gray-100 hover:scale-110 transition-transform shadow-sm" style={{ backgroundColor: c }} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="pl-2 border-l border-gray-200">
+                        <button onClick={() => { if (window.confirm('Clear all images?')) { updateItems([]); } }} disabled={items.length === 0} className="p-2 rounded-full hover:bg-red-50 text-gray-700 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all" title="Clear all"><Trash2 size={16} /></button>
+                    </div>
                 </div>
             </div>
 
@@ -389,162 +544,162 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                 <div className="p-4 border-b border-[var(--color-border)]">
                     {activeTab === 'search_results' ? (
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('ideas');
-                                    setSearchQuery('');
-                                }}
-                                className="flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors lowercase"
-                            >
-                                <ChevronRight className="rotate-180" size={14} />
-                                back
-                            </button>
-                            <span className="text-xs text-[var(--color-text-tertiary)] ml-auto lowercase">results for "{searchQuery}"</span>
-                        </div>
-                    ) : (
-                        <div className="relative group">
-                            <button
-                                onClick={handleSearch}
-                                disabled={isSearching}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors focus:outline-none disabled:opacity-50"
-                            >
-                                {isSearching ? (
-                                    <motion.div
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                    >
-                                        <RotateCw size={14} />
-                                    </motion.div>
-                                ) : (
-                                    <Search size={14} />
-                                )}
-                            </button>
-                            <input
-                                type="text"
-                                placeholder="search photos..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !isSearching) {
-                                        handleSearch();
-                                    }
-                                }}
-                                disabled={isSearching}
-                                className="w-full bg-[var(--color-bg-secondary)] pl-9 pr-4 py-2 text-sm rounded-[2px] border border-transparent focus:bg-white focus:border-[var(--color-border)] focus:outline-none focus:ring-4 focus:ring-[var(--color-brand-muted)] transition-all placeholder:text-[var(--color-text-tertiary)] lowercase disabled:opacity-50"
-                            />
-                        </div>
-                    )}
+                    <button
+                        onClick={() => {
+                            setActiveTab('ideas');
+                            setSearchQuery('');
+                        }}
+                        className="flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors lowercase"
+                    >
+                        <ChevronRight className="rotate-180" size={14} />
+                        back
+                    </button>
+                    <span className="text-xs text-[var(--color-text-tertiary)] ml-auto lowercase">results for "{searchQuery}"</span>
                 </div>
+            ) : (
+                <div className="relative group">
+                    <button
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors focus:outline-none disabled:opacity-50"
+                    >
+                        {isSearching ? (
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                                <RotateCw size={14} />
+                            </motion.div>
+                        ) : (
+                            <Search size={14} />
+                        )}
+                    </button>
+                    <input
+                        type="text"
+                        placeholder="search photos..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !isSearching) {
+                                handleSearch();
+                            }
+                        }}
+                        disabled={isSearching}
+                        className="w-full bg-[var(--color-bg-secondary)] pl-9 pr-4 py-2 text-sm rounded-[2px] border border-transparent focus:bg-white focus:border-[var(--color-border)] focus:outline-none focus:ring-4 focus:ring-[var(--color-brand-muted)] transition-all placeholder:text-[var(--color-text-tertiary)] lowercase disabled:opacity-50"
+                    />
+                </div>
+            )}
+        </div>
 
-                {activeTab !== 'search_results' && (
-                    <div className="px-4 pt-4 pb-2">
-                        <div className="flex p-1 gap-1 bg-[var(--color-button-bg)] rounded-[2px] shadow-[inset_0_1px_4px_0_rgba(0,0,0,0.05)]">
-                            {[
-                                { id: 'ideas', label: 'more ideas' },
-                                { id: 'mycollages', label: 'my collages' }
-                            ].map((tab) => (
+        {activeTab !== 'search_results' && (
+            <div className="px-4 pt-4 pb-2">
+                <div className="flex p-1 gap-1 bg-[var(--color-button-bg)] rounded-[2px] shadow-[inset_0_1px_4px_0_rgba(0,0,0,0.05)]">
+                    {[
+                        { id: 'ideas', label: 'more ideas' },
+                        { id: 'mycollages', label: 'my collages' }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className="relative flex-1 py-1.5 text-xs font-medium transition-colors rounded-[2px] focus:outline-none z-10 lowercase"
+                            style={{
+                                color: activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                            }}
+                        >
+                            {activeTab === tab.id && (
+                                <motion.div
+                                    layoutId="collageSidebarTab"
+                                    className="absolute inset-0 bg-white rounded-[2px] shadow-sm z-[-1]"
+                                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                                />
+                            )}
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto p-4">
+
+            {(activeTab === 'ideas' || activeTab === 'search_results') && (
+                <div className="columns-2 gap-3 space-y-3">
+                    {images.map((image, i) => {
+                        const imgSrc = typeof image === 'string' ? image : image?.url || image;
+                        const imgKey = typeof image === 'string' ? i : image?.id || i;
+
+                        return (
+                            <button
+                                key={imgKey}
+                                onClick={() => addItem(image)}
+                                className="block w-full rounded-[2px] overflow-hidden relative group hover:opacity-90 transition-opacity"
+                            >
+                                <img src={imgSrc} className="w-full h-auto" loading="lazy" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Plus className="text-white drop-shadow-md" />
+                                </div>
+                            </button>
+                        );
+                    })}
+
+                    {/* Upload Button */}
+                    <label className="flex flex-col items-center justify-center w-full aspect-[3/4] rounded-[2px] border-2 border-dashed border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-colors cursor-pointer bg-gray-50 text-gray-400">
+                        <ImageIcon size={24} className="mb-2" />
+                        <span className="text-xs lowercase">upload</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = () => addItem(reader.result);
+                                reader.readAsDataURL(file);
+                            }
+                        }} />
+                    </label>
+                </div>
+            )}
+            {activeTab === 'mycollages' && (
+                <div className="space-y-3">
+                    {savedCollages.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-3">
+                            {savedCollages.map(collage => (
                                 <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className="relative flex-1 py-1.5 text-xs font-medium transition-colors rounded-[2px] focus:outline-none z-10 lowercase"
-                                    style={{
-                                        color: activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
+                                    key={collage.id}
+                                    onClick={() => {
+                                        updateEditorData({
+                                            currentItems: [...collage.items],
+                                            backgroundColor: collage.backgroundColor
+                                        });
+                                        const newCollages = savedCollages.filter(c => c.id !== collage.id);
+                                        onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
                                     }}
+                                    className="aspect-[3/4] rounded-[2px] border border-[var(--color-border)] overflow-hidden relative group bg-white hover:border-[var(--color-brand)] transition-colors"
+                                    style={{ backgroundColor: collage.backgroundColor }}
                                 >
-                                    {activeTab === tab.id && (
-                                        <motion.div
-                                            layoutId="collageSidebarTab"
-                                            className="absolute inset-0 bg-white rounded-[2px] shadow-sm z-[-1]"
-                                            transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                                        />
-                                    )}
-                                    {tab.label}
+                                    {collage.items.slice(0, 3).map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="absolute"
+                                            style={{
+                                                left: `${item.x}%`,
+                                                top: `${item.y}%`,
+                                                width: '50%',
+                                                transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scale(${item.scale * 0.4})`,
+                                                zIndex: item.zIndex
+                                            }}
+                                        >
+                                            <img src={item.src} className="w-full rounded-sm shadow-sm" />
+                                        </div>
+                                    ))}
                                 </button>
                             ))}
                         </div>
-                    </div>
-                )}
-
-                <div className="flex-1 overflow-y-auto p-4">
-
-                    {(activeTab === 'ideas' || activeTab === 'search_results') && (
-                        <div className="columns-2 gap-3 space-y-3">
-                            {images.map((image, i) => {
-                                const imgSrc = typeof image === 'string' ? image : image?.url || image;
-                                const imgKey = typeof image === 'string' ? i : image?.id || i;
-
-                                return (
-                                    <button
-                                        key={imgKey}
-                                        onClick={() => addItem(image)}
-                                        className="block w-full rounded-[2px] overflow-hidden relative group hover:opacity-90 transition-opacity"
-                                    >
-                                        <img src={imgSrc} className="w-full h-auto" loading="lazy" />
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Plus className="text-white drop-shadow-md" />
-                                        </div>
-                                    </button>
-                                );
-                            })}
-
-                            {/* Upload Button */}
-                            <label className="flex flex-col items-center justify-center w-full aspect-[3/4] rounded-[2px] border-2 border-dashed border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-colors cursor-pointer bg-gray-50 text-gray-400">
-                                <ImageIcon size={24} className="mb-2" />
-                                <span className="text-xs lowercase">upload</span>
-                                <input type="file" className="hidden" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = () => addItem(reader.result);
-                                        reader.readAsDataURL(file);
-                                    }
-                                }} />
-                            </label>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-40 text-gray-400 text-sm lowercase">
+                            <p>no collages yet</p>
                         </div>
                     )}
-                    {activeTab === 'mycollages' && (
-                        <div className="space-y-3">
-                            {savedCollages.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-3">
-                                    {savedCollages.map(collage => (
-                                        <button
-                                            key={collage.id}
-                                            onClick={() => {
-                                                updateEditorData({
-                                                    currentItems: [...collage.items],
-                                                    backgroundColor: collage.backgroundColor
-                                                });
-                                                const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                                onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
-                                            }}
-                                            className="aspect-[3/4] rounded-[2px] border border-[var(--color-border)] overflow-hidden relative group bg-white hover:border-[var(--color-brand)] transition-colors"
-                                            style={{ backgroundColor: collage.backgroundColor }}
-                                        >
-                                            {collage.items.slice(0, 3).map((item) => (
-                                                <div
-                                                    key={item.id}
-                                                    className="absolute"
-                                                    style={{
-                                                        left: `${item.x}%`,
-                                                        top: `${item.y}%`,
-                                                        width: '50%',
-                                                        transform: `translate(-50%, -50%) rotate(${item.rotation}deg) scale(${item.scale * 0.4})`,
-                                                        zIndex: item.zIndex
-                                                    }}
-                                                >
-                                                    <img src={item.src} className="w-full rounded-sm shadow-sm" />
-                                                </div>
-                                            ))}
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-40 text-gray-400 text-sm lowercase">
-                                    <p>no collages yet</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                </div>
+            )}
                 </div>
             </div>
         </div>
