@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import FriendForm from './pages/FriendForm';
 import Join from './pages/Join';
 import ThankYou from './pages/ThankYou';
+import ButtonGallery from './pages/ButtonGallery';
 import { FriendProvider } from './context/FriendContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -21,6 +22,7 @@ function App() {
                             <Route path="/thank-you" element={<ThankYou />} />
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/friend-form" element={<FriendForm />} />
+                            <Route path="/buttons" element={<ButtonGallery />} />
                         </Routes>
                     </div>
                 </Router>

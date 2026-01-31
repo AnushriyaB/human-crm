@@ -139,7 +139,7 @@ export default function Dashboard() {
 
                 {/* Right: Settings and Theme Toggle */}
                 <div className="pointer-events-auto relative flex items-center gap-2">
-                    <ThemeToggle />
+                    {/* <ThemeToggle /> */}
                     <button onClick={() => setSettingsOpen(!settingsOpen)} className={`w-10 h-10 rounded-full transition-all flex items-center justify-center ${settingsOpen ? 'shadow-active' : 'shadow-inner hover:shadow-sm'}`}
                         style={{
                             backgroundColor: 'var(--color-button-bg)',

@@ -75,7 +75,7 @@ export default function AddFriendDropdown({ isOpen, onClose, onComplete }) {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         autoFocus
-                                        className="border-transparent transition-all rounded-[2px] text-lg font-medium shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]"
+                                        className="border-transparent transition-all rounded-[2px] text-lg font-medium shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)] focus-visible:ring-0 focus-visible:ring-offset-0 caret-[var(--color-brand)]"
                                         style={{
                                             backgroundColor: 'var(--color-button-bg)',
                                             color: 'var(--color-text-primary)'
