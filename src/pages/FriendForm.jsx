@@ -282,9 +282,9 @@ export default function FriendForm() {
                                                 const newPhotos = formData.photos.filter((_, i) => i !== index);
                                                 setFormData({ ...formData, photos: newPhotos });
                                             }}
-                                            className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                                            className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-all"
                                         >
-                                            <span className="text-white text-lg">✕</span>
+                                            <span className="w-6 h-6 rounded-full bg-red-500 text-white text-sm flex items-center justify-center shadow-lg">✕</span>
                                         </button>
                                     </div>
                                 ))}
@@ -441,7 +441,7 @@ export default function FriendForm() {
                                 <button
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(index)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5' : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-[2px] text-sm font-medium transition-all ${isActive ? 'text-brand bg-brand/5 shadow-[inset_0_2px_4px_0_rgba(59,130,246,0.1)]' : 'text-text-secondary hover:text-text-primary bg-[var(--color-button-bg)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.05),inset_0_2px_4px_0_rgba(255,255,255,0.5)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05),inset_0_-2px_4px_0_rgba(255,255,255,0.5)]'
                                         }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-brand' : 'text-gray-400'}`} />
@@ -456,7 +456,7 @@ export default function FriendForm() {
                     {isEdit && !isGuest && (
                         <div className="pt-4 mt-4 border-t border-gray-100">
                             <button
-                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-[8px] w-full transition-colors lowercase hover:bg-red-50"
+                                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-500 rounded-[2px] w-full transition-all lowercase bg-[var(--color-button-bg)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.05),inset_0_2px_4px_0_rgba(255,255,255,0.5)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05),inset_0_-2px_4px_0_rgba(255,255,255,0.5)] hover:bg-red-50"
                                 onClick={() => {
                                     navigate('/dashboard');
                                 }}
@@ -475,7 +475,7 @@ export default function FriendForm() {
                         <div className="absolute top-6 right-6 z-50">
                             <button
                                 onClick={() => navigate('/dashboard')}
-                                className="bg-gray-50 border border-gray-100 shadow-inner px-6 py-3 rounded-[8px] text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white hover:shadow-sm transition-all flex items-center gap-2 group"
+                                className="bg-[var(--color-button-bg)] border border-[var(--color-border)] px-6 py-3 rounded-[2px] text-sm font-medium text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 group shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]"
                             >
                                 <span className="lowercase">close</span>
                             </button>

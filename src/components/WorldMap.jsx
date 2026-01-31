@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { feature } from 'topojson-client';
 import worldData from '../assets/world-countries.json';
 
@@ -54,6 +54,15 @@ function getGradientColors(name) {
 }
 
 export default function WorldMap({ friends, onFriendClick }) {
+    const [tooltip, setTooltip] = useState({ visible: false, name: '', x: 0, y: 0 });
+
+    const handleMouseMove = useCallback((e, name) => {
+        const rect = e.currentTarget.closest('[data-map-container]')?.getBoundingClientRect();
+        if (rect) {
+            setTooltip({ visible: true, name, x: e.clientX - rect.left, y: e.clientY - rect.top });
+        }
+    }, []);
+
     const geoData = useMemo(() => {
         if (worldData.type === 'Topology' && worldData.objects.countries) {
             return feature(worldData, worldData.objects.countries);
@@ -69,7 +78,7 @@ export default function WorldMap({ friends, onFriendClick }) {
     }
 
     return (
-        <div className="w-full h-full absolute inset-0 overflow-hidden" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+        <div className="w-full h-full absolute inset-0 overflow-hidden relative" data-map-container style={{ backgroundColor: 'var(--color-bg-primary)' }}>
             <ComposableMap
                 projection="geoMercator"
                 projectionConfig={{
@@ -86,13 +95,12 @@ export default function WorldMap({ friends, onFriendClick }) {
                             <Geography
                                 key={geo.rsmKey}
                                 geography={geo}
-                                fill="var(--color-card-bg)"
-                                stroke="var(--color-border)"
-                                strokeWidth={0.5}
+                                onMouseMove={(e) => handleMouseMove(e, geo.properties.name)}
+                                onMouseLeave={() => setTooltip(t => ({ ...t, visible: false }))}
                                 style={{
-                                    default: { outline: "none" },
-                                    hover: { fill: "var(--color-highlight)", outline: "none", transition: "all 250ms" },
-                                    pressed: { outline: "none" },
+                                    default: { fill: "#f3f4f6", stroke: "#e5e7eb", strokeWidth: 0.5, outline: "none", transition: "fill 200ms ease" },
+                                    hover: { fill: "#dbeafe", stroke: "#93c5fd", strokeWidth: 0.8, outline: "none", transition: "fill 200ms ease, stroke 200ms ease", cursor: "default" },
+                                    pressed: { fill: "#bfdbfe", outline: "none" },
                                 }}
                             />
                         ));
@@ -217,6 +225,27 @@ export default function WorldMap({ friends, onFriendClick }) {
                     );
                 })}
             </ComposableMap>
+
+            {/* Country name tooltip */}
+            <AnimatePresence>
+                {tooltip.visible && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute pointer-events-none z-50 text-xs font-medium lowercase whitespace-nowrap"
+                        style={{
+                            left: tooltip.x,
+                            top: tooltip.y - 28,
+                            transform: 'translateX(-50%)',
+                            color: 'var(--color-text-primary)',
+                        }}
+                    >
+                        {tooltip.name}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

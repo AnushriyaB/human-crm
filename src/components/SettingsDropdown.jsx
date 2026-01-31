@@ -29,21 +29,23 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                             {/* Label */}
                             <p className="text-xs text-[var(--color-text-secondary)] font-medium px-1">Digest Frequency</p>
                             {/* Visual Toggle */}
-                            <div className="flex rounded-[2px] p-1 relative" style={{ backgroundColor: 'var(--color-button-bg)' }}>
+                            <div className="flex rounded-[2px] p-1.5 gap-1 relative shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.12)]" style={{ backgroundColor: 'var(--color-button-bg)' }}>
                                 <motion.div
-                                    className="absolute top-1 bottom-1 rounded-[2px] shadow-sm"
+                                    className="absolute top-1.5 bottom-1.5 rounded-[2px] shadow-[0_2px_8px_0_rgba(0,0,0,0.08),inset_0_-1px_2px_0_rgba(0,0,0,0.1),inset_0_1px_2px_0_rgba(255,255,255,0.8)]"
                                     style={{ backgroundColor: 'var(--color-highlight)' }}
                                     initial={false}
                                     animate={{
-                                        left: frequency === 'weekly' ? '4px' : '50%',
-                                        width: 'calc(50% - 4px)'
+                                        left: frequency === 'weekly' ? '6px' : 'calc(50% + 2px)',
+                                        width: 'calc(50% - 8px)'
                                     }}
                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setFrequency('weekly')}
-                                    className="flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer"
+                                    className={`flex-1 relative z-10 py-2 text-sm font-medium transition-all lowercase cursor-pointer rounded-[2px] ${
+                                        frequency === 'weekly' ? '' : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
+                                    }`}
                                     style={{
                                         color: frequency === 'weekly' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
                                     }}
@@ -53,7 +55,9 @@ export default function SettingsDropdown({ isOpen, onClose }) {
                                 <button
                                     type="button"
                                     onClick={() => setFrequency('daily')}
-                                    className="flex-1 relative z-10 py-2 text-sm font-medium transition-colors lowercase cursor-pointer"
+                                    className={`flex-1 relative z-10 py-2 text-sm font-medium transition-all lowercase cursor-pointer rounded-[2px] ${
+                                        frequency === 'daily' ? '' : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
+                                    }`}
                                     style={{
                                         color: frequency === 'daily' ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
                                     }}

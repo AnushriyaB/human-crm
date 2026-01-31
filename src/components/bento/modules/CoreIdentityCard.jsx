@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Handshake, Sparkles, MapPin, Briefcase, Camera, Plus, X, ImagePlus, User, Hand, Heart } from 'lucide-react';
+import { Handshake, Sparkles, MapPin, Briefcase, Camera, Plus, X, ImagePlus, User, Hand, Heart, Eye, EyeOff, Check, Copy } from 'lucide-react';
 import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
 
@@ -76,6 +76,11 @@ const tactileInputClass = `
     shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]
     focus:outline-none focus:ring-1 focus:ring-[var(--color-brand)]
     placeholder:text-gray-400
+`;
+
+const tactileSelectClass = `
+    appearance-none
+    ${tactileInputClass}
 `;
 
 
@@ -263,7 +268,7 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                         value={friend.name || ''}
                         onChange={(e) => handleChange('name', e.target.value)}
                         placeholder="Their name"
-                        className={`${tactileInputClass} text-xl font-bold`}
+                        className={`${tactileInputClass} text-xl font-bold focus:ring-0`}
                     />
                 ) : (
                     <h2 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">
@@ -455,7 +460,7 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                                 </span>
                                 <button
                                     onClick={() => setShowPasskey(!showPasskey)}
-                                    className="p-1 hover:bg-white rounded transition-colors"
+                                    className="p-1.5 rounded-full transition-all shadow-inner hover:shadow-sm bg-[var(--color-button-bg)] border border-[var(--color-border)] hover:bg-white"
                                 >
                                     {showPasskey ? (
                                         <EyeOff size={14} className="text-[var(--color-text-secondary)]" />
@@ -466,9 +471,9 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                             </div>
                             <button
                                 onClick={handleCopyPasskey}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${copied
-                                    ? 'bg-green-100 text-green-600'
-                                    : 'bg-white hover:bg-[var(--color-brand)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] border border-[var(--color-border)]'
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[2px] transition-all ${copied
+                                    ? 'bg-green-100 text-green-600 shadow-[inset_0_2px_4px_0_rgba(34,197,94,0.2)]'
+                                    : 'bg-[var(--color-button-bg)] hover:text-[var(--color-brand)] text-[var(--color-text-secondary)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]'
                                     }`}
                             >
                                 {copied ? (

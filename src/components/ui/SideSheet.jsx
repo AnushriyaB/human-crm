@@ -239,7 +239,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                             </div>
                         ) : (
                             <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
-                                {isMe ? 'my profile' : 'profile'}
+                                {friend?.name || 'profile'}
                             </h4>
                         )}
 
@@ -264,15 +264,18 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                 </div>
 
                 {/* Tab Navigation - Tactical Design */}
-                <div className="px-6 py-4 border-b relative z-20" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
-                    <div className="flex p-1 gap-1 bg-[var(--color-button-bg)] rounded-[4px] shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)]">
+                <div className="px-6 py-4 border-b relative z-50" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card-bg)' }}>
+                    <div className="flex p-1.5 gap-1.5 bg-[var(--color-button-bg)] rounded-[2px] shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.12)]">
                         {TABS.filter(tab => enabledTabs.includes(tab.id)).map(tab => {
                             const isActive = activeTab === tab.id;
                             return (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className="relative flex-1 px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-[2px] focus:outline-none"
+                                    className={`relative flex-1 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-[2px] focus:outline-none ${isActive
+                                            ? ''
+                                            : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
+                                        }`}
                                     style={{
                                         color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                                     }}
@@ -280,10 +283,10 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                     {isActive && (
                                         <motion.div
                                             layoutId="activeTab"
-                                            className="absolute inset-0 rounded-[2px] shadow-sm"
+                                            className="absolute inset-0 rounded-[2px] shadow-[0_2px_8px_0_rgba(0,0,0,0.08),inset_0_-1px_2px_0_rgba(0,0,0,0.1),inset_0_1px_2px_0_rgba(255,255,255,0.8)]"
                                             initial={false}
                                             animate={{ backgroundColor: tab.color }}
-                                            transition={{ type: "spring", stiffness: 250, damping: 30 }}
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                         />
                                     )}
                                     <span className="relative z-10 lowercase">{tab.label}</span>
@@ -292,15 +295,15 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                         })}
                         {TABS.filter(tab => !enabledTabs.includes(tab.id)).length > 0 && (
                             <div className="relative group flex items-center">
-                                <button className="flex items-center justify-center w-8 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-colors rounded-[2px] hover:bg-white/50">
-                                    <Plus size={16} />
+                                <button className="flex items-center justify-center w-8 h-8 rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] transition-all shadow-inner hover:shadow-sm bg-[var(--color-button-bg)] border border-[var(--color-border)]">
+                                    <Plus size={16} strokeWidth={1.5} />
                                 </button>
                                 <div className="absolute top-full right-0 mt-2 py-1 bg-white border border-[var(--color-border)] rounded-[2px] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[140px] overflow-hidden">
                                     {TABS.filter(tab => !enabledTabs.includes(tab.id)).map(tab => (
                                         <button
                                             key={tab.id}
                                             onClick={() => handleAddTab(tab.id)}
-                                            className="w-full px-4 py-2.5 text-sm text-left hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] text-[var(--color-text-primary)] transition-colors lowercase"
+                                            className="w-full px-4 py-2.5 text-sm text-left hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] text-[var(--color-text-primary)] transition-all lowercase"
                                         >
                                             {tab.label}
                                         </button>

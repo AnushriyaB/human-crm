@@ -216,7 +216,8 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                             />
                             <button
                                 onClick={() => coverInputRef.current?.click()}
-                                className="absolute top-3 right-3 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all shadow-lg hover:shadow-xl"
+                                title="Change cover photo"
                             >
                                 <ImagePlus size={18} />
                             </button>
@@ -398,7 +399,7 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                                 </span>
                                 <button
                                     onClick={() => setShowPasskey(!showPasskey)}
-                                    className="p-1 hover:bg-white rounded transition-colors"
+                                    className="p-1.5 rounded-full transition-all shadow-inner hover:shadow-sm bg-[var(--color-button-bg)] border border-[var(--color-border)] hover:bg-white"
                                 >
                                     {showPasskey ? (
                                         <EyeOff size={14} className="text-[var(--color-text-secondary)]" />
@@ -409,9 +410,9 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                             </div>
                             <button
                                 onClick={handleCopyPasskey}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${copied
-                                    ? 'bg-green-100 text-green-600'
-                                    : 'bg-white hover:bg-[var(--color-brand)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-brand)] border border-[var(--color-border)]'
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[2px] transition-all ${copied
+                                    ? 'bg-green-100 text-green-600 shadow-[inset_0_2px_4px_0_rgba(34,197,94,0.2)]'
+                                    : 'bg-[var(--color-button-bg)] hover:text-[var(--color-brand)] text-[var(--color-text-secondary)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]'
                                     }`}
                             >
                                 {copied ? (

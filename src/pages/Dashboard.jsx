@@ -139,7 +139,7 @@ export default function Dashboard() {
 
                 {/* Right: Settings and Theme Toggle */}
                 <div className="pointer-events-auto relative flex items-center gap-2">
-                    <ThemeToggle />
+                    {/* <ThemeToggle /> */}
                     <button onClick={() => setSettingsOpen(!settingsOpen)} className={`w-10 h-10 rounded-full transition-all flex items-center justify-center ${settingsOpen ? 'shadow-active' : 'shadow-inner hover:shadow-sm'}`}
                         style={{
                             backgroundColor: 'var(--color-button-bg)',
@@ -167,7 +167,7 @@ export default function Dashboard() {
 
                 {/* Left: Friend Shelf (Only unmapped friends) */}
                 <div className="absolute left-8 top-0 bottom-8 w-64 pointer-events-none flex flex-col justify-start pt-24">
-                    <div className="pointer-events-auto space-y-3">
+                    <div className="pointer-events-auto flex flex-col items-start gap-3">
                         {friends.filter(f => !f.lat || !f.lon).length > 0 && (
                             <div className="mb-2">
                                 <h3 className="text-xs font-medium pl-1 lowercase tracking-wide opacity-50" style={{ color: 'var(--color-text-secondary)' }}>add location</h3>
@@ -180,10 +180,10 @@ export default function Dashboard() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 onClick={() => setSelectedFriendId(f.id)}
-                                className="relative group cursor-pointer"
+                                className="relative group cursor-pointer inline-flex"
                             >
                                 <div
-                                    className="flex items-center gap-4 backdrop-blur-sm rounded-[8px] p-3 shadow-sm hover:shadow-md transition-all w-full"
+                                    className="flex items-center gap-3 backdrop-blur-sm rounded-[8px] px-3 py-2.5 shadow-sm hover:shadow-md transition-all"
                                     style={{
                                         backgroundColor: 'var(--color-card-bg)',
                                         borderColor: 'var(--color-border)',
@@ -192,16 +192,16 @@ export default function Dashboard() {
                                         color: 'var(--color-text-primary)'
                                     }}
                                 >
-                                    <div className={`w-10 h-10 rounded-full shadow-inner overflow-hidden flex-shrink-0 border ${f.isMe ? 'bg-brand border-brand' : 'bg-gray-100 border-white'}`}>
+                                    <div className={`w-8 h-8 rounded-full shadow-inner overflow-hidden flex-shrink-0 border ${f.isMe ? 'bg-brand border-brand' : 'bg-gray-100 border-white'}`}>
                                         {(f.photos && f.photos.length > 0) || f.photo ? (
                                             <img src={f.photos?.[0] || f.photo} alt={f.name || 'Friend'} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className={`w-full h-full flex items-center justify-center text-[10px] font-bold ${f.isMe ? 'text-white' : 'text-gray-400'}`}>
+                                            <div className={`w-full h-full flex items-center justify-center text-[9px] font-bold ${f.isMe ? 'text-white' : 'text-gray-400'}`}>
                                                 {(f.name || '?').substring(0, 2).toUpperCase()}
                                             </div>
                                         )}
                                     </div>
-                                    <span className={`text-sm font-medium lowercase truncate ${f.isMe ? 'text-brand' : 'text-text-secondary group-hover:text-text-primary'}`}>{f.name || 'friend'}</span>
+                                    <span className={`text-sm font-medium lowercase whitespace-nowrap ${f.isMe ? 'text-brand' : 'text-text-secondary group-hover:text-text-primary'}`}>{f.name || 'friend'}</span>
                                 </div>
                             </motion.div>
                         ))}
