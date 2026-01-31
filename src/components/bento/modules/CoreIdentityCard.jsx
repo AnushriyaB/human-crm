@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { Handshake, Sparkles, MapPin, Briefcase, Camera, Plus, X, ImagePlus, User, Hand, Heart, Eye, EyeOff, Check, Copy } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Handshake, Sparkles, MapPin, Briefcase, Camera, ImagePlus } from 'lucide-react';
 import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
 
@@ -99,8 +99,6 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
     const { geocodeFriendLocation } = useFriends();
     const photoInputRef = useRef(null);
     const coverInputRef = useRef(null);
-    const [copied, setCopied] = useState(false);
-    const [showPasskey, setShowPasskey] = useState(false);
 
     const handleChange = (field, value) => {
         onUpdate?.({ [field]: value });
@@ -158,106 +156,82 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
         }
     };
 
-    const handleCopyPasskey = async () => {
-        if (friend.passphrase) {
-            try {
-                await navigator.clipboard.writeText(friend.passphrase);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-            } catch (err) {
-                console.error('Failed to copy:', err);
-            }
-        }
-    };
-
-    const maskPasskey = (passkey) => {
-        if (!passkey) return '';
-        return '•'.repeat(passkey.length);
-    };
-
     const states = getStatesForCountry(friend.country);
-
-    // Generate gradient based on friend name
-    const getGradient = () => {
-        const colors = [
-            'from-violet-400 to-purple-500',
-            'from-blue-400 to-indigo-500',
-            'from-emerald-400 to-teal-500',
-            'from-orange-400 to-rose-500',
-            'from-pink-400 to-fuchsia-500',
-        ];
-        const hash = (friend.name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        return colors[hash % colors.length];
-    };
 
     // Build location string
     const locationString = [friend.state, friend.country].filter(Boolean).join(', ');
 
     return (
         <div className="space-y-6">
-            {/* Photo Gallery Header (Reduced Height, No Circles) */}
-            <div className="relative mb-6 -mx-6 px-6 pt-6 pb-2 bg-[var(--color-bg-secondary)]/10 border-b border-[var(--color-border)] overflow-hidden">
-                {/* Gallery Scroll */}
-                <div className="relative z-10 flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory items-center">
-                    {friend.photos && friend.photos.length > 0 ? (
-                        friend.photos.map((photo, i) => (
-                            <div key={i} className="flex-shrink-0 w-32 h-40 rounded-lg bg-white shadow-sm border border-[var(--color-border)] overflow-hidden snap-center relative group">
-                                <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                                {isEditing && (
-                                    <button
-                                        onClick={() => {
-                                            const newPhotos = friend.photos.filter((_, idx) => idx !== i);
-                                            handleChange('photos', newPhotos);
-                                        }}
-                                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                                    >
-                                        <X size={10} />
-                                    </button>
-                                )}
-                            </div>
-                        ))
-                    ) : (friend.photo) ? (
-                        // Fallback for legacy single photo
-                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-white shadow-sm border border-[var(--color-border)] overflow-hidden snap-center">
-                            <img src={friend.photo} alt="Profile" className="w-full h-full object-cover" />
-                        </div>
-                    ) : (
-                        // Empty State
-                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-white/50 border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
-                            <Camera className="text-[var(--color-text-secondary)] opacity-50" size={24} />
-                        </div>
+            {/* Cover Image & Avatar container */}
+            <div className="relative mb-20">
+                {/* Cover Image */}
+                <div className="relative w-full overflow-hidden rounded-[4px]" style={{ height: '180px' }}>
+                    {/* Glass Frame Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 border border-black/5 shadow-inner" />
+
+                    {/* Cover photo */}
+                    {friend.coverPhoto && (
+                        <img
+                            src={friend.coverPhoto}
+                            alt="Cover"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
                     )}
 
-                    {/* Add Photo Button (Edit Mode) */}
+                    {/* Cover upload button (edit mode) */}
                     {isEditing && (
-                        <div className="flex-shrink-0 w-32 h-40 rounded-lg bg-[var(--color-button-bg)] border-2 border-dashed border-[var(--color-border)] flex flex-col items-center justify-center gap-2 hover:border-[var(--color-brand)] cursor-pointer transition-colors relative group">
-                            <Plus className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand)]" size={20} />
-                            <span className="text-[10px] text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand)] font-medium uppercase tracking-wider">add photo</span>
+                        <>
                             <input
+                                ref={coverInputRef}
                                 type="file"
                                 accept="image/*"
-                                multiple
-                                onChange={(e) => {
-                                    if (e.target.files) {
-                                        const newPhotos = [...(friend.photos || [])];
-                                        Array.from(e.target.files).forEach(file => {
-                                            const reader = new FileReader();
-                                            reader.onload = () => {
-                                                newPhotos.push(reader.result);
-                                                handleChange('photos', newPhotos);
-                                            };
-                                            reader.readAsDataURL(file);
-                                        });
-                                    }
-                                }}
-                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                onChange={handleCoverUpload}
+                                className="hidden"
                             />
-                        </div>
+                            <button
+                                onClick={() => coverInputRef.current?.click()}
+                                className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all shadow-lg hover:shadow-xl"
+                                title="Change cover photo"
+                            >
+                                <ImagePlus size={18} />
+                            </button>
+                        </>
                     )}
                 </div>
-            </div>
 
-            {/* Spacer no longer needed */}
+                {/* Avatar - positioned absolutely, overlapping bottom of cover */}
+                <div className="absolute -bottom-10 left-6 z-10">
+                    <div className="relative group">
+                        <div className="w-20 h-20 rounded-2xl bg-white shadow-lg border-4 border-white overflow-hidden relative">
+                            {friend.photo ? (
+                                <img src={friend.photo} alt={friend.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-gray-400">{(friend.name || '?').charAt(0).toUpperCase()}</span>
+                                </div>
+                            )}
+                        </div>
+                        {isEditing && (
+                            <>
+                                <input
+                                    ref={photoInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handlePhotoUpload}
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => photoInputRef.current?.click()}
+                                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Camera size={20} className="text-white" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
 
             {/* Form Fields */}
             <div className="space-y-4">
@@ -449,48 +423,6 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                     </div>
                 )}
 
-                {/* Passkey Section */}
-                {friend.passphrase && !friend.hasJoined && (
-                    <div className="pt-4 mt-4 border-t border-[var(--color-border)]">
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-bg-secondary)]">
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-[var(--color-text-secondary)]">Passkey:</span>
-                                <span className="font-mono text-sm text-[var(--color-brand)]">
-                                    {showPasskey ? friend.passphrase : maskPasskey(friend.passphrase)}
-                                </span>
-                                <button
-                                    onClick={() => setShowPasskey(!showPasskey)}
-                                    className="p-1.5 rounded-full transition-all shadow-inner hover:shadow-sm bg-[var(--color-button-bg)] border border-[var(--color-border)] hover:bg-white"
-                                >
-                                    {showPasskey ? (
-                                        <EyeOff size={14} className="text-[var(--color-text-secondary)]" />
-                                    ) : (
-                                        <Eye size={14} className="text-[var(--color-text-secondary)]" />
-                                    )}
-                                </button>
-                            </div>
-                            <button
-                                onClick={handleCopyPasskey}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[2px] transition-all ${copied
-                                    ? 'bg-green-100 text-green-600 shadow-[inset_0_2px_4px_0_rgba(34,197,94,0.2)]'
-                                    : 'bg-[var(--color-button-bg)] hover:text-[var(--color-brand)] text-[var(--color-text-secondary)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]'
-                                    }`}
-                            >
-                                {copied ? (
-                                    <>
-                                        <Check size={12} />
-                                        Copied!
-                                    </>
-                                ) : (
-                                    <>
-                                        <Copy size={12} />
-                                        Copy
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
         </div >
     );

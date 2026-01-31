@@ -17,7 +17,7 @@ import NotesCard from '../bento/modules/NotesCard';
 import CollageCard from '../bento/modules/CollageCard';
 import BentoCard from '../bento/Card';
 import ModuleLibrary from '../bento/ModuleLibrary';
-import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool } from 'lucide-react';
+import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool, Eye, EyeOff, Copy } from 'lucide-react';
 
 // Tab configuration with pastel colors
 const FRIEND_TABS = [
@@ -32,6 +32,7 @@ const ME_TABS = [
     { id: 'about', label: 'about me', icon: User, modules: ['timeline'], color: '#fee2e2' },
     { id: 'favorites', label: 'my favorites', icon: Heart, modules: ['favorites'], color: '#dbeafe' },
     { id: 'work', label: 'my work', icon: Briefcase, modules: ['work'], color: '#dcfce7' },
+    { id: 'connect', label: 'social links', icon: MessageCircle, modules: ['communication'], color: '#fef3c7' },
     { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' },
 ];
 
@@ -45,7 +46,16 @@ export default function SideSheet({ isOpen, onClose, friend }) {
     const [activeTab, setActiveTab] = useState('about');
     const [recentlyAdded, setRecentlyAdded] = useState(new Set());
     const [enabledTabs, setEnabledTabs] = useState(['about']); // Only 'about' enabled by default
+    const [showPasskey, setShowPasskey] = useState(false);
+    const [passkeyCopied, setPasskeyCopied] = useState(false);
     const scrollContainerRef = useRef(null);
+
+    const maskPasskey = (pk) => pk ? pk.slice(0, 2) + '••••' + pk.slice(-2) : '';
+    const handleCopyPasskey = () => {
+        navigator.clipboard.writeText(friend.passphrase);
+        setPasskeyCopied(true);
+        setTimeout(() => setPasskeyCopied(false), 2000);
+    };
 
     // Determine if this is the "me" profile
     const isMe = friend?.name?.toLowerCase() === 'me' || friend?.isMe;
@@ -238,9 +248,30 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                 <span>• click 🗑️ to remove</span>
                             </div>
                         ) : (
-                            <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
-                                {friend?.name || 'profile'}
-                            </h4>
+                            <div className="flex items-center gap-3">
+                                <h4 className="text-xs uppercase tracking-widest opacity-50 font-semibold">
+                                    {friend?.name || 'profile'}
+                                </h4>
+                                {!isMe && friend?.passphrase && (
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-mono text-xs text-[var(--color-brand)]">
+                                            {showPasskey ? friend.passphrase : maskPasskey(friend.passphrase)}
+                                        </span>
+                                        <button
+                                            onClick={() => setShowPasskey(!showPasskey)}
+                                            className="p-1 rounded-full transition-all text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                                        >
+                                            {showPasskey ? <EyeOff size={11} /> : <Eye size={11} />}
+                                        </button>
+                                        <button
+                                            onClick={handleCopyPasskey}
+                                            className={`p-1 rounded-full transition-all ${passkeyCopied ? 'text-green-500' : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}`}
+                                        >
+                                            {passkeyCopied ? <Check size={11} /> : <Copy size={11} />}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         )}
 
                         <div className="flex items-center gap-3">
@@ -272,10 +303,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`relative flex-1 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-[2px] focus:outline-none ${isActive
-                                            ? ''
-                                            : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
-                                        }`}
+                                    className="relative flex-1 px-3 py-2 text-sm font-medium transition-all duration-200 rounded-[2px] focus:outline-none"
                                     style={{
                                         color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                                     }}
@@ -303,7 +331,7 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                                         <button
                                             key={tab.id}
                                             onClick={() => handleAddTab(tab.id)}
-                                            className="w-full px-4 py-2.5 text-sm text-left hover:bg-[var(--color-brand)]/10 hover:text-[var(--color-brand)] text-[var(--color-text-primary)] transition-all lowercase"
+                                            className="w-full px-4 py-2.5 text-sm text-left text-[var(--color-text-primary)] transition-all lowercase"
                                         >
                                             {tab.label}
                                         </button>
