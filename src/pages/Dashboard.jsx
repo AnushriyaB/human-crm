@@ -215,6 +215,8 @@ export default function Dashboard() {
                 isOpen={!!selectedFriend}
                 onClose={() => setSelectedFriendId(null)}
                 friend={selectedFriend}
+                friends={friends}
+                onNavigate={(id) => setSelectedFriendId(id)}
             />
 
 
