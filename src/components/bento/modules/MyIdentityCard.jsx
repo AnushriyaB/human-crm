@@ -388,48 +388,6 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                     </div>
                 )}
 
-                {/* Passkey Section */}
-                {friend.passphrase && (
-                    <div className="pt-4 mt-4 border-t border-[var(--color-border)]">
-                        <p className="text-xs text-[var(--color-text-secondary)] mb-2">Share this passkey with friends:</p>
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-bg-secondary)]">
-                            <div className="flex items-center gap-2">
-                                <span className="font-mono text-sm text-[var(--color-brand)]">
-                                    {showPasskey ? friend.passphrase : maskPasskey(friend.passphrase)}
-                                </span>
-                                <button
-                                    onClick={() => setShowPasskey(!showPasskey)}
-                                    className="p-1.5 rounded-full transition-all shadow-inner hover:shadow-sm bg-[var(--color-button-bg)] border border-[var(--color-border)] hover:bg-white"
-                                >
-                                    {showPasskey ? (
-                                        <EyeOff size={14} className="text-[var(--color-text-secondary)]" />
-                                    ) : (
-                                        <Eye size={14} className="text-[var(--color-text-secondary)]" />
-                                    )}
-                                </button>
-                            </div>
-                            <button
-                                onClick={handleCopyPasskey}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[2px] transition-all ${copied
-                                    ? 'bg-green-100 text-green-600 shadow-[inset_0_2px_4px_0_rgba(34,197,94,0.2)]'
-                                    : 'bg-[var(--color-button-bg)] hover:text-[var(--color-brand)] text-[var(--color-text-secondary)] shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)] hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]'
-                                    }`}
-                            >
-                                {copied ? (
-                                    <>
-                                        <Check size={12} />
-                                        Copied!
-                                    </>
-                                ) : (
-                                    <>
-                                        <Copy size={12} />
-                                        Copy
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

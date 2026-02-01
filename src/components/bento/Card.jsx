@@ -23,7 +23,7 @@ export default function BentoCard({
             onClick={onClick}
             className={clsx(
                 "group relative rounded-2xl p-5 overflow-hidden transition-all duration-200",
-                "border border-transparent hover:border-[var(--color-border)] hover:bg-blue-50/40",
+                "border border-transparent",
                 isNew
                     ? "bg-blue-50/50 border-blue-100"
                     : "bg-[var(--color-card-bg)]",
