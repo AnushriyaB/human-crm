@@ -17,7 +17,7 @@ import NotesCard from '../bento/modules/NotesCard';
 import CollageCard from '../bento/modules/CollageCard';
 import BentoCard from '../bento/Card';
 import ModuleLibrary from '../bento/ModuleLibrary';
-import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool, Eye, EyeOff, Copy } from 'lucide-react';
+import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool, Eye, EyeOff, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Tab configuration with pastel colors
 const FRIEND_TABS = [
@@ -36,9 +36,14 @@ const ME_TABS = [
     { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' },
 ];
 
-export default function SideSheet({ isOpen, onClose, friend }) {
+export default function SideSheet({ isOpen, onClose, friend, friends = [], onNavigate }) {
     const navigate = useNavigate();
     const { updateFriend } = useFriends();
+
+    // Pagination: derive prev/next from the full friends list
+    const currentIndex = friends.findIndex(f => f.id === friend?.id);
+    const prevFriend = currentIndex > 0 ? friends[currentIndex - 1] : null;
+    const nextFriend = currentIndex < friends.length - 1 ? friends[currentIndex + 1] : null;
 
     const [isEditing, setIsEditing] = useState(false);
     const [view, setView] = useState('details');
@@ -275,6 +280,31 @@ export default function SideSheet({ isOpen, onClose, friend }) {
                         )}
 
                         <div className="flex items-center gap-3">
+                            {/* Prev / Next navigation */}
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => prevFriend && onNavigate(prevFriend.id)}
+                                    disabled={!prevFriend}
+                                    className="w-8 h-8 rounded-[2px] transition-all flex items-center justify-center border border-[var(--color-border)] bg-[var(--color-button-bg)] disabled:opacity-25 disabled:cursor-not-allowed hover:bg-[var(--color-highlight)]"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                    title={prevFriend ? prevFriend.name : 'No previous'}
+                                >
+                                    <ChevronLeft size={16} strokeWidth={2} />
+                                </button>
+                                <span className="text-xs font-medium tabular-nums" style={{ color: 'var(--color-text-secondary)', minWidth: '38px', textAlign: 'center' }}>
+                                    {currentIndex + 1} / {friends.length}
+                                </span>
+                                <button
+                                    onClick={() => nextFriend && onNavigate(nextFriend.id)}
+                                    disabled={!nextFriend}
+                                    className="w-8 h-8 rounded-[2px] transition-all flex items-center justify-center border border-[var(--color-border)] bg-[var(--color-button-bg)] disabled:opacity-25 disabled:cursor-not-allowed hover:bg-[var(--color-highlight)]"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                    title={nextFriend ? nextFriend.name : 'No next'}
+                                >
+                                    <ChevronRight size={16} strokeWidth={2} />
+                                </button>
+                            </div>
+
                             <button
                                 onClick={isEditing ? handleSaveEdit : handleToggleEdit}
                                 className={`w-10 h-10 rounded-full transition-all flex items-center justify-center shadow-inner hover:shadow-sm border border-[var(--color-border)] bg-[var(--color-button-bg)]`}
