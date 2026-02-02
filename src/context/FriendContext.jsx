@@ -70,6 +70,13 @@ export function FriendProvider({ children }) {
         }));
     }, []);
 
+    // Delete a friend by ID (cannot delete 'me')
+    const deleteFriend = useCallback((id) => {
+        if (id === 'me') return false; // Prevent deleting the 'me' profile
+        setFriends(prev => prev.filter(f => f.id !== id));
+        return true;
+    }, []);
+
     // Call this to geocode a specific location string for a friend
     const geocodeFriendLocation = useCallback(async (id, locationOverride) => {
         // Get current friend state
@@ -97,7 +104,7 @@ export function FriendProvider({ children }) {
     }, []);
 
     return (
-        <FriendContext.Provider value={{ friends, addFriend, updateFriend, geocodeFriendLocation }}>
+        <FriendContext.Provider value={{ friends, addFriend, updateFriend, deleteFriend, geocodeFriendLocation }}>
             {children}
         </FriendContext.Provider>
     );

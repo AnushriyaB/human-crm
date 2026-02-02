@@ -13,19 +13,20 @@ import FavoritesCard from '../bento/modules/FavoritesCard';
 import WorkCard from '../bento/modules/WorkCard';
 import CommunicationCard from '../bento/modules/CommunicationCard';
 import StoryCard from '../bento/modules/StoryCard';
+import RelationshipCard from '../bento/modules/RelationshipCard';
 import NotesCard from '../bento/modules/NotesCard';
-import CollageCard from '../bento/modules/CollageCard';
+import ScrapbookCard from '../bento/modules/ScrapbookCard';
 import BentoCard from '../bento/Card';
 import ModuleLibrary from '../bento/ModuleLibrary';
-import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool, Eye, EyeOff, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Check, User, Heart, Briefcase, MessageCircle, PenTool, Eye, EyeOff, Copy, ChevronLeft, ChevronRight, Handshake, Trash2 } from 'lucide-react';
 
-// Tab configuration with pastel colors
 const FRIEND_TABS = [
     { id: 'about', label: 'about', icon: User, modules: ['family', 'timeline'], color: '#fee2e2' }, // rose-100
+    { id: 'relationship', label: 'relationship', icon: Handshake, modules: ['relationship'], color: '#fce7f3' }, // pink-100
     { id: 'favorites', label: 'favorites', icon: Heart, modules: ['favorites', 'story'], color: '#dbeafe' }, // blue-100
     { id: 'work', label: 'work', icon: Briefcase, modules: ['work'], color: '#dcfce7' }, // green-100
     { id: 'connect', label: 'connect', icon: MessageCircle, modules: ['communication'], color: '#fef3c7' }, // amber-100
-    { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' }, // purple-100
+    { id: 'scrapbook', label: 'scrapbook', icon: PenTool, modules: ['scrapbook', 'notes'], color: '#f3e8ff' }, // purple-100
 ];
 
 const ME_TABS = [
@@ -33,12 +34,12 @@ const ME_TABS = [
     { id: 'favorites', label: 'my favorites', icon: Heart, modules: ['favorites'], color: '#dbeafe' },
     { id: 'work', label: 'my work', icon: Briefcase, modules: ['work'], color: '#dcfce7' },
     { id: 'connect', label: 'social links', icon: MessageCircle, modules: ['communication'], color: '#fef3c7' },
-    { id: 'collage', label: 'collage', icon: PenTool, modules: ['collage', 'notes'], color: '#f3e8ff' },
+    { id: 'scrapbook', label: 'scrapbook', icon: PenTool, modules: ['scrapbook', 'notes'], color: '#f3e8ff' },
 ];
 
 export default function SideSheet({ isOpen, onClose, friend, friends = [], onNavigate }) {
     const navigate = useNavigate();
-    const { updateFriend } = useFriends();
+    const { updateFriend, deleteFriend } = useFriends();
 
     // Pagination: derive prev/next from the full friends list
     const currentIndex = friends.findIndex(f => f.id === friend?.id);
@@ -53,6 +54,9 @@ export default function SideSheet({ isOpen, onClose, friend, friends = [], onNav
     const [enabledTabs, setEnabledTabs] = useState(['about']); // Only 'about' enabled by default
     const [showPasskey, setShowPasskey] = useState(false);
     const [passkeyCopied, setPasskeyCopied] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
     const scrollContainerRef = useRef(null);
 
     const maskPasskey = (pk) => pk ? pk.slice(0, 2) + '••••' + pk.slice(-2) : '';
@@ -198,8 +202,9 @@ export default function SideSheet({ isOpen, onClose, friend, friends = [], onNav
             case 'work': return <WorkCard key={type} {...props} />;
             case 'communication': return <CommunicationCard key={type} {...props} />;
             case 'story': return <StoryCard key={type} {...props} />;
-            case 'collage': return <CollageCard key={type} {...props} />;
-            case 'notes': return <CollageCard key={type} {...props} />;
+            case 'relationship': return <RelationshipCard key={type} {...props} />;
+            case 'scrapbook': return <ScrapbookCard key={type} {...props} />;
+            case 'notes': return <ScrapbookCard key={type} {...props} />;
             default: return null;
         }
     };
@@ -228,9 +233,24 @@ export default function SideSheet({ isOpen, onClose, friend, friends = [], onNav
             {/* Panel */}
             <motion.div
                 initial={{ x: '100%' }}
-                animate={{ x: 0 }}
+                animate={isDeleting ? {
+                    x: '45vw',
+                    y: '45vh',
+                    scale: 0.05,
+                    opacity: 0,
+                    rotate: 5
+                } : {
+                    x: 0,
+                    y: 0,
+                    scale: 1,
+                    opacity: 1,
+                    rotate: 0
+                }}
                 exit={{ x: '100%' }}
-                transition={{
+                transition={isDeleting ? {
+                    duration: 0.7,
+                    ease: [0.32, 0, 0.67, 0] // easeInCubic-ish for "falling" feel
+                } : {
                     type: "spring",
                     damping: 30,
                     stiffness: 300,
@@ -403,8 +423,8 @@ export default function SideSheet({ isOpen, onClose, friend, friends = [], onNav
                                     </div>
                                 )}
 
-                                {/* Module Grid - Full width for collage/editor, Masonry for others */}
-                                <div className={activeTab === 'collage' ? "flex flex-col gap-6" : "columns-1 md:columns-2 gap-6"}>
+                                {/* Module Grid - Full width for scrapbook/editor, Masonry for others */}
+                                <div className={activeTab === 'scrapbook' ? "flex flex-col gap-6" : "columns-1 md:columns-2 gap-6"}>
                                     {activeModulesInTab.map(type => (
                                         <div key={type} className="break-inside-avoid mb-6">
                                             {renderModule(type)}
@@ -438,6 +458,96 @@ export default function SideSheet({ isOpen, onClose, friend, friends = [], onNav
                     existingModules={friend?.modules || []}
                     isMe={isMe}
                 />
+
+                {/* Floating Delete Button - Bottom Right */}
+                <AnimatePresence>
+                    {isEditing && !isMe && (
+                        <motion.button
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                                setDeleteConfirmationText('');
+                                setShowDeleteConfirm(true);
+                            }}
+                            className="absolute bottom-8 right-8 w-12 h-12 rounded-full bg-red-50 text-red-500 border border-red-200 shadow-lg flex items-center justify-center hover:bg-red-500 hover:text-white hover:border-red-600 transition-colors z-40"
+                            title="Delete friend"
+                        >
+                            <Trash2 size={20} />
+                        </motion.button>
+                    )}
+                </AnimatePresence>
+
+                {/* Delete Confirmation Modal */}
+                <AnimatePresence>
+                    {showDeleteConfirm && (
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
+                            />
+                            {/* Modal */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-2xl border border-gray-100 p-6 z-[70] text-center"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete {friend?.name}?</h3>
+                                <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                                    This will permanently remove them from your book of humans. This action cannot be undone.
+                                </p>
+                                <div className="mb-6">
+                                    <label className="block text-xs font-medium text-gray-500 mb-2">
+                                        Type <span className="font-bold text-gray-700">delete</span> to confirm
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={deleteConfirmationText}
+                                        onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                                        className="w-full px-3 py-2 border rounded-[4px] text-center focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-red-300 transition-all font-mono text-sm"
+                                        placeholder="delete"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="flex-1"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <button
+                                        onClick={() => {
+                                            if (deleteConfirmationText !== 'delete') return;
+                                            setIsDeleting(true);
+                                            setShowDeleteConfirm(false);
+                                            // Wait for animation to finish
+                                            setTimeout(() => {
+                                                deleteFriend(friend.id);
+                                                onClose();
+                                            }, 700);
+                                        }}
+                                        disabled={deleteConfirmationText !== 'delete'}
+                                        className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-[2px] transition-colors shadow-sm"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </motion.div>
         </>
     );

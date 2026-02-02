@@ -35,9 +35,9 @@ export default function ButtonGallery() {
                 </div>
             </section>
 
-            {/* Ad-hoc Buttons from CollageCard */}
+            {/* Ad-hoc Buttons from ScrapbookCard */}
             <section className="space-y-4">
-                <h2 className="text-xl font-semibold border-b pb-2">Ad-hoc: Collage Card Controls</h2>
+                <h2 className="text-xl font-semibold border-b pb-2">Ad-hoc: Scrapbook Card Controls</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {/* Floating Menu Buttons */}
@@ -65,7 +65,7 @@ export default function ButtonGallery() {
                                 ideas
                             </button>
                             <button className="relative flex-1 py-1.5 text-xs font-medium transition-all rounded-[2px] focus:outline-none z-10 lowercase text-[var(--color-text-secondary)] hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]">
-                                my collages
+                                my scrapbooks
                             </button>
                         </div>
                     </div>
