@@ -3,54 +3,13 @@ import { motion } from 'framer-motion';
 import { User, MapPin, Globe, Briefcase, Heart, Camera, Copy, Check, Eye, EyeOff, ChevronDown, Search, ImagePlus } from 'lucide-react';
 import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
+import { COUNTRIES, getSubdivisions, getSubdivisionLabel, getTimezoneForSubdivision, getCountryTimezone } from '../../../data/countryData';
 
 const PRONOUNS = [
     { name: 'he/him', code: 'he/him' },
     { name: 'she/her', code: 'she/her' },
     { name: 'they/them', code: 'they/them' },
     { name: 'other', code: 'other' }
-];
-
-const COUNTRIES = [
-    { name: 'United States', code: 'US', tz: 'Multiple' },
-    { name: 'United Kingdom', code: 'GB', tz: 'GMT (UTC+0)' },
-    { name: 'Canada', code: 'CA', tz: 'Multiple' },
-    { name: 'Australia', code: 'AU', tz: 'Multiple' },
-    { name: 'Germany', code: 'DE', tz: 'CET (UTC+1)' },
-    { name: 'France', code: 'FR', tz: 'CET (UTC+1)' },
-    { name: 'Japan', code: 'JP', tz: 'JST (UTC+9)' },
-    { name: 'India', code: 'IN', tz: 'IST (UTC+5:30)' },
-    { name: 'Brazil', code: 'BR', tz: 'BRT (UTC-3)' },
-    { name: 'Singapore', code: 'SG', tz: 'SGT (UTC+8)' },
-    { name: 'South Korea', code: 'KR', tz: 'KST (UTC+9)' },
-    { name: 'New Zealand', code: 'NZ', tz: 'NZST (UTC+12)' },
-    { name: 'Ireland', code: 'IE', tz: 'GMT (UTC+0)' },
-    { name: 'Sweden', code: 'SE', tz: 'CET (UTC+1)' },
-    { name: 'Switzerland', code: 'CH', tz: 'CET (UTC+1)' },
-];
-
-const US_STATES = [
-    { name: 'California', code: 'CA', tz: 'PST (UTC-8)' },
-    { name: 'New York', code: 'NY', tz: 'EST (UTC-5)' },
-    { name: 'Texas', code: 'TX', tz: 'CST (UTC-6)' },
-    { name: 'Florida', code: 'FL', tz: 'EST (UTC-5)' },
-    { name: 'Illinois', code: 'IL', tz: 'CST (UTC-6)' },
-    { name: 'Washington', code: 'WA', tz: 'PST (UTC-8)' },
-    { name: 'Massachusetts', code: 'MA', tz: 'EST (UTC-5)' },
-    { name: 'Colorado', code: 'CO', tz: 'MST (UTC-7)' },
-];
-
-const CA_PROVINCES = [
-    { name: 'Ontario', code: 'ON', tz: 'EST (UTC-5)' },
-    { name: 'Quebec', code: 'QC', tz: 'EST (UTC-5)' },
-    { name: 'British Columbia', code: 'BC', tz: 'PST (UTC-8)' },
-    { name: 'Alberta', code: 'AB', tz: 'MST (UTC-7)' },
-];
-
-const AU_STATES = [
-    { name: 'New South Wales', code: 'NSW', tz: 'AEST (UTC+10)' },
-    { name: 'Victoria', code: 'VIC', tz: 'AEST (UTC+10)' },
-    { name: 'Queensland', code: 'QLD', tz: 'AEST (UTC+10)' },
 ];
 
 // Tactile input styling
@@ -95,15 +54,21 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
     };
 
     const handleCountryChange = (country) => {
+        const subdivisions = getSubdivisions(country.code || country.name);
+        const countryTz = getCountryTimezone(country.code || country.name);
+
         const updates = {
             country: country.name,
             state: '',
             location: country.name,
         };
-        if (country.tz !== 'Multiple') {
-            updates.timezone = country.tz;
+
+        // Set timezone if country has a single timezone (no subdivisions needed)
+        if (countryTz) {
+            updates.timezone = countryTz;
             setTimeout(() => geocodeFriendLocation?.(friend.id, country.name), 100);
         }
+
         onUpdate?.(updates);
     };
 
@@ -117,12 +82,9 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
         setTimeout(() => geocodeFriendLocation?.(friend.id, newLocation), 100);
     };
 
-    const getStatesForCountry = (countryName) => {
-        if (countryName === 'United States') return US_STATES;
-        if (countryName === 'Canada') return CA_PROVINCES;
-        if (countryName === 'Australia') return AU_STATES;
-        return null;
-    };
+    // Get subdivisions for the selected country
+    const subdivisions = getSubdivisions(friend.country);
+    const subdivisionLabel = getSubdivisionLabel(friend.country);
 
     const handlePhotoUpload = (e) => {
         const file = e.target.files?.[0];
@@ -162,8 +124,6 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
         if (!passkey) return '';
         return '•'.repeat(passkey.length);
     };
-
-    const states = getStatesForCountry(friend.country);
 
     const getGradient = () => {
         const colors = [
@@ -353,13 +313,13 @@ export default function MyIdentityCard({ friend, isEditing, onUpdate, scrollCont
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">
-                                    {friend.country === 'Canada' ? 'province' : 'state/region'}
+                                    {subdivisionLabel}
                                 </label>
-                                {states ? (
+                                {subdivisions ? (
                                     <TactileSelect
                                         value={friend.state}
                                         onChange={handleStateChange}
-                                        options={states}
+                                        options={subdivisions}
                                         placeholder="Select..."
                                     />
                                 ) : (

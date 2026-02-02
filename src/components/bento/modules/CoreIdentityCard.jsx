@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Handshake, Sparkles, MapPin, Briefcase, Camera, ImagePlus } from 'lucide-react';
 import TactileSelect from '../../ui/TactileSelect';
 import { useFriends } from '../../../context/FriendContext';
+import { COUNTRIES, getSubdivisions, getSubdivisionLabel, getCountryTimezone } from '../../../data/countryData';
 
 const PRONOUNS = [
     { name: 'he/him', code: 'he/him' },
@@ -13,57 +14,6 @@ const PRONOUNS = [
 const RELATIONSHIP_TYPES = [
     'friend', 'family', 'partner', 'ex-coworker', 'coworker',
     'classmate', 'neighbor', 'mentor', 'client', 'other'
-];
-
-// Countries with their timezones
-const COUNTRIES = [
-    { name: 'United States', code: 'US', tz: 'Multiple' },
-    { name: 'United Kingdom', code: 'GB', tz: 'GMT (UTC+0)' },
-    { name: 'Canada', code: 'CA', tz: 'Multiple' },
-    { name: 'Australia', code: 'AU', tz: 'Multiple' },
-    { name: 'Germany', code: 'DE', tz: 'CET (UTC+1)' },
-    { name: 'France', code: 'FR', tz: 'CET (UTC+1)' },
-    { name: 'Japan', code: 'JP', tz: 'JST (UTC+9)' },
-    { name: 'India', code: 'IN', tz: 'IST (UTC+5:30)' },
-    { name: 'Brazil', code: 'BR', tz: 'BRT (UTC-3)' },
-    { name: 'Mexico', code: 'MX', tz: 'Multiple' },
-    { name: 'Spain', code: 'ES', tz: 'CET (UTC+1)' },
-    { name: 'Italy', code: 'IT', tz: 'CET (UTC+1)' },
-    { name: 'Netherlands', code: 'NL', tz: 'CET (UTC+1)' },
-    { name: 'Singapore', code: 'SG', tz: 'SGT (UTC+8)' },
-    { name: 'South Korea', code: 'KR', tz: 'KST (UTC+9)' },
-    { name: 'China', code: 'CN', tz: 'CST (UTC+8)' },
-    { name: 'New Zealand', code: 'NZ', tz: 'NZST (UTC+12)' },
-    { name: 'Ireland', code: 'IE', tz: 'GMT (UTC+0)' },
-    { name: 'Sweden', code: 'SE', tz: 'CET (UTC+1)' },
-    { name: 'Switzerland', code: 'CH', tz: 'CET (UTC+1)' },
-];
-
-// US States with timezones (abbreviated for brevity)
-const US_STATES = [
-    { name: 'California', code: 'CA', tz: 'PST (UTC-8)' },
-    { name: 'New York', code: 'NY', tz: 'EST (UTC-5)' },
-    { name: 'Texas', code: 'TX', tz: 'CST (UTC-6)' },
-    { name: 'Florida', code: 'FL', tz: 'EST (UTC-5)' },
-    { name: 'Illinois', code: 'IL', tz: 'CST (UTC-6)' },
-    { name: 'Washington', code: 'WA', tz: 'PST (UTC-8)' },
-    { name: 'Massachusetts', code: 'MA', tz: 'EST (UTC-5)' },
-    { name: 'Colorado', code: 'CO', tz: 'MST (UTC-7)' },
-    { name: 'Georgia', code: 'GA', tz: 'EST (UTC-5)' },
-    { name: 'Arizona', code: 'AZ', tz: 'MST (UTC-7)' },
-];
-
-const CA_PROVINCES = [
-    { name: 'Ontario', code: 'ON', tz: 'EST (UTC-5)' },
-    { name: 'Quebec', code: 'QC', tz: 'EST (UTC-5)' },
-    { name: 'British Columbia', code: 'BC', tz: 'PST (UTC-8)' },
-    { name: 'Alberta', code: 'AB', tz: 'MST (UTC-7)' },
-];
-
-const AU_STATES = [
-    { name: 'New South Wales', code: 'NSW', tz: 'AEST (UTC+10)' },
-    { name: 'Victoria', code: 'VIC', tz: 'AEST (UTC+10)' },
-    { name: 'Queensland', code: 'QLD', tz: 'AEST (UTC+10)' },
 ];
 
 // Tactile input styling
@@ -105,15 +55,19 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
     };
 
     const handleCountryChange = (country) => {
+        const countryTz = getCountryTimezone(country.code || country.name);
+
         const updates = {
             country: country.name,
             state: '',
             location: country.name,
         };
-        if (country.tz !== 'Multiple') {
-            updates.timezone = country.tz;
+
+        if (countryTz) {
+            updates.timezone = countryTz;
             setTimeout(() => geocodeFriendLocation?.(friend.id, country.name), 100);
         }
+
         onUpdate?.(updates);
     };
 
@@ -127,12 +81,9 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
         setTimeout(() => geocodeFriendLocation?.(friend.id, newLocation), 100);
     };
 
-    const getStatesForCountry = (countryName) => {
-        if (countryName === 'United States') return US_STATES;
-        if (countryName === 'Canada') return CA_PROVINCES;
-        if (countryName === 'Australia') return AU_STATES;
-        return null;
-    };
+    // Get subdivisions for the selected country
+    const subdivisions = getSubdivisions(friend.country);
+    const subdivisionLabel = getSubdivisionLabel(friend.country);
 
     const handlePhotoUpload = (e) => {
         const file = e.target.files?.[0];
@@ -155,8 +106,6 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
             reader.readAsDataURL(file);
         }
     };
-
-    const states = getStatesForCountry(friend.country);
 
     // Build location string
     const locationString = [friend.state, friend.country].filter(Boolean).join(', ');
@@ -352,13 +301,13 @@ export default function CoreIdentityCard({ friend, isEditing, onUpdate }) {
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 block lowercase">
-                                    {friend.country === 'Canada' ? 'province' : 'state/region'}
+                                    {subdivisionLabel}
                                 </label>
-                                {states ? (
+                                {subdivisions ? (
                                     <TactileSelect
                                         value={friend.state}
                                         onChange={handleStateChange}
-                                        options={states}
+                                        options={subdivisions}
                                         placeholder="select..."
                                     />
                                 ) : (

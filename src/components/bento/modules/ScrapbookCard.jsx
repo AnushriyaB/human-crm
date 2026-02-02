@@ -73,10 +73,10 @@ const COLORS = [
     '#991B1B', '#78350F', '#365314', '#064E3B', '#1E3A8A', '#4C1D95', '#831843', '#000000'
 ];
 
-export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
+export default function ScrapbookCard({ module, isEditing, onUpdate, onRemove }) {
     // Mode: 'list' (default) or 'editor' (when creating)
-    // If no collages exist, default to 'list' which will show empty state with create button
-    const [mode, setMode] = useState(module.data?.collages?.length > 0 ? 'list' : 'editor');
+    // If no scrapbooks exist, default to 'list' which will show empty state with create button
+    const [mode, setMode] = useState(module.data?.scrapbooks?.length > 0 ? 'list' : 'editor');
 
     // Editor State
     const [activeTab, setActiveTab] = useState('ideas');
@@ -84,7 +84,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     const [bgOpen, setBgOpen] = useState(false);
     const [images, setImages] = useState(STATIC_IMAGES);
     const [isSearching, setIsSearching] = useState(false);
-    const [collageName, setCollageName] = useState('Untitled Collage');
+    const [scrapbookName, setScrapbookName] = useState('Untitled Scrapbook');
     const [isEditingName, setIsEditingName] = useState(false);
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
@@ -95,7 +95,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     // Get current items/bg from module data or defaults
     const items = module.data?.currentItems || [];
     const backgroundColor = module.data?.backgroundColor || '#FFFFFF';
-    const savedCollages = module.data?.collages || [];
+    const savedScrapbooks = module.data?.scrapbooks || [];
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) {
@@ -210,26 +210,26 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
         updateItems(items.filter(item => item.id !== id));
     };
 
-    const handleSaveCollage = () => {
-        // Save current state as a new collage
-        const newCollage = {
+    const handleSaveScrapbook = () => {
+        // Save current state as a new scrapbook
+        const newScrapbook = {
             id: Date.now(),
-            name: collageName,
+            name: scrapbookName,
             items: [...items],
             backgroundColor,
             date: new Date().toISOString()
         };
 
-        const newCollages = [newCollage, ...savedCollages];
+        const newScrapbooks = [newScrapbook, ...savedScrapbooks];
 
         onUpdate?.({
             ...module.data,
-            collages: newCollages,
+            scrapbooks: newScrapbooks,
             currentItems: [], // Clear editor
             backgroundColor: '#FFFFFF'
         });
 
-        setCollageName('Untitled Collage');
+        setScrapbookName('Untitled Scrapbook');
         setMode('list');
     };
 
@@ -255,11 +255,11 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     }, [mode, historyIndex, history]);
 
     // LIST VIEW
-    if (mode === 'list' && savedCollages.length > 0) {
+    if (mode === 'list' && savedScrapbooks.length > 0) {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center px-1">
-                    <h3 className="text-sm font-medium text-[var(--color-text-secondary)] lowercase">your collages ({savedCollages.length})</h3>
+                    <h3 className="text-sm font-medium text-[var(--color-text-secondary)] lowercase">your scrapbooks ({savedScrapbooks.length})</h3>
                     <button
                         onClick={() => setMode('editor')}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-[2px] text-xs font-medium transition-all lowercase
@@ -269,17 +269,17 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                             active:shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.15)]"
                     >
                         <Plus size={14} />
-                        new collage
+                        new scrapbook
                     </button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                    {savedCollages.map(collage => (
-                        <div key={collage.id} className="flex flex-col rounded-[2px] border border-[var(--color-border)] overflow-hidden bg-white shadow-sm group">
-                            {/* Collage preview */}
-                            <div className="aspect-[3/4] relative" style={{ backgroundColor: collage.backgroundColor }}>
+                    {savedScrapbooks.map(scrapbook => (
+                        <div key={scrapbook.id} className="flex flex-col rounded-[2px] border border-[var(--color-border)] overflow-hidden bg-white shadow-sm group">
+                            {/* Scrapbook preview */}
+                            <div className="aspect-[3/4] relative" style={{ backgroundColor: scrapbook.backgroundColor }}>
                                 {/* Mini preview of items */}
-                                {(collage.items || []).map((item) => (
+                                {(scrapbook.items || []).map((item) => (
                                     <div
                                         key={item.id}
                                         className="absolute"
@@ -299,14 +299,14 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                 <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => {
-                                            // Load collage into editor
+                                            // Load scrapbook into editor
                                             updateEditorData({
-                                                currentItems: [...collage.items],
-                                                backgroundColor: collage.backgroundColor
+                                                currentItems: [...scrapbook.items],
+                                                backgroundColor: scrapbook.backgroundColor
                                             });
                                             // Remove from saved list (editing = destructive to original)
-                                            const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                            onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
+                                            const newScrapbooks = savedScrapbooks.filter(c => c.id !== scrapbook.id);
+                                            onUpdate?.({ ...module.data, scrapbooks: newScrapbooks, currentItems: [...scrapbook.items], backgroundColor: scrapbook.backgroundColor });
                                             setMode('editor');
                                         }}
                                         className="p-2 rounded-[2px] transition-all
@@ -314,34 +314,34 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                         shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:text-[var(--color-text-primary)]"
-                                        title="Edit collage"
+                                        title="Edit scrapbook"
                                     >
                                         <Pencil size={14} />
                                     </button>
                                     <button
                                         onClick={() => {
-                                            const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                            onUpdate?.({ ...module.data, collages: newCollages });
+                                            const newScrapbooks = savedScrapbooks.filter(c => c.id !== scrapbook.id);
+                                            onUpdate?.({ ...module.data, scrapbooks: newScrapbooks });
                                         }}
                                         className="p-2 rounded-[2px] transition-all
                                         bg-[var(--color-button-bg)] text-red-400
                                         shadow-[inset_0_-2px_4px_0_rgba(0,0,0,0.1),inset_0_2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1),inset_0_-2px_4px_0_rgba(255,255,255,0.9)]
                                         hover:text-red-500"
-                                        title="Delete collage"
+                                        title="Delete scrapbook"
                                     >
                                         <Trash2 size={14} />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Collage name at bottom */}
+                            {/* Scrapbook name at bottom */}
                             <div className="px-3 py-2 bg-gray-50 border-t border-[var(--color-border)]">
                                 <p className="text-sm font-medium text-[var(--color-text-primary)] lowercase truncate">
-                                    {collage.name || 'Untitled Collage'}
+                                    {scrapbook.name || 'Untitled Scrapbook'}
                                 </p>
                                 <p className="text-xs text-[var(--color-text-tertiary)] lowercase">
-                                    {new Date(collage.date).toLocaleDateString()}
+                                    {new Date(scrapbook.date).toLocaleDateString()}
                                 </p>
                             </div>
                         </div>
@@ -352,23 +352,23 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
     }
 
     // EMPTY STATE (List view but no items) -> Redirect to Editor or specific empty UI?
-    // User requested: "The default view ... would be to 'create a collage' ... otherwise it would show the collages"
-    // So if no collages, show editor directly? Or an empty state button? 
-    // Let's stick to logic: if collages.length === 0, we set mode='editor' initially. 
-    // But if user deletes all collages, we might end up here.
-    if (mode === 'list' && savedCollages.length === 0) {
+    // User requested: "The default view ... would be to 'create a collage' ... otherwise it would show the scrapbooks"
+    // So if no scrapbooks, show editor directly? Or an empty state button? 
+    // Let's stick to logic: if scrapbooks.length === 0, we set mode='editor' initially. 
+    // But if user deletes all scrapbooks, we might end up here.
+    if (mode === 'list' && savedScrapbooks.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-[var(--color-border)] rounded-[2px] bg-[var(--color-bg-secondary)]/30">
                 <div className="w-16 h-16 bg-[var(--color-bg-secondary)] rounded-full flex items-center justify-center mb-4">
                     <Sparkles className="text-[var(--color-brand)]" size={32} />
                 </div>
-                <h3 className="font-medium text-[var(--color-text-primary)] mb-1 lowercase">no collages yet</h3>
+                <h3 className="font-medium text-[var(--color-text-primary)] mb-1 lowercase">no scrapbooks yet</h3>
                 <p className="text-sm text-[var(--color-text-secondary)] mb-6">start collecting your ideas</p>
                 <button
                     onClick={() => setMode('editor')}
                     className="px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm lowercase"
                 >
-                    create collage
+                    create scrapbook
                 </button>
             </div>
         );
@@ -391,7 +391,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                 {/* Header Overlay - Back button & Name only */}
                 <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-50 pointer-events-none">
                     <div className="flex items-center gap-2 pointer-events-auto">
-                        {savedCollages.length > 0 && (
+                        {savedScrapbooks.length > 0 && (
                             <button onClick={() => setMode('list')} className="p-2 bg-white/80 hover:bg-white backdrop-blur rounded-full shadow-sm text-[var(--color-text-secondary)] hover:text-black transition-colors">
                                 <ChevronRight className="rotate-180" size={18} />
                             </button>
@@ -400,8 +400,8 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                             <input
                                 ref={nameInputRef}
                                 type="text"
-                                value={collageName}
-                                onChange={(e) => setCollageName(e.target.value)}
+                                value={scrapbookName}
+                                onChange={(e) => setScrapbookName(e.target.value)}
                                 onBlur={() => setIsEditingName(false)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') setIsEditingName(false);
@@ -415,7 +415,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                 className="text-lg font-bold lowercase bg-white/80 backdrop-blur px-3 py-1 rounded-full cursor-pointer hover:bg-white transition-colors truncate max-w-[200px]"
                                 title="Click to edit name"
                             >
-                                {collageName}
+                                {scrapbookName}
                             </h2>
                         )}
                     </div>
@@ -424,7 +424,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                     <div className="pointer-events-auto">
                         {items.length > 0 && (
                             <Button
-                                onClick={handleSaveCollage}
+                                onClick={handleSaveScrapbook}
                                 variant="primary"
                                 size="sm"
                                 className="shadow-sm lowercase gap-2"
@@ -601,23 +601,22 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                             <div className="flex-1 flex p-1.5 gap-1.5 bg-[var(--color-button-bg)] rounded-[2px] shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.12)]">
                                 {[
                                     { id: 'ideas', label: 'more ideas' },
-                                    { id: 'mycollages', label: 'my collages' }
+                                    { id: 'myscrapbooks', label: 'my scrapbooks' }
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`relative flex-1 py-1.5 text-xs font-medium transition-all rounded-[2px] focus:outline-none z-10 lowercase ${
-                                            activeTab === tab.id
-                                                ? ''
-                                                : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
-                                        }`}
+                                        className={`relative flex-1 py-1.5 text-xs font-medium transition-all rounded-[2px] focus:outline-none z-10 lowercase ${activeTab === tab.id
+                                            ? ''
+                                            : 'hover:shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.08)]'
+                                            }`}
                                         style={{
                                             color: activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'
                                         }}
                                     >
                                         {activeTab === tab.id && (
                                             <motion.div
-                                                layoutId="collageSidebarTab"
+                                                layoutId="scrapbookSidebarTab"
                                                 className="absolute inset-0 bg-white rounded-[2px] shadow-[0_2px_8px_0_rgba(0,0,0,0.08),inset_0_-1px_2px_0_rgba(0,0,0,0.1),inset_0_1px_2px_0_rgba(255,255,255,0.8)] z-[-1]"
                                                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
                                             />
@@ -684,25 +683,25 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                             })}
                         </div>
                     )}
-                    {activeTab === 'mycollages' && (
+                    {activeTab === 'myscrapbooks' && (
                         <div className="space-y-3">
-                            {savedCollages.length > 0 ? (
+                            {savedScrapbooks.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
-                                    {savedCollages.map(collage => (
+                                    {savedScrapbooks.map(scrapbook => (
                                         <button
-                                            key={collage.id}
+                                            key={scrapbook.id}
                                             onClick={() => {
                                                 updateEditorData({
-                                                    currentItems: [...collage.items],
-                                                    backgroundColor: collage.backgroundColor
+                                                    currentItems: [...scrapbook.items],
+                                                    backgroundColor: scrapbook.backgroundColor
                                                 });
-                                                const newCollages = savedCollages.filter(c => c.id !== collage.id);
-                                                onUpdate?.({ ...module.data, collages: newCollages, currentItems: [...collage.items], backgroundColor: collage.backgroundColor });
+                                                const newScrapbooks = savedScrapbooks.filter(c => c.id !== scrapbook.id);
+                                                onUpdate?.({ ...module.data, scrapbooks: newScrapbooks, currentItems: [...scrapbook.items], backgroundColor: scrapbook.backgroundColor });
                                             }}
                                             className="aspect-[3/4] rounded-[2px] border border-[var(--color-border)] overflow-hidden relative group bg-white hover:border-[var(--color-brand)] transition-colors"
-                                            style={{ backgroundColor: collage.backgroundColor }}
+                                            style={{ backgroundColor: scrapbook.backgroundColor }}
                                         >
-                                            {collage.items.slice(0, 3).map((item) => (
+                                            {scrapbook.items.slice(0, 3).map((item) => (
                                                 <div
                                                     key={item.id}
                                                     className="absolute"
@@ -722,7 +721,7 @@ export default function CollageCard({ module, isEditing, onUpdate, onRemove }) {
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-40 text-gray-400 text-sm lowercase">
-                                    <p>no collages yet</p>
+                                    <p>no scrapbooks yet</p>
                                 </div>
                             )}
                         </div>
